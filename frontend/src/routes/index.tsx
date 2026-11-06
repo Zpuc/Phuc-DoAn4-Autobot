@@ -7,8 +7,14 @@ import { LoginPage } from '../pages/public/LoginPage';
 import { RegisterPage } from '../pages/public/RegisterPage';
 import { ProductListPage } from '../pages/public/ProductListPage';
 import { ProductDetailPage } from '../pages/public/ProductDetailPage';
+import { CartPage } from '../pages/public/CartPage';
+import { CheckoutPage } from '../pages/public/CheckoutPage';
+import { TrackOrderPage } from '../pages/public/TrackOrderPage';
+import { QuotationPage } from '../pages/public/QuotationPage';
 import { DashboardPage } from '../pages/admin/DashboardPage';
 import { ProductManagePage } from '../pages/admin/ProductManagePage';
+import { OrderManagePage } from '../pages/admin/OrderManagePage';
+import { QuotationManagePage } from '../pages/admin/QuotationManagePage';
 
 export const router = createBrowserRouter([
   // Public Routes
@@ -21,9 +27,10 @@ export const router = createBrowserRouter([
       { path: 'register', element: <RegisterPage /> },
       { path: 'products', element: <ProductListPage /> },
       { path: 'products/:slug', element: <ProductDetailPage /> },
-      { path: 'quotations', element: <HomePage /> },
-      { path: 'cart', element: <HomePage /> },
-      { path: 'track-order', element: <HomePage /> },
+      { path: 'cart', element: <CartPage /> },
+      { path: 'checkout', element: <CheckoutPage /> },
+      { path: 'track-order', element: <TrackOrderPage /> },
+      { path: 'quotations', element: <QuotationPage /> },
     ],
   },
 
@@ -38,8 +45,8 @@ export const router = createBrowserRouter([
           { index: true, element: <DashboardPage /> },
           { path: 'products', element: <ProductManagePage /> },
           { path: 'inventory', element: <ProductManagePage /> },
-          { path: 'orders', element: <DashboardPage /> },
-          { path: 'quotations', element: <DashboardPage /> },
+          { path: 'orders', element: <OrderManagePage /> },
+          { path: 'quotations', element: <QuotationManagePage /> },
           { path: 'reports', element: <DashboardPage /> },
         ],
       },
