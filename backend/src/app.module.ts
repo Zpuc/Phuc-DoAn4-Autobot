@@ -6,6 +6,10 @@ import { AuthModule } from './modules/auth/auth.module';
 import { CategoriesModule } from './modules/categories/categories.module';
 import { BrandsModule } from './modules/brands/brands.module';
 import { ProductsModule } from './modules/products/products.module';
+import { ShippingModule } from './modules/shipping/shipping.module';
+import { OrdersModule } from './modules/orders/orders.module';
+import { QuotationsModule } from './modules/quotations/quotations.module';
+import { ReportsModule } from './modules/reports/reports.module';
 
 @Module({
   imports: [
@@ -24,6 +28,10 @@ import { ProductsModule } from './modules/products/products.module';
     CategoriesModule,
     BrandsModule,
     ProductsModule,
+    ShippingModule,
+    OrdersModule,
+    QuotationsModule,
+    ReportsModule,
   ],
 })
 export class AppModule {}
