@@ -20,3 +20,4 @@ export class ReportsController {
     return this.reportsService.getDashboardStats();
   }
 }
+

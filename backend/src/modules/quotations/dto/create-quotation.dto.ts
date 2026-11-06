@@ -41,3 +41,4 @@ export class CreateQuotationDto {
   @Type(() => QuotationItemDto)
   items: QuotationItemDto[];
 }
+

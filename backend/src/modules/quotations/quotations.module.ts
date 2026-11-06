@@ -8,3 +8,4 @@ import { QuotationsController } from './quotations.controller';
   exports: [QuotationsService],
 })
 export class QuotationsModule {}
+

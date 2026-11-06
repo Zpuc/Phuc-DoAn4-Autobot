@@ -1,10 +1,10 @@
-import { PrismaClient, Role, ProductStatus } from '@prisma/client';
+import { PrismaClient, Role, ProductStatus, OrderStatus, PaymentMethod, InventoryChangeReason } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('--- Đang khởi tạo dữ liệu mẫu (Seed Data) ---');
+  console.log('--- Đang khởi tạo dữ liệu mẫu phong phú (Seed Data v2) ---');
 
   // 1. Tạo Users mẫu
   const salt = await bcrypt.genSalt(10);
@@ -48,7 +48,7 @@ async function main() {
     },
   });
 
-  console.log(`Đã tạo người dùng: ${admin.email}, ${staff.email}, ${customer.email}`);
+  console.log(`Đã tạo tài khoản: ${admin.email}, ${staff.email}, ${customer.email}`);
 
   // 2. Tạo Brands mẫu
   const brandsData = [
@@ -68,7 +68,6 @@ async function main() {
     });
     brandMap[b.slug] = created.id;
   }
-  console.log('Đã tạo các thương hiệu Gundam mẫu');
 
   // 3. Tạo Categories mẫu
   const categoriesData = [
@@ -89,7 +88,6 @@ async function main() {
     });
     categoryMap[c.slug] = created.id;
   }
-  console.log('Đã tạo các danh mục phân khúc Gunpla mẫu');
 
   // 4. Tạo Shipping Zones mẫu
   const existingZone = await prisma.shippingZone.findFirst();
@@ -97,29 +95,28 @@ async function main() {
     await prisma.shippingZone.createMany({
       data: [
         {
-          name: 'Nội thành TP.HCM (Giao hỏa tốc)',
+          name: 'Nội thành TP.HCM (Giao hỏa tốc trong ngày)',
           districts: 'Quận 1, Quận 3, Quận 5, Quận 10, Phú Nhuận, Bình Thạnh',
           fee: 25000,
           isLocal: true,
         },
         {
-          name: 'Ngoại thành TP.HCM',
+          name: 'Ngoại thành TP.HCM (Giao nhanh 1-2 ngày)',
           districts: 'Quận 7, Quận 8, Quận 12, Bình Tân, Thủ Đức, Gò Vấp',
           fee: 35000,
           isLocal: true,
         },
         {
           name: 'Toàn quốc (Chuyển phát nhanh GHN/GHTK)',
-          districts: 'Tất cả các tỉnh thành khác',
+          districts: 'Tất cả các tỉnh thành khác trên toàn quốc',
           fee: 45000,
           isLocal: false,
         },
       ],
     });
-    console.log('Đã tạo các khu vực vận chuyển mẫu');
   }
 
-  // 5. Tạo các sản phẩm Gundam mẫu
+  // 5. Danh sách 16 mẫu Gunpla đa dạng phân khúc
   const sampleProducts = [
     {
       name: 'MG 1/100 Freedom Gundam Ver. 2.0',
@@ -176,6 +173,24 @@ async function main() {
       imageUrl: 'https://images.unsplash.com/photo-1563089145-599997674d42?w=600&auto=format&fit=crop&q=60',
     },
     {
+      name: 'HG 1/144 Gundam Calibarn',
+      slug: 'hg-1-144-gundam-calibarn',
+      sku: 'BAN-HG-CALIBARN',
+      categoryId: categoryMap['hg-high-grade'],
+      brandId: brandMap['bandai-namco'],
+      grade: 'HG',
+      scale: '1/144',
+      series: 'Mobile Suit Gundam: The Witch from Mercury',
+      condition: 'NEW_SEAL',
+      description: 'Mô hình chổi thần Broom Rifle hiệu ứng cầu vồng cực phẩm của series Witch from Mercury.',
+      status: ProductStatus.ACTIVE,
+      isPreorder: false,
+      price: 490000,
+      costPrice: 360000,
+      quantity: 15,
+      imageUrl: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=600&auto=format&fit=crop&q=60',
+    },
+    {
       name: 'PG 1/60 Gundam Exia Lighting Model',
       slug: 'pg-1-60-gundam-exia-lighting-model',
       sku: 'BAN-PG-EXIA-LED',
@@ -190,8 +205,26 @@ async function main() {
       isPreorder: false,
       price: 7800000,
       costPrice: 6200000,
-      quantity: 3,
+      quantity: 2,
       imageUrl: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=600&auto=format&fit=crop&q=60',
+    },
+    {
+      name: 'PG Unleashed 1/60 RX-78-2 Gundam',
+      slug: 'pg-unleashed-1-60-rx-78-2',
+      sku: 'BAN-PGU-RX78',
+      categoryId: categoryMap['pg-perfect-grade'],
+      brandId: brandMap['bandai-namco'],
+      grade: 'PG',
+      scale: '1/60',
+      series: 'Universal Century',
+      condition: 'NEW_SEAL',
+      description: 'Cột mốc 40 năm Gunpla. 5 giai đoạn lắp ráp từ khung xương sơ khai đến giáp ngoài mạ kim loại và LED tích hợp.',
+      status: ProductStatus.ACTIVE,
+      isPreorder: true,
+      price: 6500000,
+      costPrice: 5200000,
+      quantity: 1,
+      imageUrl: 'https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?w=600&auto=format&fit=crop&q=60',
     },
     {
       name: 'Motor Nuclear MN-Q05 Lữ Bố (LuBu & Xích Thố)',
@@ -212,6 +245,24 @@ async function main() {
       imageUrl: 'https://images.unsplash.com/photo-1563089145-599997674d42?w=600&auto=format&fit=crop&q=60',
     },
     {
+      name: 'Motor Nuclear MN-Q02 Tào Nhân (CaoRen)',
+      slug: 'motor-nuclear-mn-q02-cao-ren',
+      sku: 'MN-MB-CAOREN',
+      categoryId: categoryMap['metal-build'],
+      brandId: brandMap['motor-nuclear'],
+      grade: 'Metal Build',
+      scale: '1/72',
+      series: 'Legend of Star General',
+      condition: 'NEW_SEAL',
+      description: 'Mô hình robot hợp kim biến hình phượng hoàng lửa cánh vàng rực rỡ, kèm đế trưng bày và cánh hiệu ứng.',
+      status: ProductStatus.ACTIVE,
+      isPreorder: false,
+      price: 2350000,
+      costPrice: 1850000,
+      quantity: 4,
+      imageUrl: 'https://images.unsplash.com/photo-1608889175123-8ee362201f81?w=600&auto=format&fit=crop&q=60',
+    },
+    {
       name: 'MG 1/100 Sazabi Ver. Ka',
       slug: 'mg-1-100-sazabi-ver-ka',
       sku: 'BAN-MG-SAZABI-KA',
@@ -229,15 +280,70 @@ async function main() {
       quantity: 6,
       imageUrl: 'https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?w=600&auto=format&fit=crop&q=60',
     },
+    {
+      name: 'MG 1/100 Gundam Barbatos',
+      slug: 'mg-1-100-gundam-barbatos',
+      sku: 'BAN-MG-BARBATOS',
+      categoryId: categoryMap['mg-master-grade'],
+      brandId: brandMap['bandai-namco'],
+      grade: 'MG',
+      scale: '1/100',
+      series: 'Iron-Blooded Orphans',
+      condition: 'NEW_SEAL',
+      description: 'Khung xương Gundam Frame hoàn chỉnh với các pít-tông mạ chrome chuyển động linh hoạt theo từng khớp cử động.',
+      status: ProductStatus.ACTIVE,
+      isPreorder: false,
+      price: 1100000,
+      costPrice: 820000,
+      quantity: 10,
+      imageUrl: 'https://images.unsplash.com/photo-1563089145-599997674d42?w=600&auto=format&fit=crop&q=60',
+    },
+    {
+      name: 'RG 1/144 God Gundam',
+      slug: 'rg-1-144-god-gundam',
+      sku: 'BAN-RG-GOD',
+      categoryId: categoryMap['rg-real-grade'],
+      brandId: brandMap['bandai-namco'],
+      grade: 'RG',
+      scale: '1/144',
+      series: 'Mobile Fighter G Gundam',
+      condition: 'NEW_SEAL',
+      description: 'Biên độ cử động võ thuật đỉnh cao, có thể tạo mọi thế võ kungfu, Bakunetsu God Finger với hiệu ứng lửa.',
+      status: ProductStatus.ACTIVE,
+      isPreorder: false,
+      price: 950000,
+      costPrice: 710000,
+      quantity: 7,
+      imageUrl: 'https://images.unsplash.com/photo-1608889175123-8ee362201f81?w=600&auto=format&fit=crop&q=60',
+    },
+    {
+      name: 'SDCS Wing Gundam Zero EW',
+      slug: 'sdcs-wing-gundam-zero-ew',
+      sku: 'BAN-SD-WING0',
+      categoryId: categoryMap['sd-gundam'],
+      brandId: brandMap['bandai-namco'],
+      grade: 'SD',
+      scale: 'Non-scale',
+      series: 'Endless Waltz',
+      condition: 'NEW_SEAL',
+      description: 'Dòng SD Cross Silhouette hỗ trợ nâng cấp khung xương cao ráo, đôi cánh thiên thần xòe rộng đẹp mắt.',
+      status: ProductStatus.ACTIVE,
+      isPreorder: false,
+      price: 280000,
+      costPrice: 200000,
+      quantity: 18,
+      imageUrl: 'https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?w=600&auto=format&fit=crop&q=60',
+    },
   ];
 
+  const createdProducts: any[] = [];
   for (const p of sampleProducts) {
-    const existing = await prisma.product.findUnique({
+    let prod = await prisma.product.findUnique({
       where: { slug: p.slug },
     });
 
-    if (!existing) {
-      const created = await prisma.product.create({
+    if (!prod) {
+      prod = await prisma.product.create({
         data: {
           name: p.name,
           slug: p.slug,
@@ -254,39 +360,124 @@ async function main() {
         },
       });
 
-      // Price
+      // Giá
       await prisma.productPrice.create({
         data: {
-          productId: created.id,
+          productId: prod.id,
           price: p.price,
           costPrice: p.costPrice,
           note: 'Khởi tạo theo đợt nhập ban đầu',
         },
       });
 
-      // Inventory
+      // Tồn kho
       await prisma.inventory.create({
         data: {
-          productId: created.id,
+          productId: prod.id,
           quantity: p.quantity,
           minStock: 2,
         },
       });
 
-      // Image
+      // Ảnh
       await prisma.productImage.create({
         data: {
-          productId: created.id,
+          productId: prod.id,
           url: p.imageUrl,
           sortOrder: 0,
           isThumbnail: true,
         },
       });
     }
+    createdProducts.push(prod);
   }
 
-  console.log(`Đã nạp ${sampleProducts.length} sản phẩm Gundam mẫu.`);
-  console.log('--- Khởi tạo dữ liệu mẫu hoàn tất! ---');
+  // 6. Tạo một số đơn hàng mẫu để Dashboard hiển thị số liệu thực tế
+  const existingOrdersCount = await prisma.order.count();
+  if (existingOrdersCount === 0 && createdProducts.length >= 2) {
+    const orderSample1 = await prisma.order.create({
+      data: {
+        code: 'AG-261106-001',
+        customerName: 'Trần Văn Nam',
+        customerPhone: '0988776655',
+        customerEmail: 'namtran@gmail.com',
+        shippingAddress: '12 Nguyễn Huệ, Phường Bến Nghé, Quận 1, TP.HCM',
+        shippingFee: 25000,
+        subtotal: 2400000,
+        total: 2425000,
+        status: OrderStatus.COMPLETED,
+        paymentMethod: PaymentMethod.COD,
+        trackingCode: 'GHN-884920491',
+        note: 'Giao giờ hành chính giúp mình',
+        items: {
+          create: [
+            {
+              productId: createdProducts[0].id,
+              productName: createdProducts[0].name,
+              quantity: 1,
+              unitPrice: 1150000,
+              unitCost: 850000,
+            },
+            {
+              productId: createdProducts[1].id,
+              productName: createdProducts[1].name,
+              quantity: 1,
+              unitPrice: 1250000,
+              unitCost: 920000,
+            },
+          ],
+        },
+        statusHistory: {
+          create: [
+            { status: OrderStatus.PENDING, note: 'Khách đặt đơn qua website' },
+            { status: OrderStatus.CONFIRMED, note: 'Đã gọi điện chốt đơn với khách' },
+            { status: OrderStatus.SHIPPING, note: 'Bàn giao shipper GHN' },
+            { status: OrderStatus.COMPLETED, note: 'Khách đã nhận hàng và thanh toán COD' },
+          ],
+        },
+      },
+    });
+
+    const orderSample2 = await prisma.order.create({
+      data: {
+        code: 'AG-261106-002',
+        customerName: 'Hoàng Minh Quân',
+        customerPhone: '0911223344',
+        shippingAddress: '45 Võ Văn Ngân, Phường Linh Chiểu, TP. Thủ Đức, TP.HCM',
+        shippingFee: 35000,
+        subtotal: 2450000,
+        total: 2485000,
+        status: OrderStatus.SHIPPING,
+        paymentMethod: PaymentMethod.BANK_TRANSFER,
+        trackingCode: 'GHTK-9920141',
+        note: 'Bọc xốp kỹ tránh móp góc hộp',
+        items: {
+          create: [
+            {
+              productId: createdProducts[6]?.id || createdProducts[0].id,
+              productName: createdProducts[6]?.name || createdProducts[0].name,
+              quantity: 1,
+              unitPrice: 2450000,
+              unitCost: 1950000,
+            },
+          ],
+        },
+        statusHistory: {
+          create: [
+            { status: OrderStatus.PENDING, note: 'Khách đặt đơn' },
+            { status: OrderStatus.CONFIRMED, note: 'Đã nhận chuyển khoản MB Bank' },
+            { status: OrderStatus.PACKING, note: 'Đang bọc bóng khí chống va đập' },
+            { status: OrderStatus.SHIPPING, note: 'Giao cho shipper GHTK' },
+          ],
+        },
+      },
+    });
+
+    console.log(`Đã tạo đơn hàng mẫu: ${orderSample1.code}, ${orderSample2.code}`);
+  }
+
+  console.log(`Đã nạp ${sampleProducts.length} mô hình Gunpla và đơn hàng mẫu thành công!`);
+  console.log('--- Hoàn tất nạp dữ liệu mẫu! ---');
 }
 
 main()
