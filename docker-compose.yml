@@ -3,17 +3,44 @@ version: '3.8'
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: autobot_gundam_postgres
+    container_name: autobot_postgres
     restart: always
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
+      POSTGRES_PASSWORD: vanphuc04
       POSTGRES_DB: autobot_gundam_db
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: autobot_backend
+    restart: always
+    environment:
+      PORT: 3000
+      DATABASE_URL: "postgresql://postgres:vanphuc04@postgres:5432/autobot_gundam_db?schema=public"
+      JWT_SECRET: "autobot_gundam_secret_jwt_key_2026"
+      JWT_EXPIRES_IN: "7d"
+      CORS_ORIGIN: "http://localhost:5173"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: autobot_frontend
+    restart: always
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
 volumes:
   postgres_data:
-
