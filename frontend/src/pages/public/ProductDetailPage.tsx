@@ -28,6 +28,7 @@ import {
 } from '@ant-design/icons';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { apiClient } from '../../api/client';
+import { useCartStore } from '../../store/useCartStore';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -84,9 +85,24 @@ export const ProductDetailPage: React.FC = () => {
       });
   }, [slug]);
 
+  const addToCart = useCartStore((state) => state.addToCart);
+
   const handleAddToCart = () => {
     if (!product) return;
+    addToCart({
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      sku: product.sku,
+      grade: product.grade,
+      scale: product.scale,
+      price: product.currentPrice,
+      quantity: buyQuantity,
+      imageUrl: product.images[0]?.url,
+      isPreorder: product.isPreorder,
+    });
     message.success(`Đã thêm ${buyQuantity} hộp "${product.name}" vào giỏ hàng!`);
+    navigate('/cart');
   };
 
   const handleRequestQuotation = () => {
