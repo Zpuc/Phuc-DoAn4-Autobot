@@ -5,6 +5,8 @@ import { ProtectedRoute } from '../components/ProtectedRoute';
 import { HomePage } from '../pages/public/HomePage';
 import { LoginPage } from '../pages/public/LoginPage';
 import { RegisterPage } from '../pages/public/RegisterPage';
+import { ProductListPage } from '../pages/public/ProductListPage';
+import { ProductDetailPage } from '../pages/public/ProductDetailPage';
 import { DashboardPage } from '../pages/admin/DashboardPage';
 import { ProductManagePage } from '../pages/admin/ProductManagePage';
 
@@ -17,7 +19,8 @@ export const router = createBrowserRouter([
       { index: true, element: <HomePage /> },
       { path: 'login', element: <LoginPage /> },
       { path: 'register', element: <RegisterPage /> },
-      { path: 'products', element: <HomePage /> }, // Sẽ bổ sung ProductListPage ở feature tiếp theo
+      { path: 'products', element: <ProductListPage /> },
+      { path: 'products/:slug', element: <ProductDetailPage /> },
       { path: 'quotations', element: <HomePage /> },
       { path: 'cart', element: <HomePage /> },
       { path: 'track-order', element: <HomePage /> },
@@ -33,8 +36,8 @@ export const router = createBrowserRouter([
         element: <AdminLayout />,
         children: [
           { index: true, element: <DashboardPage /> },
-          { path: 'products', element: <DashboardPage /> },
-          { path: 'inventory', element: <DashboardPage /> },
+          { path: 'products', element: <ProductManagePage /> },
+          { path: 'inventory', element: <ProductManagePage /> },
           { path: 'orders', element: <DashboardPage /> },
           { path: 'quotations', element: <DashboardPage /> },
           { path: 'reports', element: <DashboardPage /> },
@@ -49,4 +52,3 @@ export const router = createBrowserRouter([
     element: <Navigate to="/" replace />,
   },
 ]);
-
