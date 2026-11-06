@@ -266,7 +266,7 @@ export const ProductManagePage: React.FC = () => {
             {val.toLocaleString('vi-VN')} đ
           </Text>
           <br />
-          <Text orientation="right" type="secondary" style={{ fontSize: 11 }}>
+          <Text type="secondary" style={{ fontSize: 11 }}>
             Vốn: {record.costPrice.toLocaleString('vi-VN')} đ
           </Text>
         </div>
