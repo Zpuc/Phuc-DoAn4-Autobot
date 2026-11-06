@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Build outputs
+dist/
+*/dist/
+build/
+*/build/
+
+# Environment variables
+.env
+*/.env
+*.env.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# System & Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Uploads
+uploads/
+*/uploads/
+
+# Rules, agents & text notes (Tuyệt đối không đẩy lên Git)
+AGENTS.md
+*/AGENTS.md
+user-rules.txt
+*.txt
+text/
