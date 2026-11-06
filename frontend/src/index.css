@@ -10,3 +10,24 @@ body {
   color: #333;
 }
 
+/* Tối ưu hóa khi in báo giá hoặc đơn hàng sang file PDF */
+@media print {
+  header,
+  footer,
+  .ant-layout-header,
+  .ant-layout-footer,
+  .ant-layout-sider,
+  .ant-btn,
+  .ant-breadcrumb {
+    display: none !important;
+  }
+
+  body {
+    background: #fff !important;
+  }
+
+  .ant-card {
+    border: none !important;
+    box-shadow: none !important;
+  }
+}

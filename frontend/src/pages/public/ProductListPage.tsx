@@ -398,3 +398,4 @@ export const ProductListPage: React.FC = () => {
     </div>
   );
 };
+

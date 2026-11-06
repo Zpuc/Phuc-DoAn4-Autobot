@@ -10,7 +10,10 @@
     "build:frontend": "npm --prefix frontend run build"
   },
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "@prisma/client": "^6.19.3",
+    "@types/bcrypt": "^6.0.0",
+    "@types/node": "^26.6.6",
+    "concurrently": "^9.1.2",
+    "prisma": "^6.19.3"
   }
 }
-
