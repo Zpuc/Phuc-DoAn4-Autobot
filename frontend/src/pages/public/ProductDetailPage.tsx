@@ -16,6 +16,14 @@ import {
   Badge,
   message,
   Alert,
+  Rate,
+  Progress,
+  Avatar,
+  Divider,
+  Modal,
+  Form,
+  Input,
+  List,
 } from 'antd';
 import {
   HomeOutlined,
@@ -27,11 +35,19 @@ import {
   SafetyCertificateOutlined,
   HeartOutlined,
   HeartFilled,
+  StarOutlined,
+  StarFilled,
+  LikeOutlined,
+  UserOutlined,
+  EditOutlined,
+  MessageOutlined,
 } from '@ant-design/icons';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { apiClient } from '../../api/client';
+import { reviewApi, ProductReviewsResponse } from '../../api/reviews';
 import { useCartStore } from '../../store/useCartStore';
 import { useWishlistStore } from '../../store/useWishlistStore';
+import { useAuthStore } from '../../store/useAuthStore';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -68,6 +84,25 @@ export const ProductDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState<string>('');
   const [buyQuantity, setBuyQuantity] = useState<number>(1);
+  const [reviewData, setReviewData] = useState<ProductReviewsResponse | null>(null);
+  const [reviewLoading, setReviewLoading] = useState(false);
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [activeTabKey, setActiveTabKey] = useState('1');
+  const [reviewForm] = Form.useForm();
+  const { user } = useAuthStore();
+
+  const fetchReviews = async (productId: string) => {
+    setReviewLoading(true);
+    try {
+      const data = await reviewApi.getByProduct(productId);
+      setReviewData(data);
+    } catch {
+      // ignore
+    } finally {
+      setReviewLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!slug) return;
@@ -79,6 +114,9 @@ export const ProductDetailPage: React.FC = () => {
         if (res.images && res.images.length > 0) {
           setSelectedImage(res.images[0].url);
         }
+        if (res.id) {
+          fetchReviews(res.id);
+        }
       })
       .catch((err: any) => {
         message.error(err.message || 'Không tìm thấy sản phẩm');
@@ -87,6 +125,40 @@ export const ProductDetailPage: React.FC = () => {
         setLoading(false);
       });
   }, [slug]);
+
+  const handleLikeReview = async (reviewId: string) => {
+    try {
+      await reviewApi.like(reviewId);
+      if (product) fetchReviews(product.id);
+      message.success('Cảm ơn bạn đã đánh giá nhận xét hữu ích!');
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleSubmitReview = async (values: any) => {
+    if (!product) return;
+    setSubmittingReview(true);
+    try {
+      await reviewApi.create({
+        productId: product.id,
+        rating: values.rating,
+        userName: values.userName,
+        userEmail: values.userEmail,
+        title: values.title,
+        comment: values.comment,
+        gradeTag: product.grade,
+      });
+      message.success('Đã gửi đánh giá thành công! Cảm ơn bạn đã đóng góp cho cộng đồng Autobot.');
+      setReviewModalOpen(false);
+      reviewForm.resetFields();
+      fetchReviews(product.id);
+    } catch (err: any) {
+      message.error(err.message || 'Lỗi khi gửi đánh giá');
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
 
   const addToCart = useCartStore((state) => state.addToCart);
   const { isInWishlist, toggleWishlist } = useWishlistStore();
@@ -251,9 +323,32 @@ export const ProductDetailPage: React.FC = () => {
               )}
             </Space>
 
-            <Title level={2} style={{ margin: '8px 0 12px 0' }}>
+            <Title level={2} style={{ margin: '8px 0 8px 0' }}>
               {product.name}
             </Title>
+
+            {/* Đánh giá sao & lượt nhận xét */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
+              <Rate
+                disabled
+                allowHalf
+                value={reviewData?.stats.average || 5}
+                style={{ fontSize: 16, color: '#faad14' }}
+              />
+              <Text strong style={{ color: '#d48806', fontSize: 15 }}>
+                {reviewData?.stats.average || 5.0}
+              </Text>
+              <Divider type="vertical" />
+              <Button
+                type="link"
+                style={{ padding: 0, height: 'auto', color: '#1890ff' }}
+                onClick={() => setActiveTabKey('3')}
+              >
+                {reviewData?.stats.total || 0} bài đánh giá
+              </Button>
+              <Divider type="vertical" />
+              <Tag color="cyan">100% Chính Hãng MISB</Tag>
+            </div>
 
             <div
               style={{
@@ -376,10 +471,11 @@ export const ProductDetailPage: React.FC = () => {
         </Row>
       </Card>
 
-      {/* Tabs thông tin chi tiết & Lịch sử giá */}
+      {/* Tabs thông tin chi tiết & Lịch sử giá & Đánh giá */}
       <Card style={{ borderRadius: 12 }}>
         <Tabs
-          defaultActiveKey="1"
+          activeKey={activeTabKey}
+          onChange={setActiveTabKey}
           items={[
             {
               key: '1',
@@ -438,9 +534,209 @@ export const ProductDetailPage: React.FC = () => {
                 </div>
               ),
             },
+            {
+              key: '3',
+              label: (
+                <span>
+                  <StarOutlined /> Đánh Giá & Nhận Xét ({reviewData?.stats.total || 0})
+                </span>
+              ),
+              children: (
+                <div style={{ padding: '16px 0' }}>
+                  {/* Bảng tổng kết số sao & Viết đánh giá */}
+                  <Row gutter={[32, 24]} align="middle" style={{ marginBottom: 32, background: '#fafafa', padding: 24, borderRadius: 8 }}>
+                    <Col xs={24} md={8} style={{ textAlign: 'center', borderRight: '1px solid #f0f0f0' }}>
+                      <div style={{ fontSize: 44, fontWeight: 900, color: '#e53935', lineHeight: 1 }}>
+                        {reviewData?.stats.average || 5.0}
+                        <span style={{ fontSize: 20, color: '#8c8c8c' }}> / 5</span>
+                      </div>
+                      <div style={{ margin: '8px 0' }}>
+                        <Rate disabled allowHalf value={reviewData?.stats.average || 5} style={{ fontSize: 20, color: '#faad14' }} />
+                      </div>
+                      <Text type="secondary">
+                        Dựa trên {reviewData?.stats.total || 0} nhận xét từ khách hàng
+                      </Text>
+                      <div style={{ marginTop: 16 }}>
+                        <Button
+                          type="primary"
+                          icon={<EditOutlined />}
+                          style={{ background: '#e53935', fontWeight: 600 }}
+                          onClick={() => {
+                            reviewForm.resetFields();
+                            if (user) {
+                              reviewForm.setFieldsValue({
+                                userName: user.name,
+                                userEmail: user.email,
+                                rating: 5,
+                              });
+                            }
+                            setReviewModalOpen(true);
+                          }}
+                        >
+                          Viết Đánh Giá Của Bạn
+                        </Button>
+                      </div>
+                    </Col>
+
+                    {/* Thanh tỷ lệ 5 sao -> 1 sao */}
+                    <Col xs={24} md={16}>
+                      {[5, 4, 3, 2, 1].map((star) => {
+                        const count = reviewData?.stats.breakdown?.[star as keyof typeof reviewData.stats.breakdown] || 0;
+                        const total = reviewData?.stats.total || 1;
+                        const percent = Math.round((count / total) * 100);
+                        return (
+                          <div key={star} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
+                            <Text style={{ width: 45 }}>{star} sao</Text>
+                            <Progress percent={percent} strokeColor="#faad14" style={{ flex: 1 }} size="small" />
+                            <Text type="secondary" style={{ width: 40, textAlign: 'right' }}>
+                              {count}
+                            </Text>
+                          </div>
+                        );
+                      })}
+                    </Col>
+                  </Row>
+
+                  {/* Danh sách bình luận */}
+                  <List
+                    loading={reviewLoading}
+                    dataSource={reviewData?.reviews || []}
+                    locale={{ emptyText: 'Chưa có đánh giá nào cho mô hình này. Hãy là người đầu tiên đánh giá!' }}
+                    itemLayout="vertical"
+                    renderItem={(item) => (
+                      <List.Item
+                        key={item.id}
+                        actions={[
+                          <Button
+                            type="text"
+                            size="small"
+                            icon={<LikeOutlined />}
+                            onClick={() => handleLikeReview(item.id)}
+                            style={{ color: '#595959' }}
+                          >
+                            Hữu ích ({item.likes || 0})
+                          </Button>,
+                        ]}
+                        style={{ borderBottom: '1px solid #f0f0f0', padding: '16px 0' }}
+                      >
+                        <List.Item.Meta
+                          avatar={
+                            <Avatar style={{ backgroundColor: '#1890ff' }} icon={<UserOutlined />}>
+                              {item.userName?.[0]?.toUpperCase()}
+                            </Avatar>
+                          }
+                          title={
+                            <Space size="middle" wrap>
+                              <Text strong style={{ fontSize: 15 }}>{item.userName}</Text>
+                              <Tag color="success">Đã mua hàng chính hãng</Tag>
+                              {item.gradeTag && <Tag color="blue">{item.gradeTag}</Tag>}
+                              <Text type="secondary" style={{ fontSize: 12 }}>
+                                {new Date(item.createdAt).toLocaleDateString('vi-VN')}
+                              </Text>
+                            </Space>
+                          }
+                          description={
+                            <div style={{ marginTop: 4 }}>
+                              <Rate disabled value={item.rating} style={{ fontSize: 13, color: '#faad14' }} />
+                              {item.title && (
+                                <span style={{ fontWeight: 700, marginLeft: 8, color: '#262626' }}>
+                                  {item.title}
+                                </span>
+                              )}
+                            </div>
+                          }
+                        />
+                        <Paragraph style={{ marginTop: 8, fontSize: 14, color: '#434343', lineHeight: 1.6 }}>
+                          {item.comment}
+                        </Paragraph>
+                      </List.Item>
+                    )}
+                  />
+                </div>
+              ),
+            },
           ]}
         />
       </Card>
+
+      {/* Modal Viết Đánh Giá */}
+      <Modal
+        title={
+          <Space>
+            <StarFilled style={{ color: '#faad14' }} />
+            <span>Đánh Giá Mô Hình: {product.name}</span>
+          </Space>
+        }
+        open={reviewModalOpen}
+        onCancel={() => setReviewModalOpen(false)}
+        footer={null}
+        destroyOnClose
+      >
+        <Form
+          form={reviewForm}
+          layout="vertical"
+          onFinish={handleSubmitReview}
+          initialValues={{
+            rating: 5,
+            userName: user?.name || '',
+            userEmail: user?.email || '',
+          }}
+        >
+          <Form.Item
+            name="rating"
+            label="Chất lượng mô hình"
+            rules={[{ required: true, message: 'Vui lòng chọn số sao đánh giá' }]}
+          >
+            <Rate
+              style={{ fontSize: 24, color: '#faad14' }}
+              tooltips={['Rất tệ', 'Chưa ưng', 'Bình thường', 'Rất hài lòng', 'Tuyệt vời 10/10']}
+            />
+          </Form.Item>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="userName"
+                label="Họ và tên"
+                rules={[{ required: true, message: 'Vui lòng nhập tên của bạn' }]}
+              >
+                <Input placeholder="Nguyễn Văn A" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="userEmail" label="Email (Không bắt buộc)">
+                <Input placeholder="email@gmail.com" />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Form.Item name="title" label="Tiêu đề cảm nhận ngắn gọn">
+            <Input placeholder="VD: Khớp đầm, runner sắc nét, đóng gói cẩn thận" maxLength={100} />
+          </Form.Item>
+
+          <Form.Item
+            name="comment"
+            label="Chi tiết nhận xét (độ sắc nét, runner, khớp, decal...)"
+            rules={[{ required: true, message: 'Vui lòng nhập nội dung đánh giá' }]}
+          >
+            <Input.TextArea
+              rows={4}
+              placeholder="Chia sẻ trải nghiệm lắp ráp Gunpla của bạn để giúp các builder khác có lựa chọn tốt nhất..."
+              maxLength={1000}
+              showCount
+            />
+          </Form.Item>
+
+          <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
+            <Space>
+              <Button onClick={() => setReviewModalOpen(false)}>Hủy</Button>
+              <Button type="primary" htmlType="submit" loading={submittingReview} style={{ background: '#e53935' }}>
+                Gửi Đánh Giá
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };
