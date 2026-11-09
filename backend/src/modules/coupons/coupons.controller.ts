@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
   Delete,
   Body,
   Param,
@@ -31,6 +32,24 @@ export class CouponsController {
   @Get()
   findAll() {
     return this.couponsService.findAll();
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Admin lấy toàn bộ danh sách mã voucher (kể cả đã tắt)' })
+  @Get('admin')
+  findAllAdmin() {
+    return this.couponsService.findAllAdmin();
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Admin bật / tắt trạng thái mã voucher' })
+  @Patch(':id/toggle')
+  toggleActive(@Param('id') id: string) {
+    return this.couponsService.toggleActive(id);
   }
 
   @ApiBearerAuth()

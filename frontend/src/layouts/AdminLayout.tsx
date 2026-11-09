@@ -8,6 +8,7 @@ import {
   DatabaseOutlined,
   FileTextOutlined,
   BarChartOutlined,
+  GiftOutlined,
   UserOutlined,
   LogoutOutlined,
   HomeOutlined,
@@ -87,6 +88,11 @@ export const AdminLayout: React.FC = () => {
       key: '/admin/quotations',
       icon: <FileTextOutlined />,
       label: <Link to="/admin/quotations">Báo Giá Khách Hàng</Link>,
+    },
+    {
+      key: '/admin/coupons',
+      icon: <GiftOutlined />,
+      label: <Link to="/admin/coupons">Mã Giảm Giá (Coupons)</Link>,
     },
     {
       key: '/admin/reports',

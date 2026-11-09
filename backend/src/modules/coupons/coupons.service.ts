@@ -96,6 +96,31 @@ export class CouponsService {
     });
   }
 
+  async findAllAdmin() {
+    const coupons = await this.prisma.coupon.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return coupons.map((c) => ({
+      ...c,
+      value: Number(c.value),
+      minOrder: Number(c.minOrder),
+      maxDiscount: c.maxDiscount ? Number(c.maxDiscount) : null,
+    }));
+  }
+
+  async toggleActive(id: string) {
+    const coupon = await this.prisma.coupon.findUnique({ where: { id } });
+    if (!coupon) {
+      throw new NotFoundException('Không tìm thấy mã giảm giá');
+    }
+
+    return this.prisma.coupon.update({
+      where: { id },
+      data: { isActive: !coupon.isActive },
+    });
+  }
+
   async remove(id: string) {
     const coupon = await this.prisma.coupon.findUnique({ where: { id } });
     if (!coupon) {

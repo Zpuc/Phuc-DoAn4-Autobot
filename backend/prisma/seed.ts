@@ -547,7 +547,82 @@ async function main() {
     });
   }
 
-  console.log(`Đã nạp ${sampleProducts.length} mô hình Gunpla, địa chỉ nhận hàng và 3 mã giảm giá!`);
+  // 6. Tạo đánh giá mẫu (Reviews) cho các mô hình
+  const aerialProduct = await prisma.product.findUnique({ where: { slug: 'hg-1-144-gundam-aerial' } });
+  const hiNuProduct = await prisma.product.findUnique({ where: { slug: 'rg-1-144-hi-nu-gundam' } });
+  const pguProduct = await prisma.product.findUnique({ where: { slug: 'pg-unleashed-1-60-rx-78-2' } });
+
+  const sampleReviews = [
+    {
+      productId: hiNuProduct?.id,
+      userName: 'Hoàng Minh Quân',
+      userEmail: 'quan.hm@gmail.com',
+      rating: 5,
+      title: 'Đỉnh cao của dòng Real Grade Bandai',
+      comment: 'Khớp cực kỳ đầm chắc, biên độ cử động vô đối, giáp trượt cơ khí đa tầng và Fin Funnel tách rời chi tiết. Giao từ Hà Nội sang Văn Giang Ecopark đóng gói bóng khí 3 lớp chống móp rất kỹ!',
+      gradeTag: 'RG 1/144',
+      likes: 12,
+    },
+    {
+      productId: hiNuProduct?.id,
+      userName: 'Trần Hải Đăng',
+      userEmail: 'haidang.gunpla@gmail.com',
+      rating: 5,
+      title: 'Hộp MISB nét căng không tì vết',
+      comment: 'Runner sắc nét, decal nước đi kèm rất đẹp. Shop Autobot tư vấn nhiệt tình, ship nhanh chuẩn chỉ.',
+      gradeTag: 'Bandai Spirits',
+      likes: 8,
+    },
+    {
+      productId: aerialProduct?.id,
+      userName: 'Nguyễn Thu Hà',
+      userEmail: 'thuha.wfm@gmail.com',
+      rating: 5,
+      title: 'Kit quốc dân cực kỳ hợp cho người mới',
+      comment: 'Màu sắc tách rời rất chuẩn, GUND-BIT biến hình gắn thành khiên hoặc giáp đều mượt. Giá 380k quá hợp lý.',
+      gradeTag: 'HG 1/144',
+      likes: 15,
+    },
+    {
+      productId: aerialProduct?.id,
+      userName: 'Lê Tuấn Hưng',
+      userEmail: 'tuanhung.le@gmail.com',
+      rating: 4,
+      title: 'Chất lượng tốt, runner hơi dính chút dầu',
+      comment: 'Về cơ bản rất đẹp, khớp đùi hơi chặt xíu nên mài nhẹ là chơi ngon lành.',
+      gradeTag: 'HG 1/144',
+      likes: 4,
+    },
+    {
+      productId: pguProduct?.id,
+      userName: 'Vũ Tuấn Kiệt',
+      userEmail: 'kiet.vu@autobot.vn',
+      rating: 5,
+      title: 'Tuyệt tác kỷ niệm 40 năm Gunpla',
+      comment: 'Chi tiết khung kim loại và mạch LED phát sáng quá đỉnh cao, cảm giác lắp ráp qua từng giai đoạn cực kỳ sướng tay. 10/10!',
+      gradeTag: 'PG 1/60',
+      likes: 21,
+    },
+  ];
+
+  for (const r of sampleReviews) {
+    if (r.productId) {
+      await prisma.review.create({
+        data: {
+          productId: r.productId,
+          userName: r.userName,
+          userEmail: r.userEmail,
+          rating: r.rating,
+          title: r.title,
+          comment: r.comment,
+          gradeTag: r.gradeTag,
+          likes: r.likes,
+        },
+      });
+    }
+  }
+
+  console.log(`Đã nạp ${sampleProducts.length} mô hình Gunpla, địa chỉ nhận hàng, mã giảm giá và đánh giá mẫu!`);
   console.log('--- Hoàn tất nạp dữ liệu mẫu! ---');
 }
 
