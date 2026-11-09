@@ -13,7 +13,8 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "seed": "ts-node prisma/seed.ts",
-    "test:flow": "ts-node test/flow-test.ts"
+    "test:flow": "ts-node test/flow-test.ts",
+    "test:suite": "ts-node test/system-test-suite.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.0",
