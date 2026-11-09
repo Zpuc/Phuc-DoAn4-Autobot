@@ -286,5 +286,40 @@ export class OrdersService {
       return updated;
     });
   }
+
+  async findMyOrders(userId: string) {
+    const orders = await this.prisma.order.findMany({
+      where: { userId },
+      include: {
+        items: {
+          include: {
+            product: {
+              select: {
+                id: true,
+                name: true,
+                sku: true,
+                images: { take: 1, orderBy: { sortOrder: 'asc' } },
+              },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return orders.map((o) => ({
+      ...o,
+      subtotal: Number(o.subtotal),
+      shippingFee: Number(o.shippingFee),
+      total: Number(o.total),
+      items: o.items.map((i) => ({
+        ...i,
+        unitPrice: Number(i.unitPrice),
+        unitCost: Number(i.unitCost),
+        totalPrice: Number(i.unitPrice) * i.quantity,
+        productImage: i.product?.images[0]?.url || null,
+      })),
+    }));
+  }
 }
 

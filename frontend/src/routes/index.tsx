@@ -11,10 +11,13 @@ import { CartPage } from '../pages/public/CartPage';
 import { CheckoutPage } from '../pages/public/CheckoutPage';
 import { TrackOrderPage } from '../pages/public/TrackOrderPage';
 import { QuotationPage } from '../pages/public/QuotationPage';
+import { MyOrdersPage } from '../pages/public/MyOrdersPage';
 import { DashboardPage } from '../pages/admin/DashboardPage';
 import { ProductManagePage } from '../pages/admin/ProductManagePage';
+import { InventoryManagePage } from '../pages/admin/InventoryManagePage';
 import { OrderManagePage } from '../pages/admin/OrderManagePage';
 import { QuotationManagePage } from '../pages/admin/QuotationManagePage';
+import { ReportsPage } from '../pages/admin/ReportsPage';
 
 export const router = createBrowserRouter([
   // Public Routes
@@ -31,6 +34,7 @@ export const router = createBrowserRouter([
       { path: 'checkout', element: <CheckoutPage /> },
       { path: 'track-order', element: <TrackOrderPage /> },
       { path: 'quotations', element: <QuotationPage /> },
+      { path: 'my-orders', element: <MyOrdersPage /> },
     ],
   },
 
@@ -44,10 +48,10 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <DashboardPage /> },
           { path: 'products', element: <ProductManagePage /> },
-          { path: 'inventory', element: <ProductManagePage /> },
+          { path: 'inventory', element: <InventoryManagePage /> },
           { path: 'orders', element: <OrderManagePage /> },
           { path: 'quotations', element: <QuotationManagePage /> },
-          { path: 'reports', element: <DashboardPage /> },
+          { path: 'reports', element: <ReportsPage /> },
         ],
       },
     ],

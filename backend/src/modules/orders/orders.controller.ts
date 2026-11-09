@@ -15,6 +15,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { FilterOrderDto } from './dto/filter-order.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../../common/guards/optional-jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '@prisma/client';
@@ -25,6 +26,7 @@ export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @ApiOperation({ summary: 'Khách hàng đặt hàng (Transaction trừ kho & tính tiền)' })
+  @UseGuards(OptionalJwtAuthGuard)
   @Post()
   create(@Body() dto: CreateOrderDto, @Request() req: any) {
     const userId = req.user?.id || undefined;
@@ -35,6 +37,14 @@ export class OrdersController {
   @Get('track/:code')
   findByCode(@Param('code') code: string) {
     return this.ordersService.findByCode(code);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Lịch sử mua hàng của khách hàng đã đăng nhập' })
+  @Get('my-orders')
+  findMyOrders(@Request() req: any) {
+    return this.ordersService.findMyOrders(req.user.id);
   }
 
   @ApiBearerAuth()
