@@ -24,8 +24,17 @@ interface CartState {
   loadFromStorage: () => void;
 }
 
+const getInitialCart = (): CartItem[] => {
+  try {
+    const raw = localStorage.getItem('autobot_cart');
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+};
+
 export const useCartStore = create<CartState>((set, get) => ({
-  items: [],
+  items: getInitialCart(),
 
   addToCart: (newItem) => {
     const currentItems = get().items;

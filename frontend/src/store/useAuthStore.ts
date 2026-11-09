@@ -20,12 +20,38 @@ interface AuthState {
   loadFromStorage: () => void;
 }
 
+// Khởi tạo trạng thái đăng nhập đồng bộ ngay khi load module
+const getInitialAuth = () => {
+  try {
+    const token = localStorage.getItem('autobot_token');
+    const userStr = localStorage.getItem('autobot_user');
+    if (token && userStr) {
+      const user: User = JSON.parse(userStr);
+      return {
+        user,
+        token,
+        isAuthenticated: true,
+        isAdmin: user.role === 'ADMIN',
+        isStaffOrAdmin: user.role === 'ADMIN' || user.role === 'STAFF',
+      };
+    }
+  } catch {
+    localStorage.removeItem('autobot_token');
+    localStorage.removeItem('autobot_user');
+  }
+  return {
+    user: null,
+    token: null,
+    isAuthenticated: false,
+    isAdmin: false,
+    isStaffOrAdmin: false,
+  };
+};
+
+const initialAuth = getInitialAuth();
+
 export const useAuthStore = create<AuthState>((set, get) => ({
-  user: null,
-  token: null,
-  isAuthenticated: false,
-  isAdmin: false,
-  isStaffOrAdmin: false,
+  ...initialAuth,
 
   setAuth: (user, token) => {
     localStorage.setItem('autobot_token', token);
@@ -52,22 +78,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   loadFromStorage: () => {
-    const token = localStorage.getItem('autobot_token');
-    const userStr = localStorage.getItem('autobot_user');
-    if (token && userStr) {
-      try {
-        const user: User = JSON.parse(userStr);
-        set({
-          user,
-          token,
-          isAuthenticated: true,
-          isAdmin: user.role === 'ADMIN',
-          isStaffOrAdmin: user.role === 'ADMIN' || user.role === 'STAFF',
-        });
-      } catch {
-        get().logout();
-      }
-    }
+    const fresh = getInitialAuth();
+    set(fresh);
   },
 }));
-
