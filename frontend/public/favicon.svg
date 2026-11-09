@@ -1,136 +1,122 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
   <defs>
-    <!-- Background / Border Gradients -->
-    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#1a1c23" />
-      <stop offset="50%" stop-color="#121318" />
-      <stop offset="100%" stop-color="#090a0d" />
+    <linearGradient id="favVFinGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFF9C4" />
+      <stop offset="35%" stop-color="#FFD54F" />
+      <stop offset="70%" stop-color="#FFA000" />
+      <stop offset="100%" stop-color="#FF6F00" />
     </linearGradient>
 
-    <linearGradient id="goldVFin" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#fff176" />
-      <stop offset="30%" stop-color="#ffd700" />
-      <stop offset="70%" stop-color="#ff9100" />
-      <stop offset="100%" stop-color="#e65100" />
+    <linearGradient id="favArmorRed" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FF5252" />
+      <stop offset="50%" stop-color="#E53935" />
+      <stop offset="100%" stop-color="#B71C1C" />
     </linearGradient>
 
-    <linearGradient id="redArmor" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#ff3d00" />
-      <stop offset="50%" stop-color="#e53935" />
-      <stop offset="100%" stop-color="#b71c1c" />
+    <linearGradient id="favArmorWhite" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="60%" stop-color="#ECEFF1" />
+      <stop offset="100%" stop-color="#CFD8DC" />
     </linearGradient>
 
-    <linearGradient id="silverPlate" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#ffffff" />
-      <stop offset="40%" stop-color="#e0e0e0" />
-      <stop offset="80%" stop-color="#9e9e9e" />
-      <stop offset="100%" stop-color="#616161" />
-    </linearGradient>
-
-    <!-- Neon Cyan Optical Glow -->
-    <filter id="cyanGlow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="1.5" result="blur" />
-      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    <filter id="favEyeGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="1.8" result="glow" />
+      <feComposite in="SourceGraphic" in2="glow" operator="over" />
     </filter>
   </defs>
 
-  <!-- Hexagonal Shield / Crest Background -->
-  <polygon points="50,3 88,14 94,52 74,86 50,98 26,86 6,52 12,14" 
-           fill="url(#shieldGrad)" 
-           stroke="url(#redArmor)" 
-           stroke-width="2.5" 
+  <!-- Nền Khiên Đa Giác Cơ Khí Đậm Chất Autobot -->
+  <polygon points="50,4 90,16 95,50 75,86 50,97 25,86 5,50 10,16" 
+           fill="#111827" 
+           stroke="url(#favArmorRed)" 
+           stroke-width="3" 
            stroke-linejoin="round" />
 
-  <!-- Inner Tech Panel Lines -->
-  <polygon points="50,8 83,18 88,51 70,82 50,92 30,82 12,51 17,18" 
-           fill="none" 
-           stroke="#2d3748" 
-           stroke-width="1" 
-           stroke-dasharray="2,3" />
-
-  <!-- Gundam V-Fin Wings (Large iconic golden antennae) -->
-  <!-- Left V-Fin Wing -->
-  <polygon points="49,38 14,12 24,32 45,43" 
-           fill="url(#goldVFin)" 
-           stroke="#d97706" 
-           stroke-width="0.8" />
-  <polygon points="45,43 24,32 32,38 46,45" 
-           fill="#b45309" 
-           opacity="0.6" />
-
-  <!-- Right V-Fin Wing -->
-  <polygon points="51,38 86,12 76,32 55,43" 
-           fill="url(#goldVFin)" 
-           stroke="#d97706" 
-           stroke-width="0.8" />
-  <polygon points="55,43 76,32 68,38 54,45" 
-           fill="#b45309" 
-           opacity="0.6" />
-
-  <!-- Central Red Sensor Crest (Diamond) -->
-  <polygon points="50,22 57,33 50,44 43,33" 
-           fill="url(#redArmor)" 
-           stroke="#ff8a80" 
+  <polygon points="50,9 85,20 89,49 71,81 50,91 29,81 11,49 15,20" 
+           fill="#1F2937" 
+           stroke="#374151" 
            stroke-width="1" />
-  <polygon points="50,24 55,33 50,37 45,33" 
-           fill="#ff5252" />
 
-  <!-- Brow & Helmet Forehead Armor -->
-  <polygon points="32,44 68,44 64,50 36,50" 
-           fill="#424242" 
-           stroke="#212121" 
+  <!-- Cặp Sừng V-Fin Vàng Kim Loại Khổng Lồ -->
+  <polygon points="49,38 12,11 23,32 46,43" 
+           fill="url(#favVFinGold)" 
+           stroke="#FF8F00" 
+           stroke-width="0.8" />
+  <polygon points="46,43 23,32 31,37 47,45" 
+           fill="#E65100" 
+           opacity="0.8" />
+
+  <polygon points="51,38 88,11 77,32 54,43" 
+           fill="url(#favVFinGold)" 
+           stroke="#FF8F00" 
+           stroke-width="0.8" />
+  <polygon points="54,43 77,32 69,37 53,45" 
+           fill="#E65100" 
+           opacity="0.8" />
+
+  <!-- Viên Kim Cương Sensor Đỏ Trung Tâm Trán -->
+  <polygon points="50,21 58,32 50,43 42,32" 
+           fill="url(#favArmorRed)" 
+           stroke="#FF8A80" 
+           stroke-width="1" />
+  <polygon points="50,24 55,32 50,37 45,32" fill="#FF1744" />
+
+  <!-- Vòm Mũi & Lông Mày Giáp Sắt -->
+  <polygon points="31,43 69,43 64,49 36,49" 
+           fill="#374151" 
+           stroke="#111827" 
            stroke-width="0.8" />
 
-  <!-- Cheek Armor (Left & Right) -->
-  <polygon points="31,48 37,48 40,68 33,65" 
-           fill="url(#silverPlate)" 
-           stroke="#424242" 
+  <!-- Ốp Má Giáp Trắng (2 Bên) -->
+  <polygon points="29,48 37,48 41,68 32,65" 
+           fill="url(#favArmorWhite)" 
+           stroke="#90A4AE" 
            stroke-width="0.8" />
-  <polygon points="69,48 63,48 60,68 67,65" 
-           fill="url(#silverPlate)" 
-           stroke="#424242" 
-           stroke-width="0.8" />
-
-  <!-- Cheek Air Vents (Slots) -->
-  <line x1="33" y1="54" x2="37" y2="54" stroke="#e53935" stroke-width="1.2" />
-  <line x1="34" y1="58" x2="38" y2="58" stroke="#e53935" stroke-width="1.2" />
-  <line x1="67" y1="54" x2="63" y2="54" stroke="#e53935" stroke-width="1.2" />
-  <line x1="66" y1="58" x2="62" y2="58" stroke="#e53935" stroke-width="1.2" />
-
-  <!-- Glowing Cyan Eyes (Dual Mecha Optics) -->
-  <!-- Left Eye -->
-  <polygon points="37,51 46,53 44,57 38,56" 
-           fill="#00f5ff" 
-           filter="url(#cyanGlow)" />
-  <!-- Right Eye -->
-  <polygon points="63,51 54,53 56,57 62,56" 
-           fill="#00f5ff" 
-           filter="url(#cyanGlow)" />
-
-  <!-- Face Mask / Nose Bridge -->
-  <polygon points="46,53 54,53 53,60 47,60" 
-           fill="#212121" />
-
-  <!-- Faceplate (White/Silver Mouthplate) -->
-  <polygon points="42,60 58,60 55,75 45,75" 
-           fill="url(#silverPlate)" 
-           stroke="#616161" 
+  <polygon points="71,48 63,48 59,68 68,65" 
+           fill="url(#favArmorWhite)" 
+           stroke="#90A4AE" 
            stroke-width="0.8" />
 
-  <!-- Gunpla Twin Vents (Classic Dual Slits on Mouthplate) -->
-  <line x1="46" y1="64" x2="54" y2="64" stroke="#212121" stroke-width="1.2" stroke-linecap="round" />
-  <line x1="47" y1="68" x2="53" y2="68" stroke="#212121" stroke-width="1.2" stroke-linecap="round" />
+  <!-- Khe Thoát Khí 2 Bên Má -->
+  <line x1="32" y1="54" x2="36" y2="54" stroke="#FF1744" stroke-width="1.5" stroke-linecap="round" />
+  <line x1="33" y1="59" x2="37" y2="59" stroke="#FF1744" stroke-width="1.5" stroke-linecap="round" />
+  <line x1="68" y1="54" x2="64" y2="54" stroke="#FF1744" stroke-width="1.5" stroke-linecap="round" />
+  <line x1="67" y1="59" x2="63" y2="59" stroke="#FF1744" stroke-width="1.5" stroke-linecap="round" />
 
-  <!-- Red Chin Armor Piece (Autobot Red Point) -->
-  <polygon points="46,75 54,75 52,85 48,85" 
-           fill="url(#redArmor)" 
-           stroke="#d32f2f" 
+  <!-- Cặp Mắt Quang Học LED Xanh Cyan Sáng Rực -->
+  <polygon points="36,50 45,52 43,57 37,56" 
+           fill="#00E5FF" 
+           filter="url(#favEyeGlow)" />
+  <polygon points="64,50 55,52 57,57 63,56" 
+           fill="#00E5FF" 
+           filter="url(#favEyeGlow)" />
+  <polygon points="38,52 44,53 43,55 39,54" fill="#E0F7FA" />
+  <polygon points="62,52 56,53 57,55 61,54" fill="#E0F7FA" />
+
+  <!-- Sống Mũi Kim Loại -->
+  <polygon points="46,52 54,52 53,59 47,59" fill="#1E293B" />
+
+  <!-- Mặt Nạ Miệng Gundam (Trắng Bạc) -->
+  <polygon points="41,59 59,59 56,75 44,75" 
+           fill="url(#favArmorWhite)" 
+           stroke="#78909C" 
            stroke-width="0.8" />
 
-  <!-- Bottom Crest Chevron Highlight -->
-  <polyline points="42,88 50,94 58,88" 
+  <!-- 2 Khe Thoát Khí Đen Đặc Trưng -->
+  <line x1="45" y1="64" x2="55" y2="64" stroke="#0F172A" stroke-width="1.6" stroke-linecap="round" />
+  <line x1="46" y1="69" x2="54" y2="69" stroke="#0F172A" stroke-width="1.6" stroke-linecap="round" />
+
+  <!-- Cằm Đỏ Nhọn Mecha -->
+  <polygon points="45,75 55,75 53,85 47,85" 
+           fill="url(#favArmorRed)" 
+           stroke="#D50000" 
+           stroke-width="0.8" />
+
+  <!-- Tia Năng Lượng Đáy Khiên -->
+  <polyline points="40,89 50,94 60,89" 
             fill="none" 
-            stroke="#00f5ff" 
-            stroke-width="1.5" 
-            filter="url(#cyanGlow)" />
+            stroke="#00E5FF" 
+            stroke-width="1.8" 
+            stroke-linecap="round" 
+            filter="url(#favEyeGlow)" />
 </svg>

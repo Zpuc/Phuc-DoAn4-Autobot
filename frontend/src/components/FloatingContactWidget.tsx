@@ -3,27 +3,30 @@ import { FloatButton } from 'antd';
 import {
   PhoneOutlined,
   FacebookOutlined,
-  CustomerServiceOutlined,
+  MessageOutlined,
 } from '@ant-design/icons';
 
-// Icon Zalo chuẩn thương hiệu
+// Icon Zalo chuẩn thương hiệu (sắc nét, không méo)
 const ZaloBadgeIcon: React.FC = () => (
-  <svg
-    viewBox="0 0 48 48"
-    width="20"
-    height="20"
-    style={{ display: 'block', margin: 'auto' }}
+  <div
+    style={{
+      width: 26,
+      height: 26,
+      borderRadius: 7,
+      backgroundColor: '#0068FF',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      color: '#FFFFFF',
+      fontWeight: 900,
+      fontSize: 10,
+      fontFamily: `'Montserrat', -apple-system, sans-serif`,
+      letterSpacing: -0.3,
+      boxShadow: '0 2px 4px rgba(0, 104, 255, 0.35)',
+    }}
   >
-    <rect width="48" height="48" rx="10" fill="#0068FF" />
-    <path
-      fill="#FFFFFF"
-      d="M13 16h11l-9.2 12.3c-.4.5-.4 1.1-.1 1.6.3.5.9.8 1.5.8h11.8v-3.4H17.8l9.2-12.3c.4-.5.4-1.1.1-1.6-.3-.5-.9-.8-1.5-.8H13V16z"
-    />
-    <path
-      fill="#FFFFFF"
-      d="M31.5 21.2c-2.8 0-4.5 1.9-4.5 4.8 0 3 1.8 4.8 4.5 4.8 2.8 0 4.5-1.9 4.5-4.8 0-3-1.7-4.8-4.5-4.8zm0 6.6c-1.1 0-1.8-1-1.8-2 0-1 .7-2 1.8-2 1.1 0 1.8 1 1.8 2 0 1-.7 2-1.8 2z"
-    />
-  </svg>
+    Zalo
+  </div>
 );
 
 export const FloatingContactWidget: React.FC = () => {
@@ -41,8 +44,8 @@ export const FloatingContactWidget: React.FC = () => {
         trigger="hover"
         type="primary"
         style={{ right: 28, bottom: 28 }}
-        icon={<CustomerServiceOutlined style={{ fontSize: 20 }} />}
-        tooltip="Hotline & Hỗ Trợ Trực Tuyến"
+        icon={<PhoneOutlined style={{ fontSize: 20, color: '#fff' }} />}
+        tooltip="Hotline & Liên Hệ Nhanh"
         badge={{ dot: true, color: '#52c41a' }}
       >
         {/* Gọi Điện Thoại Trực Tiếp */}
