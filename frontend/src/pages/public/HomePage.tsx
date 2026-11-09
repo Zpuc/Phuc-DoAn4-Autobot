@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Row, Col, Card, Button, Tag, Space, Badge, Spin, message } from 'antd';
+import { Typography, Row, Col, Card, Button, Tag, Space, Badge, Spin, message, Image } from 'antd';
 import {
   RocketOutlined,
   ThunderboltOutlined,
@@ -116,7 +116,8 @@ export const HomePage: React.FC = () => {
             </Space>
           </Col>
           <Col xs={24} md={8} style={{ textAlign: 'center' }}>
-            <img
+            <Image
+              preview={false}
               src="https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?w=600&auto=format&fit=crop&q=60"
               alt="Gundam Hero"
               style={{
@@ -193,10 +194,12 @@ export const HomePage: React.FC = () => {
                     cover={
                       <Link to={`/products/${p.slug}`}>
                         <div style={{ height: 210, background: '#262626', overflow: 'hidden' }}>
-                          <img
+                          <Image
+                            preview={false}
                             alt={p.name}
                             src={p.images?.[0]?.url || 'https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?w=500'}
                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            fallback="https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?w=500"
                           />
                         </div>
                       </Link>
@@ -258,9 +261,9 @@ export const HomePage: React.FC = () => {
                 <Text strong style={{ fontSize: 15 }}>
                   100% Hàng Chính Hãng
                 </Text>
-                <p style={{ margin: 0, color: '#8c8c8c', fontSize: 13 }}>
+                <Paragraph type="secondary" style={{ margin: 0, fontSize: 13 }}>
                   Cam kết mô hình Bandai, Daban, Motor Nuclear nhập khẩu nguyên seal.
-                </p>
+                </Paragraph>
               </div>
             </Space>
           </Col>
@@ -271,9 +274,9 @@ export const HomePage: React.FC = () => {
                 <Text strong style={{ fontSize: 15 }}>
                   Giao Hàng An Toàn & Đóng Hộp Kỹ
                 </Text>
-                <p style={{ margin: 0, color: '#8c8c8c', fontSize: 13 }}>
+                <Paragraph type="secondary" style={{ margin: 0, fontSize: 13 }}>
                   Đóng gói bóng khí 3 lớp chuyên dụng, bảo vệ hộp mô hình nguyên vẹn không móp méo.
-                </p>
+                </Paragraph>
               </div>
             </Space>
           </Col>
@@ -284,9 +287,9 @@ export const HomePage: React.FC = () => {
                 <Text strong style={{ fontSize: 15 }}>
                   Báo Giá Minh Bạch & Chiết Khấu Voucher
                 </Text>
-                <p style={{ margin: 0, color: '#8c8c8c', fontSize: 13 }}>
+                <Paragraph type="secondary" style={{ margin: 0, fontSize: 13 }}>
                   Hỗ trợ tạo báo giá PDF điện tử và áp dụng mã voucher trừ tiền trực tiếp khi thanh toán.
-                </p>
+                </Paragraph>
               </div>
             </Space>
           </Col>
