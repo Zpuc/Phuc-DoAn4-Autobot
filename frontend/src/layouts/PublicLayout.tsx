@@ -20,6 +20,7 @@ import { useAuthStore } from '../store/useAuthStore';
 import { useCartStore } from '../store/useCartStore';
 import { useWishlistStore } from '../store/useWishlistStore';
 import { GundamLogo } from '../components/GundamLogo';
+import { FloatingContactWidget } from '../components/FloatingContactWidget';
 
 const { Header, Content, Footer } = Layout;
 const { Text } = Typography;
@@ -231,7 +232,7 @@ export const PublicLayout: React.FC = () => {
                   • Hỗ trợ xuất bảng báo giá điện tử định dạng PDF cho đơn vị hoặc cá nhân.
                 </Text>
                 <Text style={{ color: '#8c8c8c', fontSize: 13 }}>
-                  • Hotline / Zalo đặt hàng: <strong style={{ color: '#e53935' }}>0901.234.567</strong> (8:00 - 22:00)
+                  • Hotline / Zalo đặt hàng: <strong style={{ color: '#e53935' }}>0967.708.350</strong> (8:00 - 22:00)
                 </Text>
               </Space>
             </Col>
@@ -246,6 +247,9 @@ export const PublicLayout: React.FC = () => {
           </div>
         </div>
       </Footer>
+
+      {/* Nút liên hệ nổi Hotline, Zalo, Facebook */}
+      <FloatingContactWidget />
     </Layout>
   );
 };
