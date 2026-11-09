@@ -41,7 +41,7 @@ export class CreateOrderDto {
   @IsEmail({}, { message: 'Email không hợp lệ' })
   customerEmail?: string;
 
-  @ApiProperty({ example: 'Số 123 Đường Gundam, Phường Bến Nghé, Quận 1, TP.HCM' })
+  @ApiProperty({ example: 'Số 12 Duy Tân, Phường Dịch Vọng Hậu, Quận Cầu Giấy, Hà Nội' })
   @IsString()
   @IsNotEmpty({ message: 'Địa chỉ giao hàng không được để trống' })
   shippingAddress: string;

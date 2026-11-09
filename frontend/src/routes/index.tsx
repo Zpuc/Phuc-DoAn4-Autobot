@@ -34,7 +34,7 @@ export const router = createBrowserRouter([
       { path: 'products/:slug', element: <ProductDetailPage /> },
       { path: 'cart', element: <CartPage /> },
       { path: 'checkout', element: <CheckoutPage /> },
-      { path: 'track-order', element: <TrackOrderPage /> },
+      { path: 'track-order', element: <Navigate to="/my-orders" replace /> },
       { path: 'quotations', element: <QuotationPage /> },
       { path: 'wishlist', element: <WishlistPage /> },
       { path: 'profile', element: <ProfilePage /> },

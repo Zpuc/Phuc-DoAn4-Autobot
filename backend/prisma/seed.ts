@@ -90,32 +90,36 @@ async function main() {
     categoryMap[c.slug] = created.id;
   }
 
-  // 4. Tạo Shipping Zones mẫu
-  const existingZone = await prisma.shippingZone.findFirst();
-  if (!existingZone) {
-    await prisma.shippingZone.createMany({
-      data: [
-        {
-          name: 'Nội thành TP.HCM (Giao hỏa tốc trong ngày)',
-          districts: 'Quận 1, Quận 3, Quận 5, Quận 10, Phú Nhuận, Bình Thạnh',
-          fee: 25000,
-          isLocal: true,
-        },
-        {
-          name: 'Ngoại thành TP.HCM (Giao nhanh 1-2 ngày)',
-          districts: 'Quận 7, Quận 8, Quận 12, Bình Tân, Thủ Đức, Gò Vấp',
-          fee: 35000,
-          isLocal: true,
-        },
-        {
-          name: 'Toàn quốc (Chuyển phát nhanh GHN/GHTK)',
-          districts: 'Tất cả các tỉnh thành khác trên toàn quốc',
-          fee: 45000,
-          isLocal: false,
-        },
-      ],
-    });
-  }
+  // 4. Tạo Shipping Zones mẫu (Chuyên biệt khu vực Hà Nội - Hưng Yên)
+  await prisma.shippingZone.deleteMany({});
+  await prisma.shippingZone.createMany({
+    data: [
+      {
+        name: 'Nội thành Hà Nội (Giao hỏa tốc trong ngày)',
+        districts: 'Cầu Giấy, Hoàn Kiếm, Ba Đình, Đống Đa, Hai Bà Trưng, Thanh Xuân, Tây Hồ, Hoàng Mai',
+        fee: 25000,
+        isLocal: true,
+      },
+      {
+        name: 'Khu vực Hưng Yên & Ecopark (Giao nhanh trong ngày)',
+        districts: 'Huyện Văn Giang (Ecopark), TP. Hưng Yên, TX. Mỹ Hào, Yên Mỹ, Văn Lâm, Khoái Châu',
+        fee: 25000,
+        isLocal: true,
+      },
+      {
+        name: 'Ngoại thành Hà Nội (Giao 24h)',
+        districts: 'Long Biên, Gia Lâm, Nam Từ Liêm, Bắc Từ Liêm, Hà Đông, Thanh Trì, Đông Anh, Hoài Đức',
+        fee: 30000,
+        isLocal: true,
+      },
+      {
+        name: 'Các huyện Hưng Yên & Vùng giáp ranh (Giao 1-2 ngày)',
+        districts: 'Ân Thi, Kim Động, Phù Cừ, Tiên Lữ; Thuận Thành (Bắc Ninh), Duy Tiên (Hà Nam)',
+        fee: 35000,
+        isLocal: false,
+      },
+    ],
+  });
 
   // 5. Danh sách 16 mẫu Gunpla đa dạng phân khúc
   const sampleProducts = [
@@ -402,7 +406,7 @@ async function main() {
         customerName: 'Trần Văn Nam',
         customerPhone: '0988776655',
         customerEmail: 'namtran@gmail.com',
-        shippingAddress: '12 Nguyễn Huệ, Phường Bến Nghé, Quận 1, TP.HCM',
+        shippingAddress: 'Số 12 Duy Tân, Phường Dịch Vọng Hậu, Quận Cầu Giấy, TP. Hà Nội',
         shippingFee: 25000,
         subtotal: 2400000,
         total: 2425000,
@@ -444,10 +448,10 @@ async function main() {
         code: 'AG-261106-002',
         customerName: 'Hoàng Minh Quân',
         customerPhone: '0911223344',
-        shippingAddress: '45 Võ Văn Ngân, Phường Linh Chiểu, TP. Thủ Đức, TP.HCM',
-        shippingFee: 35000,
+        shippingAddress: 'Tòa Sky Oasis, KĐT Ecopark, Huyện Văn Giang, Tỉnh Hưng Yên',
+        shippingFee: 25000,
         subtotal: 2450000,
-        total: 2485000,
+        total: 2475000,
         status: OrderStatus.SHIPPING,
         paymentMethod: PaymentMethod.BANK_TRANSFER,
         trackingCode: 'GHTK-9920141',
@@ -477,7 +481,7 @@ async function main() {
     console.log(`Đã tạo đơn hàng mẫu: ${orderSample1.code}, ${orderSample2.code}`);
   }
 
-  // 6. Tạo địa chỉ mẫu cho Customer
+  // 6. Tạo địa chỉ mẫu cho Customer (Khu vực Hưng Yên & Hà Nội)
   await prisma.address.deleteMany({ where: { userId: customer.id } });
   await prisma.address.createMany({
     data: [
@@ -485,20 +489,20 @@ async function main() {
         userId: customer.id,
         receiverName: 'Khách Hàng Thân Thiết',
         phone: '0912345678',
-        province: 'TP. Hồ Chí Minh',
-        district: 'Quận 1',
-        ward: 'Phường Bến Nghé',
-        detailAddress: '123 Lê Duẩn, Căn hộ 4B',
+        province: 'Tỉnh Hưng Yên',
+        district: 'Huyện Văn Giang',
+        ward: 'Xã Phụng Công',
+        detailAddress: 'Khu đô thị Ecopark, Căn hộ R102 Rừng Cọ',
         isDefault: true,
       },
       {
         userId: customer.id,
-        receiverName: 'Khách Hàng Thân Thiết (Công ty)',
+        receiverName: 'Khách Hàng Thân Thiết (Cơ quan Hà Nội)',
         phone: '0912345678',
-        province: 'TP. Hồ Chí Minh',
-        district: 'Quận 3',
-        ward: 'Phường Võ Thị Sáu',
-        detailAddress: '456 Nam Kỳ Khởi Nghĩa, Tòa nhà Bitexco',
+        province: 'TP. Hà Nội',
+        district: 'Quận Cầu Giấy',
+        ward: 'Phường Dịch Vọng Hậu',
+        detailAddress: 'Số 12 Duy Tân, Tòa nhà FPT',
         isDefault: false,
       },
     ],

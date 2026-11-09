@@ -124,11 +124,6 @@ export const PublicLayout: React.FC = () => {
               key: '/quotations',
               label: <Link to="/quotations">Yêu Cầu Báo Giá</Link>,
             },
-            {
-              key: '/track-order',
-              icon: <FileSearchOutlined />,
-              label: <Link to="/track-order">Tra Cứu Đơn Hàng</Link>,
-            },
           ]}
         />
 
