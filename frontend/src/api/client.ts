@@ -26,9 +26,11 @@ apiClient.interceptors.response.use(
   (response) => response.data,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('autobot_token');
-      localStorage.removeItem('autobot_user');
-      // Nếu đang không ở trang login thì có thể reload hoặc chuyển trang
+      const isLoginRequest = error.config?.url?.includes('/auth/login');
+      if (!isLoginRequest && localStorage.getItem('autobot_token')) {
+        localStorage.removeItem('autobot_token');
+        localStorage.removeItem('autobot_user');
+      }
     }
     const message =
       error.response?.data?.message || error.message || 'Đã có lỗi xảy ra, vui lòng thử lại';

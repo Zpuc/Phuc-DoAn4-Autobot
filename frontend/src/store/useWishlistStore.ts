@@ -23,8 +23,17 @@ interface WishlistState {
   loadFromStorage: () => void;
 }
 
+const getInitialWishlist = (): WishlistItem[] => {
+  try {
+    const raw = localStorage.getItem('autobot_wishlist');
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+};
+
 export const useWishlistStore = create<WishlistState>((set, get) => ({
-  items: [],
+  items: getInitialWishlist(),
 
   addToWishlist: (item) => {
     const exists = get().items.some((i) => i.id === item.id);
