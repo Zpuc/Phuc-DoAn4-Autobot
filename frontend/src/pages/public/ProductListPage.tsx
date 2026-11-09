@@ -29,6 +29,7 @@ import {
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { apiClient } from '../../api/client';
 import { useWishlistStore } from '../../store/useWishlistStore';
+import { useCartStore } from '../../store/useCartStore';
 import { message } from 'antd';
 
 const { Title, Text, Paragraph } = Typography;
@@ -56,6 +57,7 @@ export const ProductListPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { isInWishlist, toggleWishlist } = useWishlistStore();
+  const addToCart = useCartStore((state) => state.addToCart);
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
@@ -383,9 +385,28 @@ export const ProductListPage: React.FC = () => {
                             type="link"
                             icon={<ShoppingOutlined />}
                             style={{ color: '#e53935', fontWeight: 600 }}
-                            onClick={() => navigate(`/products/${p.slug}`)}
+                            onClick={() => {
+                              if (p.isPreorder) {
+                                navigate(`/quotations?product=${p.id}`);
+                              } else {
+                                addToCart({
+                                  id: p.id,
+                                  name: p.name,
+                                  slug: p.slug,
+                                  sku: p.sku,
+                                  grade: p.grade,
+                                  scale: p.scale,
+                                  price: p.currentPrice,
+                                  quantity: 1,
+                                  imageUrl: p.images[0]?.url,
+                                  isPreorder: false,
+                                });
+                                message.success(`Đã thêm "${p.name}" vào giỏ hàng`);
+                                navigate('/checkout');
+                              }
+                            }}
                           >
-                            {p.isPreorder ? 'Báo Giá' : 'Đặt Hàng'}
+                            {p.isPreorder ? 'Báo Giá' : 'Mua Ngay'}
                           </Button>,
                         ]}
                       >

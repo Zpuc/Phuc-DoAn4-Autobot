@@ -1,5 +1,5 @@
-import React from 'react';
-import { Typography, Row, Col, Card, Button, Tag, Space, Badge } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Typography, Row, Col, Card, Button, Tag, Space, Badge, Spin, message } from 'antd';
 import {
   RocketOutlined,
   ThunderboltOutlined,
@@ -7,12 +7,38 @@ import {
   CheckCircleOutlined,
   ShoppingOutlined,
   FileProtectOutlined,
+  EyeOutlined,
+  ArrowRightOutlined,
 } from '@ant-design/icons';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { apiClient } from '../../api/client';
+import { useCartStore } from '../../store/useCartStore';
 
 const { Title, Text, Paragraph } = Typography;
 
+interface ProductItem {
+  id: string;
+  name: string;
+  slug: string;
+  sku: string;
+  grade?: string;
+  scale?: string;
+  series?: string;
+  condition?: string;
+  currentPrice: number;
+  isPreorder: boolean;
+  quantity: number;
+  brand?: { name: string };
+  images?: { url: string }[];
+}
+
 export const HomePage: React.FC = () => {
+  const navigate = useNavigate();
+  const addToCart = useCartStore((state) => state.addToCart);
+
+  const [products, setProducts] = useState<ProductItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const grades = [
     { name: 'High Grade (HG)', scale: '1/144', color: 'blue', desc: 'Đa dạng, dễ ráp, biên độ cử động linh hoạt' },
     { name: 'Real Grade (RG)', scale: '1/144', color: 'purple', desc: 'Khung xương Advanced MS Joint siêu chi tiết' },
@@ -22,48 +48,33 @@ export const HomePage: React.FC = () => {
     { name: 'Metal Build / Alloy', scale: '1/100, 1/72', color: 'magenta', desc: 'Mô hình hoàn thiện khung kim loại đúc sẵn' },
   ];
 
-  const demoProducts = [
-    {
-      id: '1',
-      name: 'MG 1/100 Freedom Gundam Ver. 2.0',
-      grade: 'MG',
-      brand: 'Bandai Namco',
-      price: 1150000,
-      status: 'AVAILABLE',
-      image: 'https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?w=500&auto=format&fit=crop&q=60',
-      condition: 'Mới 100% (MISB)',
-    },
-    {
-      id: '2',
-      name: 'RG 1/144 Hi-Nu Gundam',
-      grade: 'RG',
-      brand: 'Bandai Namco',
-      price: 1250000,
-      status: 'AVAILABLE',
-      image: 'https://images.unsplash.com/photo-1608889175123-8ee362201f81?w=500&auto=format&fit=crop&q=60',
-      condition: 'Mới 100% (MISB)',
-    },
-    {
-      id: '3',
-      name: 'Motor Nuclear MN-Q05 Lữ Bố (LuBu)',
-      grade: 'Metal Build',
-      brand: 'Motor Nuclear',
-      price: 2450000,
-      status: 'PRE_ORDER',
-      image: 'https://images.unsplash.com/photo-1563089145-599997674d42?w=500&auto=format&fit=crop&q=60',
-      condition: 'Hàng Order (Liên hệ báo giá)',
-    },
-    {
-      id: '4',
-      name: 'PG 1/60 Gundam Exia Lighting Model',
-      grade: 'PG',
-      brand: 'Bandai Namco',
-      price: 7800000,
-      status: 'AVAILABLE',
-      image: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=500&auto=format&fit=crop&q=60',
-      condition: 'Mới 100% (Hộp đẹp)',
-    },
-  ];
+  useEffect(() => {
+    setLoading(true);
+    apiClient
+      .get('/products', { params: { limit: 8 } })
+      .then((res: any) => {
+        setProducts(res.items || []);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleQuickBuy = (p: ProductItem) => {
+    addToCart({
+      id: p.id,
+      name: p.name,
+      slug: p.slug,
+      sku: p.sku,
+      grade: p.grade,
+      scale: p.scale,
+      price: p.currentPrice,
+      quantity: 1,
+      imageUrl: p.images?.[0]?.url,
+      isPreorder: p.isPreorder,
+    });
+    message.success(`Đã thêm "${p.name}" vào giỏ hàng`);
+    navigate('/checkout');
+  };
 
   return (
     <div style={{ padding: '24px 32px', maxWidth: 1280, margin: '0 auto' }}>
@@ -94,56 +105,47 @@ export const HomePage: React.FC = () => {
             <Space size="middle" style={{ marginTop: 8 }}>
               <Link to="/products">
                 <Button type="primary" size="large" icon={<RocketOutlined />} style={{ background: '#e53935' }}>
-                  Xem Toàn Bộ Sản Phẩm
+                  Xem Danh Mục Mô Hình
                 </Button>
               </Link>
               <Link to="/quotations">
-                <Button ghost size="large" icon={<FileProtectOutlined />} style={{ color: '#fff', borderColor: '#fff' }}>
-                  Gửi Yêu Cầu Báo Giá
+                <Button size="large" ghost style={{ color: '#fff', borderColor: '#fff' }}>
+                  Yêu Cầu Báo Giá PDF
                 </Button>
               </Link>
             </Space>
           </Col>
           <Col xs={24} md={8} style={{ textAlign: 'center' }}>
-            <div
+            <img
+              src="https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?w=600&auto=format&fit=crop&q=60"
+              alt="Gundam Hero"
               style={{
-                background: 'rgba(255, 255, 255, 0.05)',
-                padding: 24,
-                borderRadius: 12,
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                width: '100%',
+                maxHeight: 260,
+                objectFit: 'cover',
+                borderRadius: 8,
+                boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
               }}
-            >
-              <ThunderboltOutlined style={{ fontSize: 48, color: '#e53935', marginBottom: 12 }} />
-              <Title level={4} style={{ color: '#fff', margin: 0 }}>
-                Hàng Mới Về Tuần Này
-              </Title>
-              <Text style={{ color: '#aaa', display: 'block', marginTop: 8 }}>
-                Hơn 50+ mã Gunpla Bandai, Daban, SNAA đã cập bến kho Autobot.
-              </Text>
-            </div>
+            />
           </Col>
         </Row>
       </Card>
 
-      {/* Phân khúc Gundam (Grades) */}
+      {/* Phân loại Grade phổ biến */}
       <div style={{ marginBottom: 36 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-          <Title level={3} style={{ margin: 0 }}>
-            Phân Khúc Gundam (Gunpla Grades)
-          </Title>
-          <Link to="/products" style={{ color: '#e53935' }}>
-            Xem tất cả →
-          </Link>
-        </div>
-
+        <Title level={3} style={{ marginBottom: 16 }}>
+          Phân Khúc Mô Hình (Grade & Scale)
+        </Title>
         <Row gutter={[16, 16]}>
           {grades.map((g) => (
             <Col xs={24} sm={12} md={8} key={g.name}>
               <Card
                 hoverable
+                onClick={() => navigate(`/products`)}
                 style={{
                   borderRadius: 8,
                   height: '100%',
+                  cursor: 'pointer',
                   borderLeft: `4px solid ${g.color === 'volcano' ? '#fa541c' : g.color === 'gold' ? '#faad14' : '#1890ff'}`,
                 }}
               >
@@ -162,67 +164,88 @@ export const HomePage: React.FC = () => {
         </Row>
       </div>
 
-      {/* Sản phẩm tiêu biểu */}
+      {/* Sản phẩm tiêu biểu thời gian thực từ Database */}
       <div style={{ marginBottom: 36 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
           <Title level={3} style={{ margin: 0 }}>
-            Mô Hình Nổi Bật & Báo Giá Mới Nhất
+            Mô Hình Nổi Bật & Có Sẵn Tại Kho
           </Title>
-          <Link to="/products" style={{ color: '#e53935' }}>
-            Xem bảng giá đầy đủ →
+          <Link to="/products" style={{ color: '#e53935', fontWeight: 600 }}>
+            Xem toàn bộ mô hình →
           </Link>
         </div>
 
-        <Row gutter={[20, 20]}>
-          {demoProducts.map((p) => (
-            <Col xs={24} sm={12} md={6} key={p.id}>
-              <Badge.Ribbon
-                text={p.status === 'PRE_ORDER' ? 'Order' : 'Có sẵn'}
-                color={p.status === 'PRE_ORDER' ? 'purple' : 'red'}
-              >
-                <Card
-                  hoverable
-                  style={{ borderRadius: 8, overflow: 'hidden' }}
-                  cover={
-                    <div style={{ height: 200, background: '#262626', overflow: 'hidden' }}>
-                      <img
-                        alt={p.name}
-                        src={p.image}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      />
-                    </div>
-                  }
-                  actions={[
-                    <Button type="link" icon={<ShoppingOutlined />} style={{ color: '#e53935', fontWeight: 600 }}>
-                      Đặt Mua
-                    </Button>,
-                    <Button type="link" icon={<FileProtectOutlined />}>
-                      Báo Giá
-                    </Button>,
-                  ]}
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '60px 0' }}>
+            <Spin size="large" tip="Đang tải danh sách mô hình Gundam..." />
+          </div>
+        ) : (
+          <Row gutter={[20, 20]}>
+            {products.map((p) => (
+              <Col xs={24} sm={12} md={6} key={p.id}>
+                <Badge.Ribbon
+                  text={p.isPreorder ? 'Hàng Order' : 'Có sẵn'}
+                  color={p.isPreorder ? 'purple' : 'red'}
                 >
-                  <Space direction="vertical" size={4} style={{ width: '100%' }}>
-                    <div style={{ display: 'flex', gap: 6, marginBottom: 4 }}>
-                      <Tag color="blue">{p.grade}</Tag>
-                      <Tag>{p.brand}</Tag>
-                    </div>
-                    <Text strong ellipsis style={{ fontSize: 15 }}>
-                      {p.name}
-                    </Text>
-                    <Text type="secondary" style={{ fontSize: 12 }}>
-                      {p.condition}
-                    </Text>
-                    <div style={{ marginTop: 8 }}>
-                      <Text style={{ fontSize: 18, fontWeight: 700, color: '#e53935' }}>
-                        {p.price.toLocaleString('vi-VN')} đ
+                  <Card
+                    hoverable
+                    style={{ borderRadius: 8, overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' }}
+                    cover={
+                      <Link to={`/products/${p.slug}`}>
+                        <div style={{ height: 210, background: '#262626', overflow: 'hidden' }}>
+                          <img
+                            alt={p.name}
+                            src={p.images?.[0]?.url || 'https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?w=500'}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          />
+                        </div>
+                      </Link>
+                    }
+                    actions={[
+                      <Button
+                        type="link"
+                        icon={<EyeOutlined />}
+                        onClick={() => navigate(`/products/${p.slug}`)}
+                      >
+                        Chi Tiết
+                      </Button>,
+                      <Button
+                        type="link"
+                        icon={<ShoppingOutlined />}
+                        style={{ color: '#e53935', fontWeight: 600 }}
+                        onClick={() => handleQuickBuy(p)}
+                      >
+                        {p.isPreorder ? 'Đặt Báo Giá' : 'Mua Ngay'}
+                      </Button>,
+                    ]}
+                  >
+                    <Space direction="vertical" size={4} style={{ width: '100%' }}>
+                      <div style={{ display: 'flex', gap: 6, marginBottom: 4 }}>
+                        <Tag color="blue">{p.grade || 'Gunpla'}</Tag>
+                        {p.brand && <Tag>{p.brand.name}</Tag>}
+                      </div>
+                      <Link to={`/products/${p.slug}`} style={{ color: 'inherit' }}>
+                        <Text strong ellipsis style={{ fontSize: 15, display: 'block' }}>
+                          {p.name}
+                        </Text>
+                      </Link>
+                      <Text type="secondary" style={{ fontSize: 12 }}>
+                        {p.scale ? `Tỉ lệ: ${p.scale}` : ''} {p.condition === 'NEW_SEAL' ? '• Mới 100%' : ''}
                       </Text>
-                    </div>
-                  </Space>
-                </Card>
-              </Badge.Ribbon>
-            </Col>
-          ))}
-        </Row>
+                      <div style={{ marginTop: 8 }}>
+                        <Text style={{ fontSize: 18, fontWeight: 700, color: '#e53935' }}>
+                          {p.currentPrice > 0
+                            ? `${p.currentPrice.toLocaleString('vi-VN')} đ`
+                            : 'Liên hệ báo giá'}
+                        </Text>
+                      </div>
+                    </Space>
+                  </Card>
+                </Badge.Ribbon>
+              </Col>
+            ))}
+          </Row>
+        )}
       </div>
 
       {/* Cam kết cửa hàng */}
@@ -246,10 +269,10 @@ export const HomePage: React.FC = () => {
               <CheckCircleOutlined style={{ fontSize: 24, color: '#52c41a', marginTop: 4 }} />
               <div>
                 <Text strong style={{ fontSize: 15 }}>
-                  Giao Hàng An Toàn
+                  Giao Hàng An Toàn & Đóng Hộp Kỹ
                 </Text>
                 <p style={{ margin: 0, color: '#8c8c8c', fontSize: 13 }}>
-                  Đóng gói bóng khí 3 lớp chuyên dụng, bảo vệ hộp mô hình nguyên vẹn.
+                  Đóng gói bóng khí 3 lớp chuyên dụng, bảo vệ hộp mô hình nguyên vẹn không móp méo.
                 </p>
               </div>
             </Space>
@@ -259,10 +282,10 @@ export const HomePage: React.FC = () => {
               <CheckCircleOutlined style={{ fontSize: 24, color: '#52c41a', marginTop: 4 }} />
               <div>
                 <Text strong style={{ fontSize: 15 }}>
-                  Báo Giá Minh Bạch
+                  Báo Giá Minh Bạch & Chiết Khấu Voucher
                 </Text>
                 <p style={{ margin: 0, color: '#8c8c8c', fontSize: 13 }}>
-                  Cập nhật theo tỉ giá ngoại tệ thực tế, có phiếu xuất báo giá PDF rõ ràng.
+                  Hỗ trợ tạo báo giá PDF điện tử và áp dụng mã voucher trừ tiền trực tiếp khi thanh toán.
                 </p>
               </div>
             </Space>
@@ -272,4 +295,3 @@ export const HomePage: React.FC = () => {
     </div>
   );
 };
-

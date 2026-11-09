@@ -128,7 +128,24 @@ export const ProductDetailPage: React.FC = () => {
       isPreorder: product.isPreorder,
     });
     message.success(`Đã thêm ${buyQuantity} hộp "${product.name}" vào giỏ hàng!`);
-    navigate('/cart');
+  };
+
+  const handleBuyNow = () => {
+    if (!product) return;
+    addToCart({
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      sku: product.sku,
+      grade: product.grade,
+      scale: product.scale,
+      price: product.currentPrice,
+      quantity: buyQuantity,
+      imageUrl: product.images[0]?.url,
+      isPreorder: product.isPreorder,
+    });
+    message.success(`Đang chuyển đến trang đặt hàng & thanh toán...`);
+    navigate('/checkout');
   };
 
   const handleRequestQuotation = () => {
@@ -298,18 +315,28 @@ export const ProductDetailPage: React.FC = () => {
               </Space>
             </div>
 
-            <Space size="middle" style={{ width: '100%', marginBottom: 20 }}>
+            <Space size="middle" wrap style={{ width: '100%', marginBottom: 20 }}>
               <Button
                 type="primary"
                 size="large"
-                icon={<ShoppingOutlined />}
+                icon={<ThunderboltOutlined />}
                 style={{ background: '#e53935', minWidth: 200, height: 48, fontWeight: 700 }}
-                onClick={handleAddToCart}
+                onClick={handleBuyNow}
                 disabled={!product.isPreorder && product.quantity === 0}
               >
                 {!product.isPreorder && product.quantity === 0
                   ? 'Tạm Hết Hàng'
-                  : 'Đặt Hàng Ngay (COD / CK)'}
+                  : 'Mua Ngay (Thanh Toán)'}
+              </Button>
+
+              <Button
+                size="large"
+                icon={<ShoppingOutlined />}
+                style={{ height: 48, fontWeight: 600 }}
+                onClick={handleAddToCart}
+                disabled={!product.isPreorder && product.quantity === 0}
+              >
+                Thêm Vào Giỏ Hàng
               </Button>
 
               <Button
