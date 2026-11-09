@@ -23,9 +23,13 @@ import {
   EyeOutlined,
   HomeOutlined,
   ClearOutlined,
+  HeartOutlined,
+  HeartFilled,
 } from '@ant-design/icons';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { apiClient } from '../../api/client';
+import { useWishlistStore } from '../../store/useWishlistStore';
+import { message } from 'antd';
 
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
@@ -51,6 +55,7 @@ interface Product {
 export const ProductListPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { isInWishlist, toggleWishlist } = useWishlistStore();
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
@@ -335,6 +340,38 @@ export const ProductListPage: React.FC = () => {
                           </Link>
                         }
                         actions={[
+                          <Button
+                            type="link"
+                            icon={
+                              isInWishlist(p.id) ? (
+                                <HeartFilled style={{ color: '#e53935' }} />
+                              ) : (
+                                <HeartOutlined />
+                              )
+                            }
+                            onClick={() => {
+                              const alreadyIn = isInWishlist(p.id);
+                              toggleWishlist({
+                                id: p.id,
+                                name: p.name,
+                                slug: p.slug,
+                                sku: p.sku,
+                                grade: p.grade,
+                                scale: p.scale,
+                                brand: p.brand?.name,
+                                price: p.currentPrice,
+                                imageUrl: p.images[0]?.url,
+                                isPreorder: p.isPreorder,
+                              });
+                              if (alreadyIn) {
+                                message.info(`Đã bỏ "${p.name}" khỏi danh sách yêu thích`);
+                              } else {
+                                message.success(`Đã thêm "${p.name}" vào danh sách yêu thích!`);
+                              }
+                            }}
+                          >
+                            {isInWishlist(p.id) ? 'Đã lưu' : 'Lưu'}
+                          </Button>,
                           <Button
                             type="link"
                             icon={<EyeOutlined />}

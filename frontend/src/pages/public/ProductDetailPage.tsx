@@ -25,10 +25,13 @@ import {
   HistoryOutlined,
   ThunderboltOutlined,
   SafetyCertificateOutlined,
+  HeartOutlined,
+  HeartFilled,
 } from '@ant-design/icons';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { apiClient } from '../../api/client';
 import { useCartStore } from '../../store/useCartStore';
+import { useWishlistStore } from '../../store/useWishlistStore';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -86,6 +89,29 @@ export const ProductDetailPage: React.FC = () => {
   }, [slug]);
 
   const addToCart = useCartStore((state) => state.addToCart);
+  const { isInWishlist, toggleWishlist } = useWishlistStore();
+  const inWishlist = product ? isInWishlist(product.id) : false;
+
+  const handleToggleWishlist = () => {
+    if (!product) return;
+    toggleWishlist({
+      id: product.id,
+      name: product.name,
+      slug: product.slug,
+      sku: product.sku,
+      grade: product.grade,
+      scale: product.scale,
+      brand: product.brand?.name,
+      price: product.currentPrice,
+      imageUrl: product.images[0]?.url,
+      isPreorder: product.isPreorder,
+    });
+    if (inWishlist) {
+      message.info(`Đã bỏ "${product.name}" khỏi danh sách yêu thích`);
+    } else {
+      message.success(`Đã thêm "${product.name}" vào danh sách yêu thích!`);
+    }
+  };
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -293,6 +319,21 @@ export const ProductDetailPage: React.FC = () => {
                 onClick={handleRequestQuotation}
               >
                 Yêu Cầu Báo Giá PDF
+              </Button>
+
+              <Button
+                size="large"
+                icon={
+                  inWishlist ? (
+                    <HeartFilled style={{ color: '#e53935' }} />
+                  ) : (
+                    <HeartOutlined />
+                  )
+                }
+                style={{ height: 48 }}
+                onClick={handleToggleWishlist}
+              >
+                {inWishlist ? 'Đã yêu thích' : 'Yêu thích'}
               </Button>
             </Space>
 

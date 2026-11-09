@@ -477,7 +477,73 @@ async function main() {
     console.log(`Đã tạo đơn hàng mẫu: ${orderSample1.code}, ${orderSample2.code}`);
   }
 
-  console.log(`Đã nạp ${sampleProducts.length} mô hình Gunpla và đơn hàng mẫu thành công!`);
+  // 6. Tạo địa chỉ mẫu cho Customer
+  await prisma.address.deleteMany({ where: { userId: customer.id } });
+  await prisma.address.createMany({
+    data: [
+      {
+        userId: customer.id,
+        receiverName: 'Khách Hàng Thân Thiết',
+        phone: '0912345678',
+        province: 'TP. Hồ Chí Minh',
+        district: 'Quận 1',
+        ward: 'Phường Bến Nghé',
+        detailAddress: '123 Lê Duẩn, Căn hộ 4B',
+        isDefault: true,
+      },
+      {
+        userId: customer.id,
+        receiverName: 'Khách Hàng Thân Thiết (Công ty)',
+        phone: '0912345678',
+        province: 'TP. Hồ Chí Minh',
+        district: 'Quận 3',
+        ward: 'Phường Võ Thị Sáu',
+        detailAddress: '456 Nam Kỳ Khởi Nghĩa, Tòa nhà Bitexco',
+        isDefault: false,
+      },
+    ],
+  });
+
+  // 7. Tạo mã giảm giá (Coupons) mẫu
+  const sampleCoupons = [
+    {
+      code: 'AUTOBOT10',
+      description: 'Giảm 10% tối đa 100.000đ cho đơn từ 300k',
+      type: 'PERCENT' as any,
+      value: 10,
+      minOrder: 300000,
+      maxDiscount: 100000,
+      usageLimit: 500,
+    },
+    {
+      code: 'GUNPLA50K',
+      description: 'Giảm ngay 50.000đ trực tiếp cho đơn từ 500k',
+      type: 'FIXED_AMOUNT' as any,
+      value: 50000,
+      minOrder: 500000,
+      maxDiscount: 50000,
+      usageLimit: 200,
+    },
+    {
+      code: 'FREESHIP',
+      description: 'Hỗ trợ 30.000đ phí vận chuyển cho đơn từ 200k',
+      type: 'FIXED_AMOUNT' as any,
+      value: 30000,
+      minOrder: 200000,
+      maxDiscount: 30000,
+      usageLimit: 300,
+    },
+  ];
+
+  for (const c of sampleCoupons) {
+    await prisma.coupon.upsert({
+      where: { code: c.code },
+      update: {},
+      create: c,
+    });
+  }
+
+  console.log(`Đã nạp ${sampleProducts.length} mô hình Gunpla, địa chỉ nhận hàng và 3 mã giảm giá!`);
   console.log('--- Hoàn tất nạp dữ liệu mẫu! ---');
 }
 
