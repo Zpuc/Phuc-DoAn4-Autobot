@@ -19,6 +19,7 @@ import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
 import { useCartStore } from '../store/useCartStore';
 import { useWishlistStore } from '../store/useWishlistStore';
+import { GundamLogo } from '../components/GundamLogo';
 
 const { Header, Content, Footer } = Layout;
 const { Text } = Typography;
@@ -100,11 +101,8 @@ export const PublicLayout: React.FC = () => {
           borderBottom: '2px solid #e53935',
         }}
       >
-        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-          <RocketOutlined style={{ fontSize: 26, color: '#e53935' }} />
-          <span style={{ color: '#fff', fontSize: 20, fontWeight: 800, letterSpacing: 1.5 }}>
-            AUTOBOT GUNDAM
-          </span>
+        <Link to="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+          <GundamLogo size="medium" />
         </Link>
 
         <Menu
@@ -190,12 +188,7 @@ export const PublicLayout: React.FC = () => {
           <Row gutter={[32, 24]}>
             <Col xs={24} md={8}>
               <Space direction="vertical" size={8}>
-                <Space size={8} align="center">
-                  <RocketOutlined style={{ fontSize: 22, color: '#e53935' }} />
-                  <span style={{ color: '#fff', fontSize: 18, fontWeight: 800, letterSpacing: 1 }}>
-                    AUTOBOT GUNDAM
-                  </span>
-                </Space>
+                <GundamLogo size={36} />
                 <Text style={{ color: '#8c8c8c', fontSize: 13, lineHeight: 1.6 }}>
                   Hệ thống chuyên phân phối mô hình Gunpla chính hãng Bandai, Daban, Motor Nuclear... Cập nhật giá theo thời gian thực và quản lý xuất nhập tồn kho chuyên nghiệp.
                 </Text>

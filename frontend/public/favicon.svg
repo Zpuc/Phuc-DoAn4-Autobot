@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+  <defs>
+    <!-- Background / Border Gradients -->
+    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a1c23" />
+      <stop offset="50%" stop-color="#121318" />
+      <stop offset="100%" stop-color="#090a0d" />
+    </linearGradient>
+
+    <linearGradient id="goldVFin" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff176" />
+      <stop offset="30%" stop-color="#ffd700" />
+      <stop offset="70%" stop-color="#ff9100" />
+      <stop offset="100%" stop-color="#e65100" />
+    </linearGradient>
+
+    <linearGradient id="redArmor" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ff3d00" />
+      <stop offset="50%" stop-color="#e53935" />
+      <stop offset="100%" stop-color="#b71c1c" />
+    </linearGradient>
+
+    <linearGradient id="silverPlate" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="40%" stop-color="#e0e0e0" />
+      <stop offset="80%" stop-color="#9e9e9e" />
+      <stop offset="100%" stop-color="#616161" />
+    </linearGradient>
+
+    <!-- Neon Cyan Optical Glow -->
+    <filter id="cyanGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="1.5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Hexagonal Shield / Crest Background -->
+  <polygon points="50,3 88,14 94,52 74,86 50,98 26,86 6,52 12,14" 
+           fill="url(#shieldGrad)" 
+           stroke="url(#redArmor)" 
+           stroke-width="2.5" 
+           stroke-linejoin="round" />
+
+  <!-- Inner Tech Panel Lines -->
+  <polygon points="50,8 83,18 88,51 70,82 50,92 30,82 12,51 17,18" 
+           fill="none" 
+           stroke="#2d3748" 
+           stroke-width="1" 
+           stroke-dasharray="2,3" />
+
+  <!-- Gundam V-Fin Wings (Large iconic golden antennae) -->
+  <!-- Left V-Fin Wing -->
+  <polygon points="49,38 14,12 24,32 45,43" 
+           fill="url(#goldVFin)" 
+           stroke="#d97706" 
+           stroke-width="0.8" />
+  <polygon points="45,43 24,32 32,38 46,45" 
+           fill="#b45309" 
+           opacity="0.6" />
+
+  <!-- Right V-Fin Wing -->
+  <polygon points="51,38 86,12 76,32 55,43" 
+           fill="url(#goldVFin)" 
+           stroke="#d97706" 
+           stroke-width="0.8" />
+  <polygon points="55,43 76,32 68,38 54,45" 
+           fill="#b45309" 
+           opacity="0.6" />
+
+  <!-- Central Red Sensor Crest (Diamond) -->
+  <polygon points="50,22 57,33 50,44 43,33" 
+           fill="url(#redArmor)" 
+           stroke="#ff8a80" 
+           stroke-width="1" />
+  <polygon points="50,24 55,33 50,37 45,33" 
+           fill="#ff5252" />
+
+  <!-- Brow & Helmet Forehead Armor -->
+  <polygon points="32,44 68,44 64,50 36,50" 
+           fill="#424242" 
+           stroke="#212121" 
+           stroke-width="0.8" />
+
+  <!-- Cheek Armor (Left & Right) -->
+  <polygon points="31,48 37,48 40,68 33,65" 
+           fill="url(#silverPlate)" 
+           stroke="#424242" 
+           stroke-width="0.8" />
+  <polygon points="69,48 63,48 60,68 67,65" 
+           fill="url(#silverPlate)" 
+           stroke="#424242" 
+           stroke-width="0.8" />
+
+  <!-- Cheek Air Vents (Slots) -->
+  <line x1="33" y1="54" x2="37" y2="54" stroke="#e53935" stroke-width="1.2" />
+  <line x1="34" y1="58" x2="38" y2="58" stroke="#e53935" stroke-width="1.2" />
+  <line x1="67" y1="54" x2="63" y2="54" stroke="#e53935" stroke-width="1.2" />
+  <line x1="66" y1="58" x2="62" y2="58" stroke="#e53935" stroke-width="1.2" />
+
+  <!-- Glowing Cyan Eyes (Dual Mecha Optics) -->
+  <!-- Left Eye -->
+  <polygon points="37,51 46,53 44,57 38,56" 
+           fill="#00f5ff" 
+           filter="url(#cyanGlow)" />
+  <!-- Right Eye -->
+  <polygon points="63,51 54,53 56,57 62,56" 
+           fill="#00f5ff" 
+           filter="url(#cyanGlow)" />
+
+  <!-- Face Mask / Nose Bridge -->
+  <polygon points="46,53 54,53 53,60 47,60" 
+           fill="#212121" />
+
+  <!-- Faceplate (White/Silver Mouthplate) -->
+  <polygon points="42,60 58,60 55,75 45,75" 
+           fill="url(#silverPlate)" 
+           stroke="#616161" 
+           stroke-width="0.8" />
+
+  <!-- Gunpla Twin Vents (Classic Dual Slits on Mouthplate) -->
+  <line x1="46" y1="64" x2="54" y2="64" stroke="#212121" stroke-width="1.2" stroke-linecap="round" />
+  <line x1="47" y1="68" x2="53" y2="68" stroke="#212121" stroke-width="1.2" stroke-linecap="round" />
+
+  <!-- Red Chin Armor Piece (Autobot Red Point) -->
+  <polygon points="46,75 54,75 52,85 48,85" 
+           fill="url(#redArmor)" 
+           stroke="#d32f2f" 
+           stroke-width="0.8" />
+
+  <!-- Bottom Crest Chevron Highlight -->
+  <polyline points="42,88 50,94 58,88" 
+            fill="none" 
+            stroke="#00f5ff" 
+            stroke-width="1.5" 
+            filter="url(#cyanGlow)" />
+</svg>
