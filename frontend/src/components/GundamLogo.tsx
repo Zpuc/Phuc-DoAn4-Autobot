@@ -50,6 +50,8 @@ export const GundamLogo: React.FC<GundamLogoProps> = ({
         userSelect: 'none',
         textDecoration: 'none',
         whiteSpace: 'nowrap',
+        lineHeight: 1,
+        verticalAlign: 'middle',
         ...style,
       }}
     >
@@ -225,7 +227,7 @@ export const GundamLogo: React.FC<GundamLogoProps> = ({
 
       {/* Cụm Chữ Thương Hiệu */}
       {showText && !collapsed && (
-        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', lineHeight: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span
               style={{

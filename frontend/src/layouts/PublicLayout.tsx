@@ -100,9 +100,11 @@ export const PublicLayout: React.FC = () => {
           background: '#141414',
           padding: '0 28px',
           borderBottom: '2px solid #e53935',
+          height: 64,
+          lineHeight: 'normal',
         }}
       >
-        <Link to="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+        <Link to="/" style={{ display: 'flex', alignItems: 'center', height: '100%', textDecoration: 'none' }}>
           <GundamLogo size="medium" />
         </Link>
 
