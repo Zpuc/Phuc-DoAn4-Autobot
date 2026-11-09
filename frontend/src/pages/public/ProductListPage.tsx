@@ -15,6 +15,7 @@ import {
   Spin,
   Empty,
   Breadcrumb,
+  Image,
 } from 'antd';
 import {
   SearchOutlined,
@@ -333,10 +334,12 @@ export const ProductListPage: React.FC = () => {
                         cover={
                           <Link to={`/products/${p.slug}`}>
                             <div style={{ height: 210, background: '#1c1c1c', overflow: 'hidden' }}>
-                              <img
+                              <Image
+                                preview={false}
                                 alt={p.name}
-                                src={p.images[0]?.url || 'https://via.placeholder.com/300x200?text=Gunpla'}
+                                src={p.images[0]?.url || 'https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?w=500'}
                                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                fallback="https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?w=500"
                               />
                             </div>
                           </Link>

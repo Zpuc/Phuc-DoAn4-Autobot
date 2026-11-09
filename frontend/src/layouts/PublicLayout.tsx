@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layout, Menu, Button, Space, Badge, Dropdown, Avatar, Typography } from 'antd';
+import { Layout, Menu, Button, Space, Badge, Dropdown, Avatar, Typography, Row, Col, Divider, Tag } from 'antd';
 import type { MenuProps } from 'antd';
 import {
   RocketOutlined,
@@ -7,11 +7,13 @@ import {
   ShoppingOutlined,
   HeartOutlined,
   AppstoreOutlined,
-  FileSearchOutlined,
   UserOutlined,
   DashboardOutlined,
   LogoutOutlined,
   LoginOutlined,
+  EnvironmentOutlined,
+  PhoneOutlined,
+  SafetyCertificateOutlined,
 } from '@ant-design/icons';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
@@ -178,19 +180,78 @@ export const PublicLayout: React.FC = () => {
 
       <Footer
         style={{
-          textAlign: 'center',
           background: '#141414',
           color: '#8c8c8c',
-          padding: '24px 50px',
-          borderTop: '1px solid #262626',
+          padding: '40px 50px 24px',
+          borderTop: '2px solid #e53935',
         }}
       >
-        <p style={{ color: '#fff', fontWeight: 600, marginBottom: 6 }}>
-          HỆ THỐNG QUẢN LÝ & BÁO GIÁ MÔ HÌNH GUNDAM AUTOBOT
-        </p>
-        <p style={{ fontSize: 13 }}>
-          Chuyên cung cấp mô hình chính hãng Bandai, Daban, Motor Nuclear... Cập nhật giá theo tỉ giá mới nhất.
-        </p>
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+          <Row gutter={[32, 24]}>
+            <Col xs={24} md={8}>
+              <Space direction="vertical" size={8}>
+                <Space size={8} align="center">
+                  <RocketOutlined style={{ fontSize: 22, color: '#e53935' }} />
+                  <span style={{ color: '#fff', fontSize: 18, fontWeight: 800, letterSpacing: 1 }}>
+                    AUTOBOT GUNDAM
+                  </span>
+                </Space>
+                <Text style={{ color: '#8c8c8c', fontSize: 13, lineHeight: 1.6 }}>
+                  Hệ thống chuyên phân phối mô hình Gunpla chính hãng Bandai, Daban, Motor Nuclear... Cập nhật giá theo thời gian thực và quản lý xuất nhập tồn kho chuyên nghiệp.
+                </Text>
+                <div>
+                  <Tag color="red">100% Chính Hãng</Tag>
+                  <Tag color="blue">Box Đẹp MISB</Tag>
+                  <Tag color="green">COD Toàn Quốc</Tag>
+                </div>
+              </Space>
+            </Col>
+
+            <Col xs={24} md={8}>
+              <Space direction="vertical" size={8}>
+                <Text strong style={{ color: '#fff', fontSize: 15 }}>
+                  <EnvironmentOutlined style={{ color: '#e53935', marginRight: 6 }} />
+                  Khu Vực Phục Vụ Trọng Điểm
+                </Text>
+                <Text style={{ color: '#8c8c8c', fontSize: 13 }}>
+                  • <strong>Hà Nội:</strong> Cầu Giấy, Hoàn Kiếm, Đống Đa, Ba Đình, Thanh Xuân, Nam/Bắc Từ Liêm, Long Biên, Hà Đông... (Giao hỏa tốc).
+                </Text>
+                <Text style={{ color: '#8c8c8c', fontSize: 13 }}>
+                  • <strong>Hưng Yên:</strong> Huyện Văn Giang (Ecopark), TP. Hưng Yên, Thị xã Mỹ Hào, Yên Mỹ, Văn Lâm...
+                </Text>
+                <Text style={{ color: '#8c8c8c', fontSize: 13 }}>
+                  • Đóng gói bóng xốp 3 lớp chống móp méo hộp mô hình khi vận chuyển.
+                </Text>
+              </Space>
+            </Col>
+
+            <Col xs={24} md={8}>
+              <Space direction="vertical" size={8}>
+                <Text strong style={{ color: '#fff', fontSize: 15 }}>
+                  <SafetyCertificateOutlined style={{ color: '#52c41a', marginRight: 6 }} />
+                  Chính Sách & Hỗ Trợ Khách Hàng
+                </Text>
+                <Text style={{ color: '#8c8c8c', fontSize: 13 }}>
+                  • Kiểm tra kit nguyên seal runner trước khi nhận hàng thanh toán.
+                </Text>
+                <Text style={{ color: '#8c8c8c', fontSize: 13 }}>
+                  • Hỗ trợ xuất bảng báo giá điện tử định dạng PDF cho đơn vị hoặc cá nhân.
+                </Text>
+                <Text style={{ color: '#8c8c8c', fontSize: 13 }}>
+                  • Hotline / Zalo đặt hàng: <strong style={{ color: '#e53935' }}>0901.234.567</strong> (8:00 - 22:00)
+                </Text>
+              </Space>
+            </Col>
+          </Row>
+
+          <Divider style={{ borderColor: '#262626', margin: '28px 0 16px' }} />
+
+          <div style={{ textAlign: 'center' }}>
+            <Text type="secondary" style={{ fontSize: 12 }}>
+              © 2026 AUTOBOT GUNDAM STORE — Thiết kế chuẩn doanh nghiệp trên nền tảng React & Ant Design.
+            </Text>
+          </div>
+        </div>
       </Footer>
     </Layout>
   );
