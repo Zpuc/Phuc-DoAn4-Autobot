@@ -467,7 +467,7 @@ export const ProfilePage: React.FC = () => {
                 label="Tỉnh / Thành phố"
                 rules={[{ required: true, message: 'Nhập Tỉnh/Thành' }]}
               >
-                <Input placeholder="TP. Hồ Chí Minh" />
+                <Input placeholder="Tỉnh Hưng Yên / Hà Nội" />
               </Form.Item>
             </Col>
             <Col span={8}>
@@ -476,7 +476,7 @@ export const ProfilePage: React.FC = () => {
                 label="Quận / Huyện"
                 rules={[{ required: true, message: 'Nhập Quận/Huyện' }]}
               >
-                <Input placeholder="Quận 1" />
+                <Input placeholder="Huyện Văn Giang / Cầu Giấy" />
               </Form.Item>
             </Col>
             <Col span={8}>
@@ -485,7 +485,7 @@ export const ProfilePage: React.FC = () => {
                 label="Phường / Xã"
                 rules={[{ required: true, message: 'Nhập Phường/Xã' }]}
               >
-                <Input placeholder="Phường Bến Nghé" />
+                <Input placeholder="Xã Phụng Công / Dịch Vọng Hậu" />
               </Form.Item>
             </Col>
           </Row>
@@ -495,7 +495,7 @@ export const ProfilePage: React.FC = () => {
             label="Địa chỉ cụ thể (Số nhà, tên đường, tòa nhà)"
             rules={[{ required: true, message: 'Vui lòng nhập địa chỉ chi tiết' }]}
           >
-            <Input placeholder="Số 123 Lê Duẩn, Căn hộ 4B..." />
+            <Input placeholder="KĐT Ecopark, Căn hộ R102 Rừng Cọ hoặc Số 12 Duy Tân..." />
           </Form.Item>
 
           <div style={{ textAlign: 'right', marginTop: 20 }}>

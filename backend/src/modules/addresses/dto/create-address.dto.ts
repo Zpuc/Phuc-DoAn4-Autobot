@@ -12,22 +12,22 @@ export class CreateAddressDto {
   @IsNotEmpty({ message: 'Số điện thoại không được để trống' })
   phone: string;
 
-  @ApiProperty({ example: 'TP. Hồ Chí Minh' })
+  @ApiProperty({ example: 'Tỉnh Hưng Yên' })
   @IsString()
   @IsNotEmpty({ message: 'Tỉnh/Thành phố không được để trống' })
   province: string;
 
-  @ApiProperty({ example: 'Quận 1' })
+  @ApiProperty({ example: 'Huyện Văn Giang' })
   @IsString()
   @IsNotEmpty({ message: 'Quận/Huyện không được để trống' })
   district: string;
 
-  @ApiProperty({ example: 'Phường Bến Nghé' })
+  @ApiProperty({ example: 'Xã Phụng Công' })
   @IsString()
   @IsNotEmpty({ message: 'Phường/Xã không được để trống' })
   ward: string;
 
-  @ApiProperty({ example: 'Số 123 Lê Duẩn, Căn hộ 4B' })
+  @ApiProperty({ example: 'KĐT Ecopark, Căn hộ R102 Rừng Cọ' })
   @IsString()
   @IsNotEmpty({ message: 'Địa chỉ chi tiết không được để trống' })
   detailAddress: string;

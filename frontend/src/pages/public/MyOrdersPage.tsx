@@ -102,8 +102,8 @@ export const MyOrdersPage: React.FC = () => {
             <Button type="primary" size="large" onClick={() => navigate('/login')}>
               Đăng nhập ngay
             </Button>
-            <Button size="large" onClick={() => navigate('/track-order')}>
-              Tra cứu nhanh bằng Mã Đơn
+            <Button size="large" onClick={() => navigate('/products')}>
+              Xem danh mục sản phẩm
             </Button>
           </Space>
         </Card>
@@ -273,14 +273,11 @@ export const MyOrdersPage: React.FC = () => {
                         {order.total.toLocaleString('vi-VN')} đ
                       </Text>
                     </div>
-                    <Button
-                      type="link"
-                      icon={<ArrowRightOutlined />}
-                      onClick={() => navigate(`/track-order?code=${order.code}`)}
-                      style={{ padding: 0 }}
-                    >
-                      Xem chi tiết & lộ trình giao hàng
-                    </Button>
+                    {order.trackingCode && (
+                      <div style={{ fontSize: 12, color: '#595959' }}>
+                        Đơn vị vận chuyển / Mã vận đơn: <Text strong style={{ color: '#13c2c2' }}>{order.trackingCode}</Text>
+                      </div>
+                    )}
                   </div>
                 </div>
               </Card>

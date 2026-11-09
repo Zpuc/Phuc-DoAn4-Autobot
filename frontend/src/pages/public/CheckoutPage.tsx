@@ -224,12 +224,12 @@ export const CheckoutPage: React.FC = () => {
             extra={[
               <Button
                 type="primary"
-                key="track"
+                key="orders"
                 size="large"
                 style={{ background: '#e53935' }}
-                onClick={() => navigate(`/track-order?code=${createdOrderCode}`)}
+                onClick={() => navigate('/my-orders')}
               >
-                Tra Cứu Lộ Trình Vận Chuyển
+                Xem Đơn Hàng Của Tôi
               </Button>,
               <Button key="home" size="large" onClick={() => navigate('/')}>
                 Tiếp Tục Mua Sắm
@@ -338,7 +338,7 @@ export const CheckoutPage: React.FC = () => {
               >
                 <Input.TextArea
                   rows={2}
-                  placeholder="Ví dụ: Số 45 Lê Lợi, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh"
+                  placeholder="Ví dụ: Số 12 Duy Tân, Cầu Giấy, Hà Nội hoặc KĐT Ecopark, Văn Giang, Hưng Yên"
                 />
               </Form.Item>
 
