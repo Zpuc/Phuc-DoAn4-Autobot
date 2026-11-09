@@ -5,6 +5,7 @@ import {
   RocketOutlined,
   ShoppingCartOutlined,
   ShoppingOutlined,
+  HeartOutlined,
   AppstoreOutlined,
   FileSearchOutlined,
   UserOutlined,
@@ -15,6 +16,7 @@ import {
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
 import { useCartStore } from '../store/useCartStore';
+import { useWishlistStore } from '../store/useWishlistStore';
 
 const { Header, Content, Footer } = Layout;
 const { Text } = Typography;
@@ -25,10 +27,13 @@ export const PublicLayout: React.FC = () => {
   const { user, isAuthenticated, isStaffOrAdmin, logout } = useAuthStore();
   const cartCount = useCartStore((state) => state.getTotalCount());
   const loadCartFromStorage = useCartStore((state) => state.loadFromStorage);
+  const wishlistItems = useWishlistStore((state) => state.items);
+  const loadWishlistFromStorage = useWishlistStore((state) => state.loadFromStorage);
 
   React.useEffect(() => {
     loadCartFromStorage();
-  }, [loadCartFromStorage]);
+    loadWishlistFromStorage();
+  }, [loadCartFromStorage, loadWishlistFromStorage]);
 
   const handleLogout = () => {
     logout();
@@ -50,6 +55,11 @@ export const PublicLayout: React.FC = () => {
       ),
     },
     { type: 'divider' },
+    {
+      key: 'profile',
+      icon: <UserOutlined />,
+      label: <Link to="/profile">Hồ sơ & Sổ địa chỉ</Link>,
+    },
     {
       key: 'my-orders',
       icon: <ShoppingOutlined />,
@@ -123,6 +133,18 @@ export const PublicLayout: React.FC = () => {
         />
 
         <Space size="middle">
+          <Link to="/wishlist">
+            <Badge count={wishlistItems.length} showZero={false} offset={[-2, 6]}>
+              <Button
+                icon={<HeartOutlined />}
+                ghost
+                style={{ color: '#fff', borderColor: '#434343' }}
+              >
+                Yêu Thích
+              </Button>
+            </Badge>
+          </Link>
+
           <Link to="/cart">
             <Badge count={cartCount} showZero={false} offset={[-2, 6]}>
               <Button type="primary" icon={<ShoppingCartOutlined />} style={{ background: '#e53935' }}>

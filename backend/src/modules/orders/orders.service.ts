@@ -66,8 +66,40 @@ export class OrdersService {
         });
       }
 
+      // Xử lý mã giảm giá coupon (nếu có)
+      let discountAmount = 0;
+      let appliedCouponCode: string | null = null;
+      if (dto.couponCode) {
+        const cleanCode = dto.couponCode.trim().toUpperCase();
+        const coupon = await tx.coupon.findUnique({ where: { code: cleanCode } });
+        if (
+          coupon &&
+          coupon.isActive &&
+          (!coupon.validUntil || new Date() <= coupon.validUntil) &&
+          coupon.usedCount < coupon.usageLimit
+        ) {
+          const minOrder = Number(coupon.minOrder);
+          if (subtotal >= minOrder) {
+            const val = Number(coupon.value);
+            if (coupon.type === 'PERCENT') {
+              discountAmount = Math.round((subtotal * val) / 100);
+              if (coupon.maxDiscount && discountAmount > Number(coupon.maxDiscount)) {
+                discountAmount = Number(coupon.maxDiscount);
+              }
+            } else {
+              discountAmount = Math.min(val, subtotal);
+            }
+            appliedCouponCode = coupon.code;
+            await tx.coupon.update({
+              where: { id: coupon.id },
+              data: { usedCount: { increment: 1 } },
+            });
+          }
+        }
+      }
+
       const shippingFee = Number(dto.shippingFee) || 0;
-      const total = subtotal + shippingFee;
+      const total = Math.max(0, subtotal - discountAmount + shippingFee);
 
       // 2. Sinh mã đơn hàng tự động định dạng: AG-YYMMDD-XXX
       const now = new Date();
@@ -92,6 +124,8 @@ export class OrdersService {
           shippingAddress: dto.shippingAddress,
           shippingFee,
           subtotal,
+          couponCode: appliedCouponCode,
+          discountAmount,
           total,
           status: OrderStatus.PENDING,
           paymentMethod: dto.paymentMethod,
@@ -213,6 +247,7 @@ export class OrdersService {
       ...order,
       subtotal: Number(order.subtotal),
       shippingFee: Number(order.shippingFee),
+      discountAmount: Number(order.discountAmount || 0),
       total: Number(order.total),
     };
   }
@@ -237,6 +272,7 @@ export class OrdersService {
       ...order,
       subtotal: Number(order.subtotal),
       shippingFee: Number(order.shippingFee),
+      discountAmount: Number(order.discountAmount || 0),
       total: Number(order.total),
     };
   }
@@ -311,6 +347,7 @@ export class OrdersService {
       ...o,
       subtotal: Number(o.subtotal),
       shippingFee: Number(o.shippingFee),
+      discountAmount: Number(o.discountAmount || 0),
       total: Number(o.total),
       items: o.items.map((i) => ({
         ...i,

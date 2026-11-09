@@ -15,6 +15,7 @@ import {
   message,
   Breadcrumb,
   Tag,
+  Select,
 } from 'antd';
 import {
   HomeOutlined,
@@ -23,6 +24,9 @@ import {
   BankOutlined,
   DollarOutlined,
   CarOutlined,
+  TagOutlined,
+  CloseCircleOutlined,
+  EnvironmentOutlined,
 } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCartStore } from '../../store/useCartStore';
@@ -39,16 +43,41 @@ interface ShippingZone {
   isLocal: boolean;
 }
 
+interface AddressItem {
+  id: string;
+  receiverName: string;
+  phone: string;
+  province: string;
+  district: string;
+  ward: string;
+  detailAddress: string;
+  isDefault: boolean;
+}
+
+interface AppliedCoupon {
+  code: string;
+  discountAmount: number;
+  description?: string;
+}
+
 export const CheckoutPage: React.FC = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const { items, getTotalPrice, clearCart } = useCartStore();
-  const { user } = useAuthStore();
+  const { user, isAuthenticated } = useAuthStore();
 
   const [shippingZones, setShippingZones] = useState<ShippingZone[]>([]);
   const [selectedZone, setSelectedZone] = useState<ShippingZone | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [createdOrderCode, setCreatedOrderCode] = useState<string | null>(null);
+
+  // Sổ địa chỉ đã lưu
+  const [savedAddresses, setSavedAddresses] = useState<AddressItem[]>([]);
+
+  // Mã giảm giá / Coupon
+  const [couponInput, setCouponInput] = useState('');
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
 
   const subtotal = getTotalPrice();
 
@@ -65,18 +94,76 @@ export const CheckoutPage: React.FC = () => {
       })
       .catch(() => {});
 
-    // Điền thông tin người dùng nếu đã đăng nhập
-    if (user) {
-      form.setFieldsValue({
-        customerName: user.name,
-        customerEmail: user.email,
-        customerPhone: user.phone || '',
-      });
+    // Nếu đã đăng nhập, tải sổ địa chỉ và điền sẵn thông tin
+    if (isAuthenticated && user) {
+      apiClient
+        .get('/addresses')
+        .then((res: any) => {
+          const list: AddressItem[] = res || [];
+          setSavedAddresses(list);
+
+          const defaultAddr = list.find((a) => a.isDefault) || list[0];
+          if (defaultAddr) {
+            form.setFieldsValue({
+              customerName: defaultAddr.receiverName,
+              customerPhone: defaultAddr.phone,
+              customerEmail: user.email,
+              detailAddress: `${defaultAddr.detailAddress}, ${defaultAddr.ward}, ${defaultAddr.district}, ${defaultAddr.province}`,
+            });
+          } else {
+            form.setFieldsValue({
+              customerName: user.name,
+              customerEmail: user.email,
+              customerPhone: user.phone || '',
+            });
+          }
+        })
+        .catch(() => {
+          form.setFieldsValue({
+            customerName: user.name,
+            customerEmail: user.email,
+            customerPhone: user.phone || '',
+          });
+        });
     }
-  }, [user, form]);
+  }, [user, isAuthenticated, form]);
 
   const shippingFee = selectedZone ? Number(selectedZone.fee) : 0;
-  const total = subtotal + shippingFee;
+  const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
+  const total = Math.max(0, subtotal - discountAmount + shippingFee);
+
+  // Xử lý áp dụng voucher
+  const handleApplyCoupon = async (codeToApply?: string) => {
+    const code = (codeToApply || couponInput).trim().toUpperCase();
+    if (!code) {
+      message.warning('Vui lòng nhập mã giảm giá');
+      return;
+    }
+
+    setCouponLoading(true);
+    try {
+      const res: any = await apiClient.post('/coupons/apply', {
+        code,
+        subtotal,
+      });
+      setAppliedCoupon({
+        code: res.code,
+        discountAmount: res.discountAmount,
+        description: res.description,
+      });
+      setCouponInput('');
+      message.success(`Áp dụng mã ${res.code} thành công! Tiết kiệm ${res.discountAmount.toLocaleString('vi-VN')} đ`);
+    } catch (err: any) {
+      message.error(err.message || 'Mã giảm giá không hợp lệ');
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    message.info('Đã hủy áp dụng mã giảm giá');
+  };
 
   const onFinish = async (values: any) => {
     if (items.length === 0) {
@@ -95,6 +182,7 @@ export const CheckoutPage: React.FC = () => {
         shippingFee,
         paymentMethod: values.paymentMethod,
         note: values.note,
+        couponCode: appliedCoupon?.code || undefined,
         items: items.map((i) => ({
           productId: i.id,
           quantity: i.quantity,
@@ -138,31 +226,15 @@ export const CheckoutPage: React.FC = () => {
                 type="primary"
                 key="track"
                 size="large"
-                icon={<FileSearchOutlined />}
                 style={{ background: '#e53935' }}
                 onClick={() => navigate(`/track-order?code=${createdOrderCode}`)}
               >
-                Tra Cứu Đơn Hàng Ngay
+                Tra Cứu Lộ Trình Vận Chuyển
               </Button>,
               <Button key="home" size="large" onClick={() => navigate('/')}>
-                Về Trang Chủ
+                Tiếp Tục Mua Sắm
               </Button>,
             ]}
-          />
-
-          <Alert
-            style={{ textAlign: 'left', marginTop: 24 }}
-            message="Thông tin thanh toán Chuyển khoản (nếu chọn CK)"
-            description={
-              <div>
-                <p><strong>Ngân hàng:</strong> MB Bank (Quân Đội)</p>
-                <p><strong>Số tài khoản:</strong> 0987654321</p>
-                <p><strong>Chủ tài khoản:</strong> GUNDAM AUTOBOT STORE</p>
-                <p><strong>Nội dung CK:</strong> {createdOrderCode} - SĐT của bạn</p>
-              </div>
-            }
-            type="info"
-            showIcon
           />
         </Card>
       </div>
@@ -170,18 +242,18 @@ export const CheckoutPage: React.FC = () => {
   }
 
   return (
-    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 20px' }}>
+    <div style={{ maxWidth: 1200, margin: '30px auto', padding: '0 20px' }}>
       <Breadcrumb
         style={{ marginBottom: 20 }}
         items={[
           { title: <Link to="/"><HomeOutlined /> Trang chủ</Link> },
           { title: <Link to="/cart">Giỏ hàng</Link> },
-          { title: 'Đặt hàng & Thanh toán' },
+          { title: 'Thanh toán & Đặt hàng' },
         ]}
       />
 
       <Title level={2} style={{ marginBottom: 24 }}>
-        Thông Tin Đặt Hàng & Giao Hàng
+        Xác Nhận & Đặt Hàng Gunpla
       </Title>
 
       <Form
@@ -193,6 +265,40 @@ export const CheckoutPage: React.FC = () => {
         <Row gutter={[24, 24]}>
           {/* Cột nhập thông tin giao hàng */}
           <Col xs={24} lg={14}>
+            {/* Lựa chọn địa chỉ đã lưu */}
+            {savedAddresses.length > 0 && (
+              <Card
+                title={
+                  <Space>
+                    <EnvironmentOutlined style={{ color: '#e53935' }} />
+                    <span>Chọn Địa Chỉ Từ Sổ Địa Chỉ Đã Lưu</span>
+                  </Space>
+                }
+                style={{ borderRadius: 12, marginBottom: 20, background: '#fafafa' }}
+                size="small"
+              >
+                <Select
+                  placeholder="Chọn địa chỉ giao hàng nhanh..."
+                  style={{ width: '100%' }}
+                  onChange={(val) => {
+                    const addr = savedAddresses.find((a) => a.id === val);
+                    if (addr) {
+                      form.setFieldsValue({
+                        customerName: addr.receiverName,
+                        customerPhone: addr.phone,
+                        detailAddress: `${addr.detailAddress}, ${addr.ward}, ${addr.district}, ${addr.province}`,
+                      });
+                      message.success('Đã áp dụng địa chỉ giao hàng');
+                    }
+                  }}
+                  options={savedAddresses.map((a) => ({
+                    label: `${a.receiverName} - ${a.phone} (${a.detailAddress}, ${a.ward}, ${a.district}) ${a.isDefault ? '[Mặc định]' : ''}`,
+                    value: a.id,
+                  }))}
+                />
+              </Card>
+            )}
+
             <Card title="1. Thông Tin Người Nhận" style={{ borderRadius: 12, marginBottom: 24 }}>
               <Row gutter={16}>
                 <Col xs={24} sm={12}>
@@ -260,35 +366,29 @@ export const CheckoutPage: React.FC = () => {
                         borderColor: selectedZone?.id === zone.id ? '#e53935' : undefined,
                         cursor: 'pointer',
                       }}
-                      onClick={() => setSelectedZone(zone)}
                     >
-                      <Radio value={zone.id}>
-                        <div style={{ display: 'inline-block', verticalAlign: 'middle' }}>
-                          <Text strong>{zone.name}</Text>
-                          <br />
-                          <Text type="secondary" style={{ fontSize: 12 }}>
-                            {zone.districts}
+                      <Radio value={zone.id} style={{ width: '100%' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                          <div>
+                            <Text strong>{zone.name}</Text>
+                            <br />
+                            <Text type="secondary" style={{ fontSize: 12 }}>
+                              {zone.districts}
+                            </Text>
+                          </div>
+                          <Text strong style={{ color: '#e53935', fontSize: 15 }}>
+                            {Number(zone.fee).toLocaleString('vi-VN')} đ
                           </Text>
                         </div>
                       </Radio>
-                      <span
-                        style={{
-                          float: 'right',
-                          fontWeight: 700,
-                          color: '#e53935',
-                          marginTop: 4,
-                        }}
-                      >
-                        {Number(zone.fee).toLocaleString('vi-VN')} đ
-                      </span>
                     </Card>
                   ))}
                 </Space>
               </Radio.Group>
             </Card>
 
-            <Card title="3. Hình Thức Thanh Toán" style={{ borderRadius: 12 }}>
-              <Form.Item name="paymentMethod" style={{ margin: 0 }}>
+            <Card title="3. Phương Thức Thanh Toán" style={{ borderRadius: 12 }}>
+              <Form.Item name="paymentMethod" noStyle>
                 <Radio.Group style={{ width: '100%' }}>
                   <Card size="small" style={{ borderRadius: 8, marginBottom: 12 }}>
                     <Radio value="COD">
@@ -324,10 +424,10 @@ export const CheckoutPage: React.FC = () => {
             </Card>
           </Col>
 
-          {/* Cột tóm tắt sản phẩm trong đơn */}
+          {/* Cột tóm tắt sản phẩm trong đơn & Mã giảm giá */}
           <Col xs={24} lg={10}>
             <Card title="Đơn Hàng Của Bạn" style={{ borderRadius: 12, position: 'sticky', top: 90 }}>
-              <div style={{ maxHeight: 320, overflowY: 'auto', marginBottom: 16 }}>
+              <div style={{ maxHeight: 260, overflowY: 'auto', marginBottom: 16 }}>
                 {items.map((item) => (
                   <div
                     key={item.id}
@@ -355,10 +455,102 @@ export const CheckoutPage: React.FC = () => {
                 ))}
               </div>
 
+              {/* Ô Nhập Mã Giảm Giá / Voucher */}
+              <div style={{ padding: '12px', background: '#fafafa', borderRadius: 8, marginBottom: 16 }}>
+                <Text strong style={{ display: 'block', marginBottom: 8 }}>
+                  <TagOutlined style={{ color: '#e53935', marginRight: 6 }} />
+                  Mã Giảm Giá / Voucher Autobot
+                </Text>
+
+                {appliedCoupon ? (
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      background: '#f6ffed',
+                      border: '1px solid #b7eb8f',
+                      padding: '8px 12px',
+                      borderRadius: 6,
+                    }}
+                  >
+                    <div>
+                      <Tag color="green" style={{ fontSize: 13, fontWeight: 'bold' }}>
+                        {appliedCoupon.code}
+                      </Tag>
+                      <span style={{ fontSize: 13, color: '#52c41a', fontWeight: 'bold' }}>
+                        -{appliedCoupon.discountAmount.toLocaleString('vi-VN')} đ
+                      </span>
+                      {appliedCoupon.description && (
+                        <div style={{ fontSize: 11, color: '#8c8c8c', marginTop: 2 }}>
+                          {appliedCoupon.description}
+                        </div>
+                      )}
+                    </div>
+                    <Button
+                      type="text"
+                      danger
+                      icon={<CloseCircleOutlined />}
+                      onClick={handleRemoveCoupon}
+                      size="small"
+                    >
+                      Bỏ mã
+                    </Button>
+                  </div>
+                ) : (
+                  <div>
+                    <Space.Compact style={{ width: '100%', marginBottom: 8 }}>
+                      <Input
+                        placeholder="Nhập mã voucher (Ví dụ: AUTOBOT10)..."
+                        value={couponInput}
+                        onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                        onPressEnter={() => handleApplyCoupon()}
+                      />
+                      <Button
+                        type="primary"
+                        onClick={() => handleApplyCoupon()}
+                        loading={couponLoading}
+                        style={{ background: '#e53935' }}
+                      >
+                        Áp dụng
+                      </Button>
+                    </Space.Compact>
+
+                    {/* Gợi ý mã có sẵn */}
+                    <Space size={6} wrap>
+                      <Text type="secondary" style={{ fontSize: 11 }}>Gợi ý:</Text>
+                      {['AUTOBOT10', 'GUNPLA50K', 'FREESHIP'].map((code) => (
+                        <Tag
+                          key={code}
+                          color="blue"
+                          style={{ cursor: 'pointer' }}
+                          onClick={() => {
+                            setCouponInput(code);
+                            handleApplyCoupon(code);
+                          }}
+                        >
+                          {code}
+                        </Tag>
+                      ))}
+                    </Space>
+                  </div>
+                )}
+              </div>
+
+              {/* Chi tiết tiền */}
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                 <Text type="secondary">Tạm tính ({items.length} món):</Text>
                 <Text strong>{subtotal.toLocaleString('vi-VN')} đ</Text>
               </div>
+
+              {discountAmount > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <Text type="secondary">Giảm giá voucher ({appliedCoupon?.code}):</Text>
+                  <Text strong style={{ color: '#52c41a' }}>
+                    -{discountAmount.toLocaleString('vi-VN')} đ
+                  </Text>
+                </div>
+              )}
 
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                 <Text type="secondary">Phí giao hàng ({selectedZone?.name || 'Mặc định'}):</Text>
@@ -382,11 +574,22 @@ export const CheckoutPage: React.FC = () => {
                 size="large"
                 block
                 loading={submitting}
-                icon={<CheckCircleOutlined />}
-                style={{ background: '#e53935', height: 48, fontWeight: 700 }}
+                style={{
+                  background: '#e53935',
+                  height: 50,
+                  fontSize: 16,
+                  fontWeight: 700,
+                  borderRadius: 8,
+                }}
               >
-                Xác Nhận Đặt Hàng
+                Xác Nhận Đặt Hàng Ngay
               </Button>
+
+              <div style={{ textAlign: 'center', marginTop: 12 }}>
+                <Text type="secondary" style={{ fontSize: 12 }}>
+                  Bằng cách đặt hàng, bạn đồng ý với chính sách bán hàng của Autobot Gundam Store.
+                </Text>
+              </div>
             </Card>
           </Col>
         </Row>

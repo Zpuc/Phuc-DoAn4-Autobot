@@ -12,6 +12,8 @@ import { CheckoutPage } from '../pages/public/CheckoutPage';
 import { TrackOrderPage } from '../pages/public/TrackOrderPage';
 import { QuotationPage } from '../pages/public/QuotationPage';
 import { MyOrdersPage } from '../pages/public/MyOrdersPage';
+import { WishlistPage } from '../pages/public/WishlistPage';
+import { ProfilePage } from '../pages/public/ProfilePage';
 import { DashboardPage } from '../pages/admin/DashboardPage';
 import { ProductManagePage } from '../pages/admin/ProductManagePage';
 import { InventoryManagePage } from '../pages/admin/InventoryManagePage';
@@ -34,6 +36,8 @@ export const router = createBrowserRouter([
       { path: 'checkout', element: <CheckoutPage /> },
       { path: 'track-order', element: <TrackOrderPage /> },
       { path: 'quotations', element: <QuotationPage /> },
+      { path: 'wishlist', element: <WishlistPage /> },
+      { path: 'profile', element: <ProfilePage /> },
       { path: 'my-orders', element: <MyOrdersPage /> },
     ],
   },
