@@ -12,3 +12,4 @@ export class ApplyCouponDto {
   @Min(0)
   subtotal: number;
 }
+

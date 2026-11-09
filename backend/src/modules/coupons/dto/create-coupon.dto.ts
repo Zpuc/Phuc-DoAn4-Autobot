@@ -53,3 +53,4 @@ export class CreateCouponDto {
   @IsOptional()
   validUntil?: string;
 }
+
