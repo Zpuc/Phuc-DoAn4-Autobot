@@ -16,6 +16,7 @@ import {
 } from '@ant-design/icons';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
+import { GundamLogo } from '../components/GundamLogo';
 
 const { Header, Sider, Content } = Layout;
 const { Title, Text } = Typography;
@@ -116,19 +117,15 @@ export const AdminLayout: React.FC = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: collapsed ? 'center' : 'flex-start',
-            padding: '0 16px',
+            padding: collapsed ? '0' : '0 16px',
             background: '#002140',
             borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+            overflow: 'hidden',
           }}
         >
-          <span style={{ color: '#e53935', fontSize: 20, fontWeight: 900, marginRight: 8 }}>
-            AG
-          </span>
-          {!collapsed && (
-            <span style={{ color: '#fff', fontSize: 16, fontWeight: 700, letterSpacing: 1 }}>
-              AUTOBOT ADMIN
-            </span>
-          )}
+          <Link to="/admin" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+            <GundamLogo size={32} collapsed={collapsed} />
+          </Link>
         </div>
 
         <Menu
