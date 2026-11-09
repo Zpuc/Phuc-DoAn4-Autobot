@@ -101,10 +101,10 @@ export const PublicLayout: React.FC = () => {
           padding: '0 28px',
           borderBottom: '2px solid #e53935',
           height: 64,
-          lineHeight: 'normal',
+          lineHeight: '64px',
         }}
       >
-        <Link to="/" style={{ display: 'flex', alignItems: 'center', height: '100%', textDecoration: 'none' }}>
+        <Link to="/" style={{ display: 'flex', alignItems: 'center', height: '100%', textDecoration: 'none', lineHeight: 1 }}>
           <GundamLogo size="medium" />
         </Link>
 
@@ -112,7 +112,7 @@ export const PublicLayout: React.FC = () => {
           theme="dark"
           mode="horizontal"
           selectedKeys={[location.pathname]}
-          style={{ background: 'transparent', flex: 1, marginLeft: 40, borderBottom: 'none' }}
+          style={{ background: 'transparent', flex: 1, marginLeft: 40, borderBottom: 'none', lineHeight: '64px', height: 64 }}
           items={[
             {
               key: '/',
