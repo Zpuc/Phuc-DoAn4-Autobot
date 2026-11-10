@@ -12,6 +12,7 @@ export interface ReviewItem {
   imageUrl?: string | null;
   gradeTag?: string | null;
   likes: number;
+  likedUserIds?: string[];
   createdAt: string;
   user?: {
     id: string;

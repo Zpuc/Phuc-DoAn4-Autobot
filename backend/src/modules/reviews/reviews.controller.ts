@@ -35,10 +35,13 @@ export class ReviewsController {
     return this.reviewsService.create(dto, userId);
   }
 
-  @ApiOperation({ summary: 'Thích (Hữu ích) một bình luận' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Thích (Hữu ích) một bình luận (Mỗi tài khoản chỉ bấm được 1 lần)' })
   @Post(':id/like')
-  like(@Param('id') id: string) {
-    return this.reviewsService.like(id);
+  like(@Param('id') id: string, @Req() req: any) {
+    const userId = req.user?.id || req.user?.userId;
+    return this.reviewsService.like(id, userId);
   }
 
   @ApiBearerAuth()

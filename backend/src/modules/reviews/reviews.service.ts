@@ -81,15 +81,27 @@ export class ReviewsService {
     });
   }
 
-  async like(id: string) {
+  async like(id: string, userId: string) {
+    if (!userId) {
+      throw new BadRequestException('Vui lòng đăng nhập tài khoản để bấm Hữu ích');
+    }
+
     const review = await this.prisma.review.findUnique({ where: { id } });
     if (!review) {
       throw new NotFoundException('Không tìm thấy nhận xét này');
     }
 
+    const currentLikedUsers = review.likedUserIds || [];
+    if (currentLikedUsers.includes(userId)) {
+      throw new BadRequestException('Tài khoản của bạn đã bấm Hữu ích cho đánh giá này rồi');
+    }
+
     return this.prisma.review.update({
       where: { id },
-      data: { likes: { increment: 1 } },
+      data: {
+        likes: { increment: 1 },
+        likedUserIds: { push: userId },
+      },
     });
   }
 
