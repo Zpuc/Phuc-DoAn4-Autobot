@@ -148,9 +148,9 @@ export const OrderManagePage: React.FC = () => {
       title: 'Mã Đơn',
       dataIndex: 'code',
       key: 'code',
-      width: 150,
+      width: 155,
       render: (code: string) => (
-        <Text copyable strong style={{ color: '#1890ff' }}>
+        <Text copyable strong style={{ color: '#1890ff', whiteSpace: 'nowrap' }}>
           {code}
         </Text>
       ),
@@ -158,11 +158,13 @@ export const OrderManagePage: React.FC = () => {
     {
       title: 'Khách Hàng',
       key: 'customer',
+      width: 210,
       render: (_: any, record: Order) => (
-        <div>
-          <Text strong>{record.customerName}</Text>
-          <br />
-          <Text type="secondary" style={{ fontSize: 12 }}>
+        <div style={{ minWidth: 180 }}>
+          <Text strong style={{ display: 'block', whiteSpace: 'nowrap' }}>
+            {record.customerName}
+          </Text>
+          <Text type="secondary" style={{ fontSize: 12, whiteSpace: 'nowrap' }}>
             SĐT: {record.customerPhone}
           </Text>
         </div>
@@ -172,9 +174,9 @@ export const OrderManagePage: React.FC = () => {
       title: 'Tổng Tiền',
       dataIndex: 'total',
       key: 'total',
-      width: 140,
+      width: 135,
       render: (val: number) => (
-        <Text strong style={{ color: '#e53935' }}>
+        <Text strong style={{ color: '#e53935', whiteSpace: 'nowrap' }}>
           {Number(val).toLocaleString('vi-VN')} đ
         </Text>
       ),
@@ -183,36 +185,40 @@ export const OrderManagePage: React.FC = () => {
       title: 'Hình Thức',
       dataIndex: 'paymentMethod',
       key: 'payment',
-      width: 120,
+      width: 130,
       render: (val: string) => (
-        <Tag color={val === 'COD' ? 'orange' : 'green'}>{val}</Tag>
+        <Tag color={val === 'COD' ? 'orange' : 'green'}>
+          {val === 'COD' ? 'COD' : 'Chuyển khoản'}
+        </Tag>
       ),
     },
     {
       title: 'Trạng Thái',
       dataIndex: 'status',
       key: 'status',
-      width: 160,
+      width: 175,
       render: (status: string) => getStatusTag(status),
     },
     {
       title: 'Mã Vận Đơn',
       dataIndex: 'trackingCode',
       key: 'tracking',
-      width: 140,
+      width: 135,
       render: (code: string) => (code ? <Tag color="geekblue">{code}</Tag> : <Text type="secondary">-</Text>),
     },
     {
       title: 'Ngày Đặt',
       dataIndex: 'createdAt',
       key: 'createdAt',
-      width: 140,
-      render: (d: string) => new Date(d).toLocaleDateString('vi-VN'),
+      width: 115,
+      render: (d: string) => (
+        <span style={{ whiteSpace: 'nowrap' }}>{new Date(d).toLocaleDateString('vi-VN')}</span>
+      ),
     },
     {
       title: 'Thao Tác',
       key: 'action',
-      width: 130,
+      width: 155,
       render: (_: any, record: Order) => (
         <Space size="small">
           <Button
@@ -294,6 +300,7 @@ export const OrderManagePage: React.FC = () => {
           dataSource={orders}
           rowKey="id"
           loading={loading}
+          scroll={{ x: 1100 }}
           pagination={{
             current: page,
             total,
