@@ -116,58 +116,170 @@ export const PublicLayout: React.FC = () => {
   };
 
   const notificationContent = (
-    <div style={{ width: isMobile ? 'min(300px, 82vw)' : 340, maxHeight: 380, overflowY: 'auto' }}>
+    <div
+      style={{
+        width: isMobile ? '100%' : 360,
+        maxWidth: isMobile ? '100%' : 360,
+        lineHeight: 1.45,
+      }}
+    >
+      {/* Header thông báo */}
       <div
         style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          paddingBottom: 8,
-          marginBottom: 8,
+          padding: '12px 14px',
+          background: '#fafafa',
           borderBottom: '1px solid #f0f0f0',
+          gap: 8,
         }}
       >
-        <Text strong style={{ fontSize: 14 }}>
-          Thông báo đơn hàng ({unreadCount} chưa đọc)
-        </Text>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+          <BellOutlined style={{ color: '#e53935', fontSize: 15 }} />
+          <Text strong style={{ fontSize: 14, whiteSpace: 'nowrap' }}>
+            Thông báo đơn hàng
+          </Text>
+          {unreadCount > 0 && (
+            <Badge
+              count={unreadCount}
+              style={{ backgroundColor: '#e53935', fontSize: 11, height: 18, minWidth: 18, lineHeight: '18px' }}
+            />
+          )}
+        </div>
         {unreadCount > 0 && (
-          <Button type="link" size="small" icon={<CheckOutlined />} onClick={handleMarkAllRead} style={{ padding: 0 }}>
+          <Button
+            type="link"
+            size="small"
+            icon={<CheckOutlined />}
+            onClick={handleMarkAllRead}
+            style={{ padding: 0, fontSize: 12, height: 'auto', flexShrink: 0, color: '#e53935' }}
+          >
             Đọc tất cả
           </Button>
         )}
       </div>
 
-      {notifications.length === 0 ? (
-        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Chưa có thông báo đơn hàng nào" />
-      ) : (
-        <Space direction="vertical" size={8} style={{ width: '100%' }}>
-          {notifications.map((item) => (
-            <div
-              key={item.id}
-              onClick={() => handleClickNotification(item)}
-              style={{
-                padding: '10px 12px',
-                borderRadius: 8,
-                cursor: 'pointer',
-                background: item.isRead ? '#fafafa' : '#fff1f0',
-                border: item.isRead ? '1px solid #f0f0f0' : '1px solid #ffa39e',
-                transition: 'all 0.2s',
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                <Text strong style={{ fontSize: 13, color: item.isRead ? '#262626' : '#e53935' }}>
-                  {item.title}
-                </Text>
-                {!item.isRead && <Badge status="error" />}
+      {/* Danh sách thông báo */}
+      <div
+        style={{
+          maxHeight: isMobile ? '58vh' : 340,
+          overflowY: 'auto',
+          padding: '10px 12px',
+        }}
+      >
+        {notifications.length === 0 ? (
+          <div style={{ padding: '20px 0' }}>
+            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Chưa có thông báo đơn hàng nào" />
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {notifications.map((item) => (
+              <div
+                key={item.id}
+                onClick={() => handleClickNotification(item)}
+                style={{
+                  padding: '10px 12px',
+                  borderRadius: 10,
+                  cursor: 'pointer',
+                  background: item.isRead ? '#fafafa' : '#fff2f0',
+                  border: item.isRead ? '1px solid #f0f0f0' : '1px solid #ffccc7',
+                  transition: 'all 0.2s',
+                  textAlign: 'left',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-start',
+                    gap: 8,
+                    marginBottom: 4,
+                  }}
+                >
+                  <Text
+                    strong
+                    style={{
+                      fontSize: 13,
+                      color: item.isRead ? '#262626' : '#cf1322',
+                      lineHeight: 1.35,
+                      flex: 1,
+                    }}
+                  >
+                    {item.title}
+                  </Text>
+                  {!item.isRead && (
+                    <span
+                      style={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: '50%',
+                        background: '#e53935',
+                        display: 'inline-block',
+                        flexShrink: 0,
+                        marginTop: 5,
+                      }}
+                    />
+                  )}
+                </div>
+
+                <div
+                  style={{
+                    fontSize: 12.5,
+                    color: '#595959',
+                    lineHeight: 1.45,
+                    wordBreak: 'break-word',
+                  }}
+                >
+                  {item.message}
+                </div>
+
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginTop: 6,
+                    paddingTop: 4,
+                    borderTop: item.isRead ? '1px dashed #f0f0f0' : '1px dashed #ffd8bf',
+                    fontSize: 11,
+                    color: '#8c8c8c',
+                  }}
+                >
+                  {item.orderCode ? (
+                    <span style={{ fontWeight: 600, color: '#595959' }}>#{item.orderCode}</span>
+                  ) : (
+                    <span>Đơn hàng</span>
+                  )}
+                  <span>{new Date(item.createdAt).toLocaleString('vi-VN')}</span>
+                </div>
               </div>
-              <div style={{ fontSize: 12, color: '#595959', lineHeight: 1.4 }}>{item.message}</div>
-              <div style={{ fontSize: 11, color: '#8c8c8c', marginTop: 4 }}>
-                {new Date(item.createdAt).toLocaleString('vi-VN')}
-              </div>
-            </div>
-          ))}
-        </Space>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Footer xem nhanh */}
+      <div
+        style={{
+          padding: '8px 12px',
+          background: '#fafafa',
+          borderTop: '1px solid #f0f0f0',
+          textAlign: 'center',
+        }}
+      >
+        <Button
+          type="link"
+          size="small"
+          style={{ fontSize: 12.5, fontWeight: 500, color: '#e53935', height: 'auto', padding: 0 }}
+          onClick={() => {
+            setNotifOpen(false);
+            navigate('/my-orders');
+          }}
+        >
+          Xem tất cả đơn hàng của tôi →
+        </Button>
+      </div>
     </div>
   );
 
@@ -309,6 +421,14 @@ export const PublicLayout: React.FC = () => {
               content={notificationContent}
               trigger="click"
               placement="bottomRight"
+              arrow={!isMobile}
+              overlayClassName="autobot-notif-popover"
+              overlayInnerStyle={{
+                padding: 0,
+                borderRadius: 12,
+                overflow: 'hidden',
+                boxShadow: '0 8px 28px rgba(0, 0, 0, 0.18)',
+              }}
               open={notifOpen}
               onOpenChange={(v) => {
                 setNotifOpen(v);
