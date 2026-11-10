@@ -51,11 +51,11 @@ export const LoginPage: React.FC = () => {
   return (
     <div
       style={{
-        minHeight: '80vh',
+        minHeight: 'calc(100vh - 140px)',
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         justifyContent: 'center',
-        padding: '24px 16px',
+        padding: '28px 16px',
       }}
     >
       <Card
