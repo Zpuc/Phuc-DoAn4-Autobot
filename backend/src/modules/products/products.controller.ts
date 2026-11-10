@@ -44,7 +44,7 @@ export class ProductsController {
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Tạo sản phẩm Gundam mới (Lưu giá ban đầu + tồn kho)' })
   @Post()
   create(@Body() dto: CreateProductDto) {
@@ -53,7 +53,7 @@ export class ProductsController {
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Cập nhật sản phẩm (Tự động ghi nhận lịch sử giá nếu đổi giá)' })
   @Put(':id')
   update(@Param('id') id: string, @Body() dto: UpdateProductDto) {

@@ -26,8 +26,8 @@ export class CategoriesController {
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.STAFF)
-  @ApiOperation({ summary: 'Tạo danh mục mới (Admin / Staff)' })
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Tạo danh mục mới (Admin)' })
   @Post()
   create(@Body() dto: CreateCategoryDto) {
     return this.categoriesService.create(dto);

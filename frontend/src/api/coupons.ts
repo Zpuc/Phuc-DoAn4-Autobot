@@ -33,3 +33,4 @@ export const couponApi = {
   toggle: (id: string): Promise<CouponItem> => apiClient.patch(`/coupons/${id}/toggle`),
   delete: (id: string): Promise<void> => apiClient.delete(`/coupons/${id}`),
 };
+

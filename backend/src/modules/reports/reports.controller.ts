@@ -13,7 +13,7 @@ export class ReportsController {
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Lấy thống kê số liệu Dashboard (Doanh thu, Lãi gộp, Tồn kho)' })
   @Get('dashboard')
   getDashboardStats() {

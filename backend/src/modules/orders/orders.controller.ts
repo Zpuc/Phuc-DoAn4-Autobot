@@ -48,9 +48,21 @@ export class OrdersController {
   }
 
   @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Khách hàng tự hủy đơn hàng khi đang ở trạng thái PENDING' })
+  @Patch(':id/cancel')
+  cancelMyOrder(
+    @Param('id') id: string,
+    @Body() body: { reason?: string },
+    @Request() req: any,
+  ) {
+    return this.ordersService.cancelMyOrder(id, req.user.id, body?.reason);
+  }
+
+  @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.STAFF)
-  @ApiOperation({ summary: 'Danh sách đơn hàng phía Quản trị (Admin / Staff)' })
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Danh sách đơn hàng phía Quản trị (Admin)' })
   @Get()
   findAll(@Query() filter: FilterOrderDto) {
     return this.ordersService.findAll(filter);
@@ -58,7 +70,7 @@ export class OrdersController {
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Xem chi tiết đơn hàng theo ID' })
   @Get(':id')
   findOne(@Param('id') id: string) {
@@ -67,7 +79,7 @@ export class OrdersController {
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Cập nhật trạng thái đơn hàng (Confirmed, Packing, Shipping, Completed, Cancelled)' })
   @Patch(':id/status')
   updateStatus(

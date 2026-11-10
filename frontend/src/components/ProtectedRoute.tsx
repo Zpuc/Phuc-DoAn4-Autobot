@@ -4,7 +4,7 @@ import { useAuthStore } from '../store/useAuthStore';
 import { Result, Button } from 'antd';
 
 interface ProtectedRouteProps {
-  requiredRoles?: ('ADMIN' | 'STAFF' | 'CUSTOMER')[];
+  requiredRoles?: ('ADMIN' | 'CUSTOMER')[];
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ requiredRoles }) => {

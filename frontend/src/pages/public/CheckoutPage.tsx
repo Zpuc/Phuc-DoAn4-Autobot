@@ -224,9 +224,17 @@ export const CheckoutPage: React.FC = () => {
             extra={[
               <Button
                 type="primary"
+                key="track"
+                size="large"
+                icon={<CarOutlined />}
+                style={{ background: '#e53935' }}
+                onClick={() => navigate(`/track-order?code=${createdOrderCode}`)}
+              >
+                Theo Dõi Lộ Trình Đơn Hàng
+              </Button>,
+              <Button
                 key="orders"
                 size="large"
-                style={{ background: '#e53935' }}
                 onClick={() => navigate('/my-orders')}
               >
                 Xem Đơn Hàng Của Tôi

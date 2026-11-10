@@ -26,7 +26,7 @@ export class BrandsController {
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Tạo thương hiệu mới' })
   @Post()
   create(@Body() dto: CreateBrandDto) {

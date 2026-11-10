@@ -20,8 +20,8 @@ export class QuotationsController {
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.STAFF)
-  @ApiOperation({ summary: 'Danh sách các bản báo giá (Admin / Staff)' })
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Danh sách các bản báo giá (Admin)' })
   @Get()
   findAll() {
     return this.quotationsService.findAll();

@@ -10,7 +10,6 @@ async function main() {
   // 1. Tạo Users mẫu
   const salt = await bcrypt.genSalt(10);
   const adminPass = await bcrypt.hash('Admin123@', salt);
-  const staffPass = await bcrypt.hash('Staff123@', salt);
   const customerPass = await bcrypt.hash('Customer123@', salt);
 
   const admin = await prisma.user.upsert({
@@ -22,18 +21,6 @@ async function main() {
       phone: '0901234567',
       passwordHash: adminPass,
       role: Role.ADMIN,
-    },
-  });
-
-  const staff = await prisma.user.upsert({
-    where: { email: 'staff@autobot.vn' },
-    update: {},
-    create: {
-      name: 'Nhân Viên Kho Autobot',
-      email: 'staff@autobot.vn',
-      phone: '0909876543',
-      passwordHash: staffPass,
-      role: Role.STAFF,
     },
   });
 
@@ -49,7 +36,7 @@ async function main() {
     },
   });
 
-  console.log(`Đã tạo tài khoản: ${admin.email}, ${staff.email}, ${customer.email}`);
+  console.log(`Đã tạo tài khoản: ${admin.email}, ${customer.email}`);
 
   // 2. Tạo Brands mẫu
   const brandsData = [

@@ -15,6 +15,8 @@ import {
   Spin,
   Timeline,
   Space,
+  Popconfirm,
+  message,
 } from 'antd';
 import {
   SearchOutlined,
@@ -24,9 +26,11 @@ import {
   ClockCircleOutlined,
   InboxOutlined,
   PhoneOutlined,
+  CloseCircleOutlined,
 } from '@ant-design/icons';
 import { Link, useSearchParams } from 'react-router-dom';
 import { apiClient } from '../../api/client';
+import { useAuthStore } from '../../store/useAuthStore';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -47,12 +51,15 @@ interface OrderHistory {
 interface OrderDetail {
   id: string;
   code: string;
+  userId?: string | null;
   customerName: string;
   customerPhone: string;
   customerEmail?: string;
   shippingAddress: string;
   shippingFee: number;
   subtotal: number;
+  discountAmount?: number;
+  couponCode?: string | null;
   total: number;
   status: string;
   paymentMethod: string;
@@ -63,11 +70,23 @@ interface OrderDetail {
   statusHistory: OrderHistory[];
 }
 
+const statusLabelMap: Record<string, { label: string; color: string }> = {
+  PENDING: { label: 'Chờ xác nhận', color: 'gold' },
+  CONFIRMED: { label: 'Đơn hàng đang được giao', color: 'purple' },
+  PACKING: { label: 'Đơn hàng đang được giao', color: 'purple' },
+  SHIPPING: { label: 'Đơn hàng đang được giao', color: 'purple' },
+  COMPLETED: { label: 'Hoàn thành', color: 'green' },
+  CANCELLED: { label: 'Đã hủy (Hoàn kho)', color: 'red' },
+  RETURNED: { label: 'Hoàn trả hàng', color: 'magenta' },
+};
+
 export const TrackOrderPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { user, isAuthenticated } = useAuthStore();
   const [orderCode, setOrderCode] = useState(searchParams.get('code') || '');
   const [order, setOrder] = useState<OrderDetail | null>(null);
   const [loading, setLoading] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const [searched, setSearched] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -95,18 +114,32 @@ export const TrackOrderPage: React.FC = () => {
     }
   }, []);
 
+  const handleCancelOrder = async () => {
+    if (!order) return;
+    try {
+      setCancelling(true);
+      await apiClient.patch(`/orders/${order.id}/cancel`, {
+        reason: 'Khách hàng chủ động hủy đơn tại trang Theo dõi lộ trình',
+      });
+      message.success('Đã hủy đơn hàng thành công');
+      fetchOrder(order.code);
+    } catch (err: any) {
+      message.error(err.message || 'Không thể hủy đơn hàng này');
+    } finally {
+      setCancelling(false);
+    }
+  };
+
   const getStepCurrent = (status: string) => {
     switch (status) {
       case 'PENDING':
         return 0;
       case 'CONFIRMED':
-        return 1;
       case 'PACKING':
-        return 2;
       case 'SHIPPING':
-        return 3;
+        return 1;
       case 'COMPLETED':
-        return 4;
+        return 2;
       default:
         return 0;
     }
@@ -172,7 +205,6 @@ export const TrackOrderPage: React.FC = () => {
             />
           )}
 
-          {/* Tiến trình đơn hàng (Steps) */}
           {order.status !== 'CANCELLED' && (
             <Card style={{ borderRadius: 12, marginBottom: 24 }}>
               <Steps
@@ -180,27 +212,17 @@ export const TrackOrderPage: React.FC = () => {
                 items={[
                   {
                     title: 'Chờ xác nhận',
-                    description: 'Shop đang xử lý',
+                    description: 'Đơn hàng đang chờ shop xác nhận',
                     icon: <ClockCircleOutlined />,
                   },
                   {
-                    title: 'Đã xác nhận',
-                    description: 'Gọi/Zalo khách',
-                    icon: <CheckCircleOutlined />,
-                  },
-                  {
-                    title: 'Đang đóng gói',
-                    description: 'Bọc xốp 3 lớp',
-                    icon: <InboxOutlined />,
-                  },
-                  {
-                    title: 'Đang giao hàng',
-                    description: order.trackingCode ? `Mã: ${order.trackingCode}` : 'Bàn giao shipper',
+                    title: 'Đơn hàng đang được giao',
+                    description: order.trackingCode ? `Mã vận đơn: ${order.trackingCode}` : 'Đang trên đường giao đến bạn',
                     icon: <CarOutlined />,
                   },
                   {
                     title: 'Hoàn thành',
-                    description: 'Đã nhận hàng',
+                    description: 'Đã giao hàng thành công',
                     icon: <CheckCircleOutlined />,
                   },
                 ]}
@@ -209,7 +231,7 @@ export const TrackOrderPage: React.FC = () => {
               {order.trackingCode && (
                 <div style={{ marginTop: 20, textAlign: 'center' }}>
                   <Tag color="purple" style={{ fontSize: 14, padding: '4px 12px' }}>
-                    Mã vận đơn bưu cục (GHN/GHTK): <strong>{order.trackingCode}</strong>
+                    Mã vận đơn / Shipper: <strong>{order.trackingCode}</strong>
                   </Tag>
                 </div>
               )}
@@ -285,10 +307,32 @@ export const TrackOrderPage: React.FC = () => {
 
                 <div style={{ marginTop: 16, textAlign: 'right' }}>
                   <p>Tạm tính: <strong>{order.subtotal.toLocaleString('vi-VN')} đ</strong></p>
+                  {Number(order.discountAmount || 0) > 0 && (
+                    <p style={{ color: '#52c41a' }}>
+                      Giảm giá voucher {order.couponCode ? `(${order.couponCode})` : ''}:{' '}
+                      <strong>-{Number(order.discountAmount).toLocaleString('vi-VN')} đ</strong>
+                    </p>
+                  )}
                   <p>Phí vận chuyển: <strong>{order.shippingFee.toLocaleString('vi-VN')} đ</strong></p>
                   <p style={{ fontSize: 18, color: '#e53935' }}>
                     Tổng tiền: <strong>{order.total.toLocaleString('vi-VN')} đ</strong>
                   </p>
+                  {isAuthenticated && user?.id === order.userId && order.status === 'PENDING' && (
+                    <div style={{ marginTop: 12 }}>
+                      <Popconfirm
+                        title="Xác nhận hủy đơn hàng?"
+                        description="Đơn hàng sẽ được hủy và hoàn lại số lượng vào kho."
+                        onConfirm={handleCancelOrder}
+                        okText="Đồng ý hủy"
+                        cancelText="Không"
+                        okButtonProps={{ danger: true }}
+                      >
+                        <Button danger icon={<CloseCircleOutlined />} loading={cancelling}>
+                          Hủy đơn hàng này
+                        </Button>
+                      </Popconfirm>
+                    </div>
+                  )}
                 </div>
               </Card>
             </Col>
@@ -297,25 +341,28 @@ export const TrackOrderPage: React.FC = () => {
               <Card title="Lịch Sử Cập Nhật Đơn Hàng" style={{ borderRadius: 12, height: '100%' }}>
                 <Timeline
                   mode="left"
-                  items={order.statusHistory.map((hist) => ({
-                    label: new Date(hist.changedAt).toLocaleTimeString('vi-VN', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    }),
-                    children: (
-                      <div>
-                        <Tag color="blue">{hist.status}</Tag>
-                        <br />
-                        <Text type="secondary" style={{ fontSize: 12 }}>
-                          {hist.note || 'Cập nhật trạng thái'}
-                        </Text>
-                        <br />
-                        <Text type="secondary" style={{ fontSize: 11 }}>
-                          {new Date(hist.changedAt).toLocaleDateString('vi-VN')}
-                        </Text>
-                      </div>
-                    ),
-                  }))}
+                  items={order.statusHistory.map((hist) => {
+                    const st = statusLabelMap[hist.status] || { label: hist.status, color: 'blue' };
+                    return {
+                      label: new Date(hist.changedAt).toLocaleTimeString('vi-VN', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      }),
+                      children: (
+                        <div>
+                          <Tag color={st.color}>{st.label}</Tag>
+                          <br />
+                          <Text type="secondary" style={{ fontSize: 12 }}>
+                            {hist.note || 'Cập nhật trạng thái'}
+                          </Text>
+                          <br />
+                          <Text type="secondary" style={{ fontSize: 11 }}>
+                            {new Date(hist.changedAt).toLocaleDateString('vi-VN')}
+                          </Text>
+                        </div>
+                      ),
+                    };
+                  })}
                 />
               </Card>
             </Col>
