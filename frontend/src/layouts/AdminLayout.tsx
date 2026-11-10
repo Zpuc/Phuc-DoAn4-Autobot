@@ -6,7 +6,6 @@ import {
   AppstoreOutlined,
   ShoppingOutlined,
   DatabaseOutlined,
-  FileTextOutlined,
   BarChartOutlined,
   GiftOutlined,
   UserOutlined,
@@ -89,11 +88,6 @@ export const AdminLayout: React.FC = () => {
       key: '/admin/order-progress',
       icon: <CarOutlined />,
       label: <Link to="/admin/order-progress">Quản Lý Tiến Độ Giao</Link>,
-    },
-    {
-      key: '/admin/quotations',
-      icon: <FileTextOutlined />,
-      label: <Link to="/admin/quotations">Báo Giá Khách Hàng</Link>,
     },
     {
       key: '/admin/coupons',
