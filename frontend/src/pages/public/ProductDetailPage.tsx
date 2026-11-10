@@ -110,6 +110,7 @@ export const ProductDetailPage: React.FC = () => {
   };
 
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
     if (!slug) return;
     setLoading(true);
     apiClient
@@ -128,6 +129,7 @@ export const ProductDetailPage: React.FC = () => {
       })
       .finally(() => {
         setLoading(false);
+        window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
       });
   }, [slug]);
 
