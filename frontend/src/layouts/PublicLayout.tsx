@@ -93,7 +93,6 @@ export const PublicLayout: React.FC = () => {
           justifyContent: 'space-between',
           background: '#141414',
           padding: '0 28px',
-          borderBottom: '2px solid #e53935',
           height: 64,
           lineHeight: '64px',
         }}
