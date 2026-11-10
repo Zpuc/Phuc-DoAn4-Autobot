@@ -40,6 +40,7 @@ import {
   StarOutlined,
   StarFilled,
   LikeOutlined,
+  LikeFilled,
   UserOutlined,
   EditOutlined,
   MessageOutlined,
@@ -133,13 +134,21 @@ export const ProductDetailPage: React.FC = () => {
       });
   }, [slug]);
 
-  const handleLikeReview = async (reviewId: string) => {
+  const handleLikeReview = async (reviewId: string, likedUserIds?: string[]) => {
+    if (!user) {
+      message.warning('Vui lòng đăng nhập tài khoản để bấm Hữu ích cho đánh giá này!');
+      return;
+    }
+    if (likedUserIds?.includes(user.id)) {
+      message.info('Tài khoản của bạn đã bấm Hữu ích cho đánh giá này rồi.');
+      return;
+    }
     try {
       await reviewApi.like(reviewId);
       if (product) fetchReviews(product.id);
       message.success('Cảm ơn bạn đã đánh giá nhận xét hữu ích!');
-    } catch {
-      // ignore
+    } catch (err: any) {
+      message.warning(err?.message || 'Bạn đã bấm Hữu ích cho đánh giá này rồi.');
     }
   };
 
@@ -629,15 +638,24 @@ export const ProductDetailPage: React.FC = () => {
                       <List.Item
                         key={item.id}
                         actions={[
-                          <Button
-                            type="text"
-                            size="small"
-                            icon={<LikeOutlined />}
-                            onClick={() => handleLikeReview(item.id)}
-                            style={{ color: '#595959' }}
-                          >
-                            Hữu ích ({item.likes || 0})
-                          </Button>,
+                          (() => {
+                            const hasLiked = Boolean(user && item.likedUserIds?.includes(user.id));
+                            return (
+                              <Button
+                                type="text"
+                                size="small"
+                                disabled={hasLiked}
+                                icon={hasLiked ? <LikeFilled style={{ color: '#e53935' }} /> : <LikeOutlined />}
+                                onClick={() => handleLikeReview(item.id, item.likedUserIds)}
+                                style={{
+                                  color: hasLiked ? '#e53935' : '#595959',
+                                  fontWeight: hasLiked ? 600 : 400,
+                                }}
+                              >
+                                {hasLiked ? `Đã thấy hữu ích (${item.likes || 0})` : `Hữu ích (${item.likes || 0})`}
+                              </Button>
+                            );
+                          })(),
                         ]}
                         style={{ borderBottom: '1px solid #f0f0f0', padding: '16px 0' }}
                       >

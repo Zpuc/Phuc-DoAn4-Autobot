@@ -344,18 +344,19 @@ model Coupon {
 }
 
 model Review {
-  id        String   @id @default(uuid()) @db.Uuid
-  productId String   @map("product_id") @db.Uuid
-  userId    String?  @map("user_id") @db.Uuid
-  userName  String   @map("user_name")
-  userEmail String?  @map("user_email")
-  rating    Int      @default(5)
-  title     String?
-  comment   String   @db.Text
-  imageUrl  String?  @map("image_url") @db.Text
-  gradeTag  String?  @map("grade_tag")
-  likes     Int      @default(0)
-  createdAt DateTime @default(now()) @map("created_at")
+  id           String   @id @default(uuid()) @db.Uuid
+  productId    String   @map("product_id") @db.Uuid
+  userId       String?  @map("user_id") @db.Uuid
+  userName     String   @map("user_name")
+  userEmail    String?  @map("user_email")
+  rating       Int      @default(5)
+  title        String?
+  comment      String   @db.Text
+  imageUrl     String?  @map("image_url") @db.Text
+  gradeTag     String?  @map("grade_tag")
+  likes        Int      @default(0)
+  likedUserIds String[] @default([]) @map("liked_user_ids")
+  createdAt    DateTime @default(now()) @map("created_at")
 
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
