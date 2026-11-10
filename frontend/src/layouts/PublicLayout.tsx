@@ -423,11 +423,13 @@ export const PublicLayout: React.FC = () => {
               placement="bottomRight"
               arrow={!isMobile}
               overlayClassName="autobot-notif-popover"
-              overlayInnerStyle={{
-                padding: 0,
-                borderRadius: 12,
-                overflow: 'hidden',
-                boxShadow: '0 8px 28px rgba(0, 0, 0, 0.18)',
+              styles={{
+                container: {
+                  padding: 0,
+                  borderRadius: 12,
+                  overflow: 'hidden',
+                  boxShadow: '0 8px 28px rgba(0, 0, 0, 0.18)',
+                },
               }}
               open={notifOpen}
               onOpenChange={(v) => {
@@ -484,10 +486,11 @@ export const PublicLayout: React.FC = () => {
       <Drawer
         title={<GundamLogo size="small" />}
         placement="right"
-        width={285}
+        size="default"
         onClose={() => setMobileMenuOpen(false)}
         open={mobileMenuOpen}
         styles={{
+          wrapper: { width: 285 },
           header: { background: '#141414', borderBottom: '1px solid #303030', color: '#fff' },
           body: { padding: '16px 12px' },
         }}
@@ -618,7 +621,7 @@ export const PublicLayout: React.FC = () => {
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
           <Row gutter={[32, 24]}>
             <Col xs={24} md={8}>
-              <Space direction="vertical" size={8}>
+              <Space orientation="vertical" size={8}>
                 <GundamLogo size={36} />
                 <Text style={{ color: '#8c8c8c', fontSize: 13, lineHeight: 1.6 }}>
                   Hệ thống chuyên phân phối mô hình Gunpla chính hãng Bandai, Daban, Motor Nuclear... Cập nhật giá theo thời gian thực và quản lý xuất nhập tồn kho chuyên nghiệp.
@@ -632,7 +635,7 @@ export const PublicLayout: React.FC = () => {
             </Col>
 
             <Col xs={24} md={8}>
-              <Space direction="vertical" size={8}>
+              <Space orientation="vertical" size={8}>
                 <Text strong style={{ color: '#fff', fontSize: 15 }}>
                   <EnvironmentOutlined style={{ color: '#e53935', marginRight: 6 }} />
                   Khu Vực Phục Vụ Trọng Điểm
@@ -650,7 +653,7 @@ export const PublicLayout: React.FC = () => {
             </Col>
 
             <Col xs={24} md={8}>
-              <Space direction="vertical" size={8}>
+              <Space orientation="vertical" size={8}>
                 <Text strong style={{ color: '#fff', fontSize: 15 }}>
                   <SafetyCertificateOutlined style={{ color: '#52c41a', marginRight: 6 }} />
                   Chính Sách & Hỗ Trợ Khách Hàng
