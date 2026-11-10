@@ -30,6 +30,7 @@ import {
   UserOutlined,
   EnvironmentOutlined,
   CloseCircleOutlined,
+  CheckCircleOutlined,
   StarFilled,
   CameraOutlined,
   DeleteOutlined,
@@ -91,10 +92,14 @@ export const MyOrdersPage: React.FC = () => {
   const [reviewTarget, setReviewTarget] = useState<{ item: OrderItem; orderCode: string } | null>(null);
   const [reviewImage, setReviewImage] = useState<string>('');
   const [submittingReview, setSubmittingReview] = useState(false);
-  const [reviewedItemIds, setReviewedItemIds] = useState<Record<string, boolean>>({});
+  const [reviewedProductIds, setReviewedProductIds] = useState<Record<string, boolean>>({});
   const [reviewForm] = Form.useForm();
 
   const handleOpenReviewModal = (item: OrderItem, orderCode: string) => {
+    if (reviewedProductIds[item.productId]) {
+      message.info('Bạn đã đánh giá sản phẩm này rồi (mỗi sản phẩm chỉ được đánh giá 1 lần).');
+      return;
+    }
     setReviewTarget({ item, orderCode });
     setReviewImage('');
     reviewForm.setFieldsValue({
@@ -134,9 +139,13 @@ export const MyOrdersPage: React.FC = () => {
         gradeTag: reviewTarget.item.productGrade || 'Gunpla',
       });
       message.success(`Đã gửi đánh giá cho "${reviewTarget.item.productName}" thành công!`);
-      setReviewedItemIds((prev) => ({ ...prev, [reviewTarget.item.id]: true }));
+      setReviewedProductIds((prev) => ({ ...prev, [reviewTarget.item.productId]: true }));
       setReviewModalOpen(false);
     } catch (err: any) {
+      if (err?.message?.includes('đã đánh giá')) {
+        setReviewedProductIds((prev) => ({ ...prev, [reviewTarget.item.productId]: true }));
+        setReviewModalOpen(false);
+      }
       message.error(err.message || 'Không thể gửi đánh giá');
     } finally {
       setSubmittingReview(false);
@@ -146,8 +155,16 @@ export const MyOrdersPage: React.FC = () => {
   const fetchOrders = async () => {
     setLoading(true);
     try {
-      const data: any = await apiClient.get('/orders/my-orders');
-      setOrders(data || []);
+      const [orderData, reviewedData]: any = await Promise.all([
+        apiClient.get('/orders/my-orders'),
+        reviewApi.getMyReviewedProducts().catch(() => ({ productIds: [] })),
+      ]);
+      setOrders(orderData || []);
+      const map: Record<string, boolean> = {};
+      (reviewedData?.productIds || []).forEach((pid: string) => {
+        map[pid] = true;
+      });
+      setReviewedProductIds(map);
     } catch {
       // bỏ qua lỗi
     } finally {
@@ -329,17 +346,14 @@ export const MyOrdersPage: React.FC = () => {
                           {item.totalPrice.toLocaleString('vi-VN')} đ
                         </Text>
                         {order.status === 'COMPLETED' && (
-                          reviewedItemIds[item.id] ? (
+                          reviewedProductIds[item.productId] ? (
                             <Button
                               size="small"
-                              type="dashed"
-                              onClick={() =>
-                                item.productSlug
-                                  ? navigate(`/products/${item.productSlug}`)
-                                  : navigate('/products')
-                              }
+                              disabled
+                              icon={<CheckCircleOutlined />}
+                              style={{ fontWeight: 600 }}
                             >
-                              Xem đánh giá
+                              Đã đánh giá
                             </Button>
                           ) : (
                             <Button
