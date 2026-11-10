@@ -51,6 +51,23 @@ body {
   .ant-space {
     flex-wrap: wrap;
   }
+
+  .ant-layout-header .ant-space {
+    flex-wrap: nowrap !important;
+  }
+
+  .autobot-notif-popover {
+    left: 12px !important;
+    right: 12px !important;
+    top: 66px !important;
+    max-width: calc(100vw - 24px) !important;
+  }
+
+  .autobot-notif-popover .ant-popover-inner {
+    padding: 0 !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+  }
 }
 
 /* Tối ưu hóa khi in báo giá hoặc đơn hàng sang file PDF */
