@@ -15,6 +15,11 @@ import {
   Breadcrumb,
   Popconfirm,
   message,
+  Modal,
+  Form,
+  Rate,
+  Input,
+  Upload,
 } from 'antd';
 import {
   ShoppingOutlined,
@@ -25,10 +30,14 @@ import {
   UserOutlined,
   EnvironmentOutlined,
   CloseCircleOutlined,
+  StarFilled,
+  CameraOutlined,
+  DeleteOutlined,
 } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/useAuthStore';
 import { apiClient } from '../../api/client';
+import { reviewApi } from '../../api/reviews';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -40,6 +49,8 @@ interface OrderItem {
   unitPrice: number;
   totalPrice: number;
   productImage: string | null;
+  productSlug?: string | null;
+  productGrade?: string | null;
 }
 
 interface Order {
@@ -75,6 +86,62 @@ export const MyOrdersPage: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [reviewTarget, setReviewTarget] = useState<{ item: OrderItem; orderCode: string } | null>(null);
+  const [reviewImage, setReviewImage] = useState<string>('');
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [reviewedItemIds, setReviewedItemIds] = useState<Record<string, boolean>>({});
+  const [reviewForm] = Form.useForm();
+
+  const handleOpenReviewModal = (item: OrderItem, orderCode: string) => {
+    setReviewTarget({ item, orderCode });
+    setReviewImage('');
+    reviewForm.setFieldsValue({
+      rating: 5,
+      title: '',
+      comment: '',
+      imageUrl: '',
+    });
+    setReviewModalOpen(true);
+  };
+
+  const handleImageFileSelect = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target?.result as string;
+      if (dataUrl) {
+        setReviewImage(dataUrl);
+        reviewForm.setFieldsValue({ imageUrl: dataUrl });
+      }
+    };
+    reader.readAsDataURL(file);
+    return false;
+  };
+
+  const handleSubmitReview = async (values: any) => {
+    if (!reviewTarget || !user) return;
+    try {
+      setSubmittingReview(true);
+      await reviewApi.create({
+        productId: reviewTarget.item.productId,
+        rating: values.rating,
+        userName: user.name,
+        userEmail: user.email,
+        title: values.title,
+        comment: values.comment,
+        imageUrl: reviewImage || values.imageUrl || undefined,
+        gradeTag: reviewTarget.item.productGrade || 'Gunpla',
+      });
+      message.success(`Đã gửi đánh giá cho "${reviewTarget.item.productName}" thành công!`);
+      setReviewedItemIds((prev) => ({ ...prev, [reviewTarget.item.id]: true }));
+      setReviewModalOpen(false);
+    } catch (err: any) {
+      message.error(err.message || 'Không thể gửi đánh giá');
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
 
   const fetchOrders = async () => {
     setLoading(true);
@@ -257,9 +324,36 @@ export const MyOrdersPage: React.FC = () => {
                         </div>
                       </Space>
 
-                      <Text strong style={{ fontSize: 14 }}>
-                        {item.totalPrice.toLocaleString('vi-VN')} đ
-                      </Text>
+                      <Space size={12} align="center">
+                        <Text strong style={{ fontSize: 14 }}>
+                          {item.totalPrice.toLocaleString('vi-VN')} đ
+                        </Text>
+                        {order.status === 'COMPLETED' && (
+                          reviewedItemIds[item.id] ? (
+                            <Button
+                              size="small"
+                              type="dashed"
+                              onClick={() =>
+                                item.productSlug
+                                  ? navigate(`/products/${item.productSlug}`)
+                                  : navigate('/products')
+                              }
+                            >
+                              Xem đánh giá
+                            </Button>
+                          ) : (
+                            <Button
+                              size="small"
+                              type="primary"
+                              icon={<StarFilled />}
+                              style={{ background: '#faad14', borderColor: '#faad14', fontWeight: 600 }}
+                              onClick={() => handleOpenReviewModal(item, order.code)}
+                            >
+                              Đánh giá món hàng
+                            </Button>
+                          )
+                        )}
+                      </Space>
                     </div>
                   ))}
                 </div>
@@ -334,6 +428,151 @@ export const MyOrdersPage: React.FC = () => {
           })}
         </Space>
       )}
+
+      <Modal
+        title={
+          <Space>
+            <StarFilled style={{ color: '#faad14' }} />
+            <span>Đánh Giá Sản Phẩm Đã Nhận ({reviewTarget?.orderCode})</span>
+          </Space>
+        }
+        open={reviewModalOpen}
+        onCancel={() => setReviewModalOpen(false)}
+        footer={null}
+        destroyOnClose
+        width={560}
+      >
+        {reviewTarget && (
+          <div>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                padding: 12,
+                background: '#fafafa',
+                borderRadius: 8,
+                marginBottom: 16,
+              }}
+            >
+              <Image
+                src={
+                  reviewTarget.item.productImage ||
+                  'https://images.unsplash.com/photo-1594787318286-3d835c1d207f?w=120'
+                }
+                width={54}
+                height={54}
+                style={{ objectFit: 'cover', borderRadius: 6 }}
+                preview={false}
+              />
+              <div>
+                <Text strong style={{ fontSize: 15 }}>
+                  {reviewTarget.item.productName}
+                </Text>
+                <br />
+                <Tag color="green" style={{ marginTop: 4 }}>
+                  Đã giao hàng thành công
+                </Tag>
+              </div>
+            </div>
+
+            <Form
+              form={reviewForm}
+              layout="vertical"
+              onFinish={handleSubmitReview}
+              initialValues={{ rating: 5 }}
+            >
+              <Form.Item
+                name="rating"
+                label="Mức độ hài lòng (Số sao)"
+                rules={[{ required: true, message: 'Vui lòng chọn số sao' }]}
+              >
+                <Rate
+                  style={{ fontSize: 28, color: '#faad14' }}
+                  tooltips={['Rất tệ', 'Chưa ưng', 'Bình thường', 'Rất hài lòng', 'Tuyệt vời 10/10']}
+                />
+              </Form.Item>
+
+              <Form.Item name="title" label="Tiêu đề ngắn gọn">
+                <Input placeholder="Ví dụ: Hộp nguyên seal nét căng, khớp chắc chắn..." maxLength={100} />
+              </Form.Item>
+
+              <Form.Item
+                name="comment"
+                label="Nhận xét chi tiết về món hàng"
+                rules={[{ required: true, message: 'Vui lòng nhập nhận xét của bạn' }]}
+              >
+                <Input.TextArea
+                  rows={4}
+                  placeholder="Chia sẻ cảm nhận về chất lượng mô hình, tình trạng hộp và tốc độ giao hàng..."
+                  maxLength={1000}
+                  showCount
+                />
+              </Form.Item>
+
+              <Form.Item label="Hình ảnh thực tế món hàng (Tải ảnh từ máy hoặc dán link ảnh)">
+                <Space direction="vertical" style={{ width: '100%' }} size={10}>
+                  <Space wrap>
+                    <Upload
+                      accept="image/*"
+                      showUploadList={false}
+                      beforeUpload={handleImageFileSelect}
+                    >
+                      <Button icon={<CameraOutlined />}>Chọn ảnh từ thiết bị</Button>
+                    </Upload>
+                    {reviewImage && (
+                      <Button
+                        danger
+                        size="small"
+                        icon={<DeleteOutlined />}
+                        onClick={() => {
+                          setReviewImage('');
+                          reviewForm.setFieldsValue({ imageUrl: '' });
+                        }}
+                      >
+                        Xóa ảnh
+                      </Button>
+                    )}
+                  </Space>
+
+                  <Form.Item name="imageUrl" noStyle>
+                    <Input
+                      placeholder="Hoặc dán đường dẫn URL hình ảnh vào đây..."
+                      onChange={(e) => setReviewImage(e.target.value)}
+                    />
+                  </Form.Item>
+
+                  {reviewImage && (
+                    <div style={{ marginTop: 4 }}>
+                      <Image
+                        src={reviewImage}
+                        alt="Ảnh đánh giá"
+                        width={120}
+                        height={120}
+                        style={{ objectFit: 'cover', borderRadius: 8, border: '1px solid #d9d9d9' }}
+                      />
+                    </div>
+                  )}
+                </Space>
+              </Form.Item>
+
+              <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
+                <Space>
+                  <Button onClick={() => setReviewModalOpen(false)}>Đóng</Button>
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    loading={submittingReview}
+                    style={{ background: '#e53935', fontWeight: 600 }}
+                  >
+                    Hoàn Tất Đánh Giá
+                  </Button>
+                </Space>
+              </Form.Item>
+            </Form>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };

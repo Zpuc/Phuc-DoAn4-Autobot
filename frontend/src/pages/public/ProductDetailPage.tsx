@@ -24,6 +24,8 @@ import {
   Form,
   Input,
   List,
+  Image,
+  Upload,
 } from 'antd';
 import {
   HomeOutlined,
@@ -41,6 +43,8 @@ import {
   UserOutlined,
   EditOutlined,
   MessageOutlined,
+  CameraOutlined,
+  DeleteOutlined,
 } from '@ant-design/icons';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { apiClient } from '../../api/client';
@@ -88,6 +92,7 @@ export const ProductDetailPage: React.FC = () => {
   const [reviewLoading, setReviewLoading] = useState(false);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [submittingReview, setSubmittingReview] = useState(false);
+  const [reviewImage, setReviewImage] = useState<string>('');
   const [activeTabKey, setActiveTabKey] = useState('1');
   const [reviewForm] = Form.useForm();
   const { user } = useAuthStore();
@@ -136,6 +141,19 @@ export const ProductDetailPage: React.FC = () => {
     }
   };
 
+  const handleImageFileSelect = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target?.result as string;
+      if (dataUrl) {
+        setReviewImage(dataUrl);
+        reviewForm.setFieldsValue({ imageUrl: dataUrl });
+      }
+    };
+    reader.readAsDataURL(file);
+    return false;
+  };
+
   const handleSubmitReview = async (values: any) => {
     if (!product) return;
     setSubmittingReview(true);
@@ -147,10 +165,12 @@ export const ProductDetailPage: React.FC = () => {
         userEmail: values.userEmail,
         title: values.title,
         comment: values.comment,
+        imageUrl: reviewImage || values.imageUrl || undefined,
         gradeTag: product.grade,
       });
       message.success('Đã gửi đánh giá thành công! Cảm ơn bạn đã đóng góp cho cộng đồng Autobot.');
       setReviewModalOpen(false);
+      setReviewImage('');
       reviewForm.resetFields();
       fetchReviews(product.id);
     } catch (err: any) {
@@ -646,9 +666,24 @@ export const ProductDetailPage: React.FC = () => {
                             </div>
                           }
                         />
-                        <Paragraph style={{ marginTop: 8, fontSize: 14, color: '#434343', lineHeight: 1.6 }}>
+                        <Paragraph style={{ marginTop: 8, fontSize: 14, color: '#434343', lineHeight: 1.6, marginBottom: item.imageUrl ? 10 : 0 }}>
                           {item.comment}
                         </Paragraph>
+                        {item.imageUrl && (
+                          <div style={{ marginTop: 8 }}>
+                            <Image
+                              src={item.imageUrl}
+                              alt="Ảnh thực tế khách hàng đánh giá"
+                              width={110}
+                              height={110}
+                              style={{
+                                objectFit: 'cover',
+                                borderRadius: 8,
+                                border: '1px solid #e8e8e8',
+                              }}
+                            />
+                          </div>
+                        )}
                       </List.Item>
                     )}
                   />
@@ -725,6 +760,50 @@ export const ProductDetailPage: React.FC = () => {
               maxLength={1000}
               showCount
             />
+          </Form.Item>
+
+          <Form.Item label="Đính kèm hình ảnh thực tế mô hình (Không bắt buộc)">
+            <Space direction="vertical" style={{ width: '100%' }} size={10}>
+              <Space wrap>
+                <Upload
+                  accept="image/*"
+                  showUploadList={false}
+                  beforeUpload={handleImageFileSelect}
+                >
+                  <Button icon={<CameraOutlined />}>Chọn ảnh từ máy</Button>
+                </Upload>
+                {reviewImage && (
+                  <Button
+                    danger
+                    size="small"
+                    icon={<DeleteOutlined />}
+                    onClick={() => {
+                      setReviewImage('');
+                      reviewForm.setFieldsValue({ imageUrl: '' });
+                    }}
+                  >
+                    Xóa ảnh
+                  </Button>
+                )}
+              </Space>
+
+              <Form.Item name="imageUrl" noStyle>
+                <Input
+                  placeholder="Hoặc dán đường dẫn URL hình ảnh..."
+                  onChange={(e) => setReviewImage(e.target.value)}
+                />
+              </Form.Item>
+
+              {reviewImage && (
+                <Image
+                  src={reviewImage}
+                  alt="Preview"
+                  width={110}
+                  height={110}
+                  style={{ objectFit: 'cover', borderRadius: 8, border: '1px solid #d9d9d9' }}
+                />
+              )}
+            </Space>
           </Form.Item>
 
           <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>

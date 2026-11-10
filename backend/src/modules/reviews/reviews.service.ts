@@ -75,6 +75,7 @@ export class ReviewsService {
         rating: dto.rating,
         title: dto.title?.trim() || null,
         comment: dto.comment.trim(),
+        imageUrl: dto.imageUrl?.trim() || null,
         gradeTag: dto.gradeTag || product.grade || 'Gunpla',
       },
     });
