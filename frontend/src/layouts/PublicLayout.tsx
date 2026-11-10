@@ -1,5 +1,5 @@
-import React from 'react';
-import { Layout, Menu, Button, Space, Badge, Dropdown, Avatar, Typography, Row, Col, Divider, Tag } from 'antd';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Layout, Menu, Button, Space, Badge, Dropdown, Avatar, Typography, Row, Col, Divider, Tag, Popover, Empty } from 'antd';
 import type { MenuProps } from 'antd';
 import {
   RocketOutlined,
@@ -13,6 +13,8 @@ import {
   EnvironmentOutlined,
   PhoneOutlined,
   SafetyCertificateOutlined,
+  BellOutlined,
+  CheckOutlined,
 } from '@ant-design/icons';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
@@ -20,9 +22,19 @@ import { useCartStore } from '../store/useCartStore';
 import { useWishlistStore } from '../store/useWishlistStore';
 import { GundamLogo } from '../components/GundamLogo';
 import { FloatingContactWidget } from '../components/FloatingContactWidget';
+import { apiClient } from '../api/client';
 
 const { Header, Content, Footer } = Layout;
 const { Text } = Typography;
+
+interface NotificationItem {
+  id: string;
+  orderCode?: string | null;
+  title: string;
+  message: string;
+  isRead: boolean;
+  createdAt: string;
+}
 
 export const PublicLayout: React.FC = () => {
   const location = useLocation();
@@ -33,10 +45,118 @@ export const PublicLayout: React.FC = () => {
   const wishlistItems = useWishlistStore((state) => state.items);
   const loadWishlistFromStorage = useWishlistStore((state) => state.loadFromStorage);
 
-  React.useEffect(() => {
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [notifOpen, setNotifOpen] = useState(false);
+
+  const fetchNotifications = useCallback(async () => {
+    if (!isAuthenticated) {
+      setNotifications([]);
+      setUnreadCount(0);
+      return;
+    }
+    try {
+      const res: any = await apiClient.get('/orders/my-notifications');
+      setNotifications(res.items || []);
+      setUnreadCount(res.unreadCount || 0);
+    } catch {
+      // ignore
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
     loadCartFromStorage();
     loadWishlistFromStorage();
   }, [loadCartFromStorage, loadWishlistFromStorage]);
+
+  useEffect(() => {
+    fetchNotifications();
+    if (!isAuthenticated) return;
+    const timer = setInterval(fetchNotifications, 15000);
+    return () => clearInterval(timer);
+  }, [isAuthenticated, location.pathname, fetchNotifications]);
+
+  const handleClickNotification = async (item: NotificationItem) => {
+    if (!item.isRead) {
+      try {
+        await apiClient.patch(`/orders/my-notifications/${item.id}/read`);
+        fetchNotifications();
+      } catch {
+        // ignore
+      }
+    }
+    setNotifOpen(false);
+    if (item.orderCode) {
+      navigate(`/track-order?code=${item.orderCode}`);
+    } else {
+      navigate('/my-orders');
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      await apiClient.patch('/orders/my-notifications/read-all');
+      fetchNotifications();
+    } catch {
+      // ignore
+    }
+  };
+
+  const notificationContent = (
+    <div style={{ width: 340, maxHeight: 400, overflowY: 'auto' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          paddingBottom: 8,
+          marginBottom: 8,
+          borderBottom: '1px solid #f0f0f0',
+        }}
+      >
+        <Text strong style={{ fontSize: 14 }}>
+          Thông báo đơn hàng ({unreadCount} chưa đọc)
+        </Text>
+        {unreadCount > 0 && (
+          <Button type="link" size="small" icon={<CheckOutlined />} onClick={handleMarkAllRead} style={{ padding: 0 }}>
+            Đọc tất cả
+          </Button>
+        )}
+      </div>
+
+      {notifications.length === 0 ? (
+        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Chưa có thông báo đơn hàng nào" />
+      ) : (
+        <Space direction="vertical" size={8} style={{ width: '100%' }}>
+          {notifications.map((item) => (
+            <div
+              key={item.id}
+              onClick={() => handleClickNotification(item)}
+              style={{
+                padding: '10px 12px',
+                borderRadius: 8,
+                cursor: 'pointer',
+                background: item.isRead ? '#fafafa' : '#fff1f0',
+                border: item.isRead ? '1px solid #f0f0f0' : '1px solid #ffa39e',
+                transition: 'all 0.2s',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                <Text strong style={{ fontSize: 13, color: item.isRead ? '#262626' : '#e53935' }}>
+                  {item.title}
+                </Text>
+                {!item.isRead && <Badge status="error" />}
+              </div>
+              <div style={{ fontSize: 12, color: '#595959', lineHeight: 1.4 }}>{item.message}</div>
+              <div style={{ fontSize: 11, color: '#8c8c8c', marginTop: 4 }}>
+                {new Date(item.createdAt).toLocaleString('vi-VN')}
+              </div>
+            </div>
+          ))}
+        </Space>
+      )}
+    </div>
+  );
 
   const handleLogout = () => {
     logout();
@@ -153,12 +273,33 @@ export const PublicLayout: React.FC = () => {
           </Link>
 
           {isAuthenticated && user ? (
-            <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" arrow>
-              <Button type="text" style={{ color: '#fff', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Avatar style={{ backgroundColor: '#e53935' }} icon={<UserOutlined />} />
-                <span>{user.name}</span>
-              </Button>
-            </Dropdown>
+            <Space size="small">
+              <Popover
+                content={notificationContent}
+                trigger="click"
+                placement="bottomRight"
+                open={notifOpen}
+                onOpenChange={(v) => {
+                  setNotifOpen(v);
+                  if (v) fetchNotifications();
+                }}
+              >
+                <Badge count={unreadCount} showZero={false} offset={[-4, 6]}>
+                  <Button
+                    type="text"
+                    icon={<BellOutlined style={{ fontSize: 19, color: '#fff' }} />}
+                    style={{ color: '#fff' }}
+                  />
+                </Badge>
+              </Popover>
+
+              <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" arrow>
+                <Button type="text" style={{ color: '#fff', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Avatar style={{ backgroundColor: '#e53935' }} icon={<UserOutlined />} />
+                  <span>{user.name}</span>
+                </Button>
+              </Dropdown>
+            </Space>
           ) : (
             <Space>
               <Link to="/login">

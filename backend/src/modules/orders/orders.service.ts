@@ -175,6 +175,17 @@ export class OrdersService {
         },
       });
 
+      if (userId) {
+        await tx.notification.create({
+          data: {
+            userId,
+            orderCode: order.code,
+            title: `Đặt hàng thành công: ${order.code}`,
+            message: `Đơn hàng ${order.code} đã được tiếp nhận và đang ở trạng thái Chờ xác nhận.`,
+          },
+        });
+      }
+
       return order;
     });
   }
@@ -319,6 +330,39 @@ export class OrdersService {
         },
       });
 
+      let targetUserId = order.userId;
+      if (!targetUserId && order.customerEmail) {
+        const matchedUser = await tx.user.findUnique({
+          where: { email: order.customerEmail },
+        });
+        if (matchedUser) targetUserId = matchedUser.id;
+      }
+
+      if (targetUserId) {
+        const statusTitleMap: Record<string, string> = {
+          PENDING: 'Chờ xác nhận',
+          CONFIRMED: 'Đã xác nhận & Đang giao hàng',
+          PACKING: 'Đang đóng gói & Giao hàng',
+          SHIPPING: 'Đơn hàng đang được giao',
+          COMPLETED: 'Giao hàng hoàn thành',
+          CANCELLED: 'Đơn hàng đã bị hủy',
+          RETURNED: 'Đơn hàng hoàn trả',
+        };
+        const statusLabel = statusTitleMap[dto.status] || dto.status;
+        const trackingInfo = dto.trackingCode ? ` (Mã vận đơn: ${dto.trackingCode})` : '';
+
+        await tx.notification.create({
+          data: {
+            userId: targetUserId,
+            orderCode: order.code,
+            title: `Đơn ${order.code}: ${statusLabel}`,
+            message:
+              (dto.note ? `${dto.note}` : `Đơn hàng ${order.code} đã chuyển sang bước: ${statusLabel}`) +
+              trackingInfo,
+          },
+        });
+      }
+
       return updated;
     });
   }
@@ -401,7 +445,45 @@ export class OrdersService {
         },
       });
 
+      await tx.notification.create({
+        data: {
+          userId,
+          orderCode: order.code,
+          title: `Đã hủy đơn hàng: ${order.code}`,
+          message: `Bạn đã hủy đơn hàng ${order.code} thành công. Số lượng mô hình đã được hoàn lại kho.`,
+        },
+      });
+
       return updated;
+    });
+  }
+
+  async getMyNotifications(userId: string) {
+    const [items, unreadCount] = await Promise.all([
+      this.prisma.notification.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+        take: 20,
+      }),
+      this.prisma.notification.count({
+        where: { userId, isRead: false },
+      }),
+    ]);
+
+    return { items, unreadCount };
+  }
+
+  async markNotificationRead(id: string, userId: string) {
+    return this.prisma.notification.updateMany({
+      where: { id, userId },
+      data: { isRead: true },
+    });
+  }
+
+  async markAllNotificationsRead(userId: string) {
+    return this.prisma.notification.updateMany({
+      where: { userId, isRead: false },
+      data: { isRead: true },
     });
   }
 }

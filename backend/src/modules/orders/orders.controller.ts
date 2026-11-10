@@ -49,6 +49,30 @@ export class OrdersController {
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Lấy danh sách thông báo cập nhật đơn hàng của khách hàng' })
+  @Get('my-notifications')
+  getMyNotifications(@Request() req: any) {
+    return this.ordersService.getMyNotifications(req.user.id);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Đánh dấu đã đọc toàn bộ thông báo của khách hàng' })
+  @Patch('my-notifications/read-all')
+  markAllNotificationsRead(@Request() req: any) {
+    return this.ordersService.markAllNotificationsRead(req.user.id);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Đánh dấu đã đọc 1 thông báo của khách hàng' })
+  @Patch('my-notifications/:id/read')
+  markNotificationRead(@Param('id') id: string, @Request() req: any) {
+    return this.ordersService.markNotificationRead(id, req.user.id);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Khách hàng tự hủy đơn hàng khi đang ở trạng thái PENDING' })
   @Patch(':id/cancel')
   cancelMyOrder(
