@@ -9,6 +9,7 @@ export interface ReviewItem {
   rating: number;
   title?: string | null;
   comment: string;
+  imageUrl?: string | null;
   gradeTag?: string | null;
   likes: number;
   createdAt: string;
@@ -44,6 +45,7 @@ export interface CreateReviewPayload {
   userEmail?: string;
   title?: string;
   comment: string;
+  imageUrl?: string;
   gradeTag?: string;
 }
 

@@ -377,7 +377,9 @@ export class OrdersService {
               select: {
                 id: true,
                 name: true,
+                slug: true,
                 sku: true,
+                grade: true,
                 images: { take: 1, orderBy: { sortOrder: 'asc' } },
               },
             },
@@ -399,6 +401,8 @@ export class OrdersService {
         unitCost: Number(i.unitCost),
         totalPrice: Number(i.unitPrice) * i.quantity,
         productImage: i.product?.images[0]?.url || null,
+        productSlug: i.product?.slug || null,
+        productGrade: i.product?.grade || null,
       })),
     }));
   }

@@ -352,6 +352,7 @@ model Review {
   rating    Int      @default(5)
   title     String?
   comment   String   @db.Text
+  imageUrl  String?  @map("image_url") @db.Text
   gradeTag  String?  @map("grade_tag")
   likes     Int      @default(0)
   createdAt DateTime @default(now()) @map("created_at")

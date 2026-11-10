@@ -37,5 +37,10 @@ export class CreateReviewDto {
   @IsOptional()
   @IsString()
   gradeTag?: string;
+
+  @ApiProperty({ required: false, description: 'Ảnh chụp thực tế mô hình (URL hoặc Base64)' })
+  @IsOptional()
+  @IsString()
+  imageUrl?: string;
 }
 
