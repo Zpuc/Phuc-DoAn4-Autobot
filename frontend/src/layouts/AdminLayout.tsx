@@ -107,8 +107,10 @@ export const AdminLayout: React.FC = () => {
         trigger={null}
         collapsible
         collapsed={collapsed}
+        breakpoint="lg"
+        onBreakpoint={(broken) => setCollapsed(broken)}
         width={255}
-        collapsedWidth={80}
+        collapsedWidth={64}
         theme="dark"
         style={{
           overflow: 'auto',

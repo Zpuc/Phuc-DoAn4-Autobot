@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Layout, Menu, Button, Space, Badge, Dropdown, Avatar, Typography, Row, Col, Divider, Tag, Popover, Empty } from 'antd';
+import { Layout, Menu, Button, Space, Badge, Dropdown, Avatar, Typography, Row, Col, Divider, Tag, Popover, Empty, Drawer, Grid } from 'antd';
 import type { MenuProps } from 'antd';
 import {
   RocketOutlined,
@@ -15,6 +15,10 @@ import {
   SafetyCertificateOutlined,
   BellOutlined,
   CheckOutlined,
+  MenuOutlined,
+  OrderedListOutlined,
+  CarOutlined,
+  CustomerServiceOutlined,
 } from '@ant-design/icons';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
@@ -48,6 +52,9 @@ export const PublicLayout: React.FC = () => {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const screens = Grid.useBreakpoint();
+  const isMobile = !screens.lg;
 
   const fetchNotifications = useCallback(async () => {
     if (!isAuthenticated) {
@@ -103,7 +110,7 @@ export const PublicLayout: React.FC = () => {
   };
 
   const notificationContent = (
-    <div style={{ width: 340, maxHeight: 400, overflowY: 'auto' }}>
+    <div style={{ width: isMobile ? 'min(300px, 82vw)' : 340, maxHeight: 380, overflowY: 'auto' }}>
       <div
         style={{
           display: 'flex',
@@ -201,6 +208,34 @@ export const PublicLayout: React.FC = () => {
     },
   ];
 
+  const navItems: MenuProps['items'] = [
+    {
+      key: '/',
+      icon: <AppstoreOutlined />,
+      label: <Link to="/" onClick={() => setMobileMenuOpen(false)}>Trang Chủ</Link>,
+    },
+    {
+      key: '/products',
+      icon: <RocketOutlined />,
+      label: <Link to="/products" onClick={() => setMobileMenuOpen(false)}>Danh Mục Gundam</Link>,
+    },
+    {
+      key: '/my-orders',
+      icon: <OrderedListOutlined />,
+      label: <Link to="/my-orders" onClick={() => setMobileMenuOpen(false)}>Đơn Hàng Của Tôi</Link>,
+    },
+    {
+      key: '/track-order',
+      icon: <CarOutlined />,
+      label: <Link to="/track-order" onClick={() => setMobileMenuOpen(false)}>Tra Cứu Tiến Độ</Link>,
+    },
+    {
+      key: '/quotations',
+      icon: <CustomerServiceOutlined />,
+      label: <Link to="/quotations" onClick={() => setMobileMenuOpen(false)}>Yêu Cầu Báo Giá</Link>,
+    },
+  ];
+
   return (
     <Layout style={{ minHeight: '100vh', background: '#f5f7fa' }}>
       <Header
@@ -212,111 +247,235 @@ export const PublicLayout: React.FC = () => {
           alignItems: 'center',
           justifyContent: 'space-between',
           background: '#141414',
-          padding: '0 20px',
+          padding: isMobile ? '0 12px' : '0 20px',
           height: 64,
           lineHeight: '64px',
         }}
       >
         <Link to="/" style={{ display: 'flex', alignItems: 'center', height: '100%', textDecoration: 'none', lineHeight: 1 }}>
-          <GundamLogo size="medium" />
+          <GundamLogo size={isMobile ? 'small' : 'medium'} />
         </Link>
 
-        <Menu
-          theme="dark"
-          mode="horizontal"
-          selectedKeys={[location.pathname]}
-          style={{ background: 'transparent', flex: 1, marginLeft: 20, borderBottom: 'none', lineHeight: '64px', height: 64 }}
-          items={[
-            {
-              key: '/',
-              icon: <AppstoreOutlined />,
-              label: <Link to="/">Trang Chủ</Link>,
-            },
-            {
-              key: '/products',
-              label: <Link to="/products">Danh Mục Gundam</Link>,
-            },
-            {
-              key: '/my-orders',
-              label: <Link to="/my-orders">Đơn Hàng Của Tôi</Link>,
-            },
-            {
-              key: '/track-order',
-              label: <Link to="/track-order">Tra Cứu Tiến Độ</Link>,
-            },
-            {
-              key: '/quotations',
-              label: <Link to="/quotations">Yêu Cầu Báo Giá</Link>,
-            },
-          ]}
-        />
+        {!isMobile && (
+          <Menu
+            theme="dark"
+            mode="horizontal"
+            selectedKeys={[location.pathname]}
+            style={{ background: 'transparent', flex: 1, marginLeft: 20, borderBottom: 'none', lineHeight: '64px', height: 64 }}
+            items={navItems}
+          />
+        )}
 
-        <Space size={10}>
-          <Link to="/wishlist">
-            <Badge count={wishlistItems.length} showZero={false} offset={[-2, 6]}>
-              <Button
-                icon={<HeartOutlined />}
-                ghost
-                style={{ color: '#fff', borderColor: '#434343' }}
-              >
-                Yêu Thích
-              </Button>
-            </Badge>
-          </Link>
+        <Space size={isMobile ? 8 : 10}>
+          {!isMobile && (
+            <Link to="/wishlist">
+              <Badge count={wishlistItems.length} showZero={false} offset={[-2, 6]}>
+                <Button
+                  icon={<HeartOutlined />}
+                  ghost
+                  style={{ color: '#fff', borderColor: '#434343' }}
+                >
+                  Yêu Thích
+                </Button>
+              </Badge>
+            </Link>
+          )}
 
           <Link to="/cart">
             <Badge count={cartCount} showZero={false} offset={[-2, 6]}>
-              <Button type="primary" icon={<ShoppingCartOutlined />} style={{ background: '#e53935' }}>
-                Giỏ Hàng
-              </Button>
+              {isMobile ? (
+                <Button
+                  type="primary"
+                  shape="circle"
+                  icon={<ShoppingCartOutlined style={{ fontSize: 17 }} />}
+                  style={{ background: '#e53935' }}
+                />
+              ) : (
+                <Button type="primary" icon={<ShoppingCartOutlined />} style={{ background: '#e53935' }}>
+                  Giỏ Hàng
+                </Button>
+              )}
             </Badge>
           </Link>
 
-          {isAuthenticated && user ? (
-            <Space size={10}>
-              <Popover
-                content={notificationContent}
-                trigger="click"
-                placement="bottomRight"
-                open={notifOpen}
-                onOpenChange={(v) => {
-                  setNotifOpen(v);
-                  if (v) fetchNotifications();
-                }}
-              >
-                <Badge count={unreadCount} showZero={false} offset={[-2, 6]}>
-                  <Button
-                    shape="circle"
-                    icon={<BellOutlined style={{ fontSize: 17 }} />}
-                    ghost
-                    style={{ color: '#fff', borderColor: '#434343' }}
-                  />
-                </Badge>
-              </Popover>
+          {isAuthenticated && user && (
+            <Popover
+              content={notificationContent}
+              trigger="click"
+              placement="bottomRight"
+              open={notifOpen}
+              onOpenChange={(v) => {
+                setNotifOpen(v);
+                if (v) fetchNotifications();
+              }}
+            >
+              <Badge count={unreadCount} showZero={false} offset={[-2, 6]}>
+                <Button
+                  shape="circle"
+                  icon={<BellOutlined style={{ fontSize: 17 }} />}
+                  ghost
+                  style={{ color: '#fff', borderColor: '#434343' }}
+                />
+              </Badge>
+            </Popover>
+          )}
 
+          {!isMobile && (
+            isAuthenticated && user ? (
               <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" arrow>
                 <Button type="text" style={{ color: '#fff', display: 'flex', alignItems: 'center', gap: 8 }}>
                   <Avatar style={{ backgroundColor: '#e53935' }} icon={<UserOutlined />} />
                   <span>{user.name}</span>
                 </Button>
               </Dropdown>
-            </Space>
-          ) : (
-            <Space>
-              <Link to="/login">
-                <Button type="text" icon={<LoginOutlined />} style={{ color: '#fff' }}>
-                  Đăng Nhập
-                </Button>
-              </Link>
-              <Link to="/register">
-                <Button ghost style={{ color: '#fff', borderColor: '#e53935' }}>
-                  Đăng Ký
-                </Button>
-              </Link>
-            </Space>
+            ) : (
+              <Space>
+                <Link to="/login">
+                  <Button type="text" icon={<LoginOutlined />} style={{ color: '#fff' }}>
+                    Đăng Nhập
+                  </Button>
+                </Link>
+                <Link to="/register">
+                  <Button ghost style={{ color: '#fff', borderColor: '#e53935' }}>
+                    Đăng Ký
+                  </Button>
+                </Link>
+              </Space>
+            )
+          )}
+
+          {isMobile && (
+            <Button
+              icon={<MenuOutlined style={{ fontSize: 18 }} />}
+              ghost
+              style={{ color: '#fff', borderColor: '#434343' }}
+              onClick={() => setMobileMenuOpen(true)}
+            />
           )}
         </Space>
       </Header>
+
+      <Drawer
+        title={<GundamLogo size="small" />}
+        placement="right"
+        width={285}
+        onClose={() => setMobileMenuOpen(false)}
+        open={mobileMenuOpen}
+        styles={{
+          header: { background: '#141414', borderBottom: '1px solid #303030', color: '#fff' },
+          body: { padding: '16px 12px' },
+        }}
+        closeIcon={<span style={{ color: '#fff', fontSize: 18 }}>✕</span>}
+      >
+        {isAuthenticated && user ? (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              padding: '12px',
+              background: '#fff1f0',
+              borderRadius: 10,
+              marginBottom: 16,
+            }}
+          >
+            <Avatar size={42} style={{ backgroundColor: '#e53935' }} icon={<UserOutlined />} />
+            <div style={{ overflow: 'hidden' }}>
+              <Text strong style={{ display: 'block', fontSize: 14 }}>
+                {user.name}
+              </Text>
+              <Text type="secondary" style={{ fontSize: 12 }}>
+                {user.email}
+              </Text>
+            </div>
+          </div>
+        ) : (
+          <Space style={{ width: '100%', marginBottom: 16 }} size={10}>
+            <Button
+              type="primary"
+              block
+              icon={<LoginOutlined />}
+              style={{ background: '#e53935' }}
+              onClick={() => {
+                setMobileMenuOpen(false);
+                navigate('/login');
+              }}
+            >
+              Đăng Nhập
+            </Button>
+            <Button
+              block
+              onClick={() => {
+                setMobileMenuOpen(false);
+                navigate('/register');
+              }}
+            >
+              Đăng Ký
+            </Button>
+          </Space>
+        )}
+
+        <Menu
+          mode="inline"
+          selectedKeys={[location.pathname]}
+          style={{ borderRight: 'none' }}
+          items={[
+            ...(navItems || []),
+            { type: 'divider' },
+            {
+              key: '/wishlist',
+              icon: <HeartOutlined />,
+              label: (
+                <Link to="/wishlist" onClick={() => setMobileMenuOpen(false)}>
+                  Yêu Thích ({wishlistItems.length})
+                </Link>
+              ),
+            },
+            ...(isAuthenticated
+              ? [
+                  {
+                    key: '/profile',
+                    icon: <UserOutlined />,
+                    label: (
+                      <Link to="/profile" onClick={() => setMobileMenuOpen(false)}>
+                        Hồ Sơ & Sổ Địa Chỉ
+                      </Link>
+                    ),
+                  },
+                ]
+              : []),
+            ...(isAdmin
+              ? [
+                  {
+                    key: '/admin',
+                    icon: <DashboardOutlined />,
+                    label: (
+                      <Link to="/admin" onClick={() => setMobileMenuOpen(false)}>
+                        Trang Quản Trị (Admin)
+                      </Link>
+                    ),
+                  },
+                ]
+              : []),
+          ]}
+        />
+
+        {isAuthenticated && (
+          <div style={{ marginTop: 20, padding: '0 8px' }}>
+            <Button
+              danger
+              block
+              icon={<LogoutOutlined />}
+              onClick={() => {
+                setMobileMenuOpen(false);
+                handleLogout();
+              }}
+            >
+              Đăng Xuất Tài Khoản
+            </Button>
+          </div>
+        )}
+      </Drawer>
 
       <Content style={{ minHeight: 'calc(100vh - 134px)' }}>
         <Outlet />
