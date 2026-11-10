@@ -53,7 +53,30 @@ export class ReviewsService {
     };
   }
 
-  async create(dto: CreateReviewDto, userId?: string) {
+  async findMyReviewedProducts(userId?: string, userEmail?: string) {
+    if (!userId && !userEmail) {
+      return { productIds: [] };
+    }
+
+    const reviews = await this.prisma.review.findMany({
+      where: {
+        OR: [
+          ...(userId ? [{ userId }] : []),
+          ...(userEmail ? [{ userEmail }] : []),
+        ],
+      },
+      select: { productId: true },
+    });
+
+    const productIds = Array.from(new Set(reviews.map((r) => r.productId)));
+    return { productIds };
+  }
+
+  async create(dto: CreateReviewDto, userId?: string, authEmail?: string) {
+    if (!userId) {
+      throw new BadRequestException('Vui lòng đăng nhập tài khoản để gửi đánh giá sản phẩm');
+    }
+
     const product = await this.prisma.product.findUnique({
       where: { id: dto.productId },
     });
@@ -66,12 +89,29 @@ export class ReviewsService {
       throw new BadRequestException('Điểm đánh giá phải từ 1 đến 5 sao');
     }
 
+    const emailToCheck = authEmail || dto.userEmail?.trim();
+    const existingReview = await this.prisma.review.findFirst({
+      where: {
+        productId: dto.productId,
+        OR: [
+          { userId },
+          ...(emailToCheck ? [{ userEmail: emailToCheck }] : []),
+        ],
+      },
+    });
+
+    if (existingReview) {
+      throw new BadRequestException(
+        'Tài khoản của bạn đã đánh giá sản phẩm này rồi (mỗi sản phẩm chỉ được đánh giá 1 lần)',
+      );
+    }
+
     return this.prisma.review.create({
       data: {
         productId: dto.productId,
-        userId: userId || null,
+        userId,
         userName: dto.userName.trim(),
-        userEmail: dto.userEmail?.trim() || null,
+        userEmail: emailToCheck || null,
         rating: dto.rating,
         title: dto.title?.trim() || null,
         comment: dto.comment.trim(),

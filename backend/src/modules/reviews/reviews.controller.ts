@@ -27,12 +27,24 @@ export class ReviewsController {
     return this.reviewsService.findByProduct(productId);
   }
 
-  @ApiOperation({ summary: 'Gửi đánh giá và bình luận mô hình (Khách hoặc Thành viên)' })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Lấy danh sách ID các sản phẩm mà tài khoản hiện tại đã đánh giá' })
+  @Get('my-reviewed-products')
+  getMyReviewedProducts(@Req() req: any) {
+    const userId = req.user?.id || req.user?.userId;
+    const userEmail = req.user?.email;
+    return this.reviewsService.findMyReviewedProducts(userId, userEmail);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Gửi đánh giá và bình luận mô hình (Mỗi tài khoản chỉ đánh giá 1 lần / sản phẩm)' })
   @Post()
   create(@Body() dto: CreateReviewDto, @Req() req: any) {
-    // Nếu có token gửi kèm thì trích xuất userId
     const userId = req.user?.id || req.user?.userId;
-    return this.reviewsService.create(dto, userId);
+    const userEmail = req.user?.email;
+    return this.reviewsService.create(dto, userId, userEmail);
   }
 
   @ApiBearerAuth()

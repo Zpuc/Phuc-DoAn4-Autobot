@@ -588,24 +588,38 @@ export const ProductDetailPage: React.FC = () => {
                         Dựa trên {reviewData?.stats.total || 0} nhận xét từ khách hàng
                       </Text>
                       <div style={{ marginTop: 16 }}>
-                        <Button
-                          type="primary"
-                          icon={<EditOutlined />}
-                          style={{ background: '#e53935', fontWeight: 600 }}
-                          onClick={() => {
-                            reviewForm.resetFields();
-                            if (user) {
-                              reviewForm.setFieldsValue({
-                                userName: user.name,
-                                userEmail: user.email,
-                                rating: 5,
-                              });
-                            }
-                            setReviewModalOpen(true);
-                          }}
-                        >
-                          Viết Đánh Giá Của Bạn
-                        </Button>
+                        {(() => {
+                          const hasReviewed = Boolean(
+                            user &&
+                              reviewData?.reviews?.some(
+                                (r) => r.userId === user.id || (user.email && r.userEmail === user.email),
+                              ),
+                          );
+                          return (
+                            <Button
+                              type="primary"
+                              disabled={hasReviewed}
+                              icon={hasReviewed ? <CheckCircleOutlined /> : <EditOutlined />}
+                              style={{ background: hasReviewed ? undefined : '#e53935', fontWeight: 600 }}
+                              onClick={() => {
+                                if (!user) {
+                                  message.warning('Vui lòng đăng nhập tài khoản để gửi đánh giá sản phẩm!');
+                                  navigate('/login');
+                                  return;
+                                }
+                                reviewForm.resetFields();
+                                reviewForm.setFieldsValue({
+                                  userName: user.name,
+                                  userEmail: user.email,
+                                  rating: 5,
+                                });
+                                setReviewModalOpen(true);
+                              }}
+                            >
+                              {hasReviewed ? 'Bạn Đã Đánh Giá Mô Hình Này' : 'Viết Đánh Giá Của Bạn'}
+                            </Button>
+                          );
+                        })()}
                       </div>
                     </Col>
 

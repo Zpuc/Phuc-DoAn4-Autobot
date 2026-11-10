@@ -53,6 +53,8 @@ export interface CreateReviewPayload {
 export const reviewApi = {
   getByProduct: (productId: string): Promise<ProductReviewsResponse> =>
     apiClient.get(`/reviews/product/${productId}`),
+  getMyReviewedProducts: (): Promise<{ productIds: string[] }> =>
+    apiClient.get('/reviews/my-reviewed-products'),
   create: (payload: CreateReviewPayload): Promise<ReviewItem> =>
     apiClient.post('/reviews', payload),
   like: (id: string): Promise<ReviewItem> =>
