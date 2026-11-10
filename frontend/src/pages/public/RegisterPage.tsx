@@ -4,6 +4,7 @@ import { UserOutlined, LockOutlined, MailOutlined, PhoneOutlined, UserAddOutline
 import { Link, useNavigate } from 'react-router-dom';
 import { apiClient } from '../../api/client';
 import { useAuthStore, User } from '../../store/useAuthStore';
+import { GundamLogo } from '../../components/GundamLogo';
 
 const { Title, Text } = Typography;
 
@@ -60,7 +61,9 @@ export const RegisterPage: React.FC = () => {
         }}
       >
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <UserAddOutlined style={{ fontSize: 40, color: '#e53935', marginBottom: 8 }} />
+          <div style={{ display: 'inline-flex', justifyContent: 'center', marginBottom: 12 }}>
+            <GundamLogo size={64} showText={false} />
+          </div>
           <Title level={3} style={{ margin: 0 }}>
             Tạo Tài Khoản Mới
           </Title>

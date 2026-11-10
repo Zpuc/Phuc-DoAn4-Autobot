@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Card, Form, Input, Button, Typography, Alert, Space, Divider, message } from 'antd';
-import { UserOutlined, LockOutlined, LoginOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
+import { Card, Form, Input, Button, Typography, Alert, message } from 'antd';
+import { UserOutlined, LockOutlined, LoginOutlined } from '@ant-design/icons';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { apiClient } from '../../api/client';
 import { useAuthStore, User } from '../../store/useAuthStore';
+import { GundamLogo } from '../../components/GundamLogo';
 
 const { Title, Text } = Typography;
 
@@ -47,13 +48,6 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const handleQuickLogin = (email: string, pass: string) => {
-    form.setFieldsValue({
-      email,
-      password: pass,
-    });
-  };
-
   return (
     <div
       style={{
@@ -73,7 +67,9 @@ export const LoginPage: React.FC = () => {
         }}
       >
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <SafetyCertificateOutlined style={{ fontSize: 40, color: '#e53935', marginBottom: 8 }} />
+          <div style={{ display: 'inline-flex', justifyContent: 'center', marginBottom: 12 }}>
+            <GundamLogo size={64} showText={false} />
+          </div>
           <Title level={3} style={{ margin: 0 }}>
             Đăng Nhập Hệ Thống
           </Title>
@@ -100,7 +96,7 @@ export const LoginPage: React.FC = () => {
               { type: 'email', message: 'Email không đúng định dạng' },
             ]}
           >
-            <Input prefix={<UserOutlined />} placeholder="Ví dụ: admin@autobot.vn" size="large" />
+            <Input prefix={<UserOutlined />} placeholder="Nhập địa chỉ email của bạn" size="large" />
           </Form.Item>
 
           <Form.Item
@@ -132,29 +128,6 @@ export const LoginPage: React.FC = () => {
             Đăng ký ngay
           </Link>
         </div>
-
-        <Divider plain>
-          <Text type="secondary" style={{ fontSize: 12 }}>
-            Tài khoản mẫu dùng thử
-          </Text>
-        </Divider>
-
-        <Space direction="vertical" style={{ width: '100%' }} size="small">
-          <Button
-            size="small"
-            block
-            onClick={() => handleQuickLogin('admin@autobot.vn', 'Admin123@')}
-          >
-            Điền tài khoản Chủ cửa hàng (admin@autobot.vn)
-          </Button>
-          <Button
-            size="small"
-            block
-            onClick={() => handleQuickLogin('customer@autobot.vn', 'Customer123@')}
-          >
-            Điền tài khoản Khách hàng (customer@autobot.vn)
-          </Button>
-        </Space>
       </Card>
     </div>
   );
