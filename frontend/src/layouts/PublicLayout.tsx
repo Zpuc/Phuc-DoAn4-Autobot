@@ -212,7 +212,7 @@ export const PublicLayout: React.FC = () => {
           alignItems: 'center',
           justifyContent: 'space-between',
           background: '#141414',
-          padding: '0 28px',
+          padding: '0 20px',
           height: 64,
           lineHeight: '64px',
         }}
@@ -225,7 +225,7 @@ export const PublicLayout: React.FC = () => {
           theme="dark"
           mode="horizontal"
           selectedKeys={[location.pathname]}
-          style={{ background: 'transparent', flex: 1, marginLeft: 40, borderBottom: 'none', lineHeight: '64px', height: 64 }}
+          style={{ background: 'transparent', flex: 1, marginLeft: 20, borderBottom: 'none', lineHeight: '64px', height: 64 }}
           items={[
             {
               key: '/',
@@ -251,7 +251,7 @@ export const PublicLayout: React.FC = () => {
           ]}
         />
 
-        <Space size="middle">
+        <Space size={10}>
           <Link to="/wishlist">
             <Badge count={wishlistItems.length} showZero={false} offset={[-2, 6]}>
               <Button
@@ -273,7 +273,7 @@ export const PublicLayout: React.FC = () => {
           </Link>
 
           {isAuthenticated && user ? (
-            <Space size="small">
+            <Space size={10}>
               <Popover
                 content={notificationContent}
                 trigger="click"
@@ -284,12 +284,14 @@ export const PublicLayout: React.FC = () => {
                   if (v) fetchNotifications();
                 }}
               >
-                <Badge count={unreadCount} showZero={false} offset={[-4, 6]}>
+                <Badge count={unreadCount} showZero={false} offset={[-2, 6]}>
                   <Button
-                    type="text"
-                    icon={<BellOutlined style={{ fontSize: 19, color: '#fff' }} />}
-                    style={{ color: '#fff' }}
-                  />
+                    icon={<BellOutlined />}
+                    ghost
+                    style={{ color: '#fff', borderColor: '#434343' }}
+                  >
+                    Thông Báo
+                  </Button>
                 </Badge>
               </Popover>
 
