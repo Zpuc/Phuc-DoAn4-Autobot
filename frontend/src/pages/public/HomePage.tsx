@@ -102,7 +102,7 @@ export const HomePage: React.FC = () => {
               các mẫu hiếm, đặt hàng trực tiếp không qua trung gian, giao hàng COD toàn quốc hoặc hỏa tốc
               nội thành.
             </Paragraph>
-            <Space size="middle" style={{ marginTop: 8 }}>
+            <Space size="middle" wrap style={{ marginTop: 8 }}>
               <Link to="/products">
                 <Button type="primary" size="large" icon={<RocketOutlined />} style={{ background: '#e53935' }}>
                   Xem Danh Mục Mô Hình
@@ -110,7 +110,7 @@ export const HomePage: React.FC = () => {
               </Link>
               <Link to="/quotations">
                 <Button size="large" ghost style={{ color: '#fff', borderColor: '#fff' }}>
-                  Yêu Cầu Báo Giá PDF
+                  Yêu Cầu Báo Giá
                 </Button>
               </Link>
             </Space>
