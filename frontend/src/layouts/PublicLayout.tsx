@@ -286,12 +286,11 @@ export const PublicLayout: React.FC = () => {
               >
                 <Badge count={unreadCount} showZero={false} offset={[-2, 6]}>
                   <Button
-                    icon={<BellOutlined />}
+                    shape="circle"
+                    icon={<BellOutlined style={{ fontSize: 17 }} />}
                     ghost
                     style={{ color: '#fff', borderColor: '#434343' }}
-                  >
-                    Thông Báo
-                  </Button>
+                  />
                 </Badge>
               </Popover>
 
