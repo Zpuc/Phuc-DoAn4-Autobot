@@ -4,50 +4,52 @@ title AUTOBOT GUNDAM STORE - Public Web Launcher
 cd /d "%~dp0"
 
 echo ==============================================================
-echo   KHOI DONG HE THONG GUNDAM AUTOBOT STORE (PUBLIC WEB LINK)
+echo   KHOI DONG HE THONG GUNDAM AUTOBOT STORE - PUBLIC WEB LINK
 echo ==============================================================
 echo.
 
-:: 1. Kiem tra neu chua co ban build frontend thi build truoc
-if not exist "frontend\dist\index.html" (
-    echo [1/4] Dang dong goi giao dien Frontend lan dau...
-    call npm run build --prefix frontend
-) else (
-    echo [1/4] Da co san ban build Frontend (frontend\dist).
-)
+if exist "frontend\dist\index.html" goto SKIP_BUILD
+echo [1/4] Dang dong goi giao dien Frontend lan dau...
+call npm run build --prefix frontend
+goto CHECK_BACKEND
 
-:: 2. Khoi dong Backend tren cong 3000 neu chua chay
+:SKIP_BUILD
+echo [1/4] Da co san ban build Frontend tai frontend\dist.
+
+:CHECK_BACKEND
 netstat -ano | findstr ":3000 " | findstr "LISTENING" >nul
-if %errorlevel% neq 0 (
-    echo [2/4] Dang bat Backend Server (Port 3000)...
-    start "AUTOBOT - Backend (Port 3000)" cmd /k "cd /d "%~dp0" && npm run start:dev --prefix backend"
-    timeout /t 5 /nobreak >nul
-) else (
-    echo [2/4] Backend Server (Port 3000) dang chay san.
-)
+if not errorlevel 1 goto BACKEND_RUNNING
+echo [2/4] Dang bat Backend Server [Port 3000]...
+start "AUTOBOT - Backend" cmd /k "cd /d "%~dp0" && npm run start:dev --prefix backend"
+timeout /t 5 /nobreak >nul
+goto CHECK_FRONTEND
 
-:: 3. Khoi dong Frontend Preview tren cong 5173 neu chua chay
+:BACKEND_RUNNING
+echo [2/4] Backend Server [Port 3000] dang chay san.
+
+:CHECK_FRONTEND
 netstat -ano | findstr ":5173 " | findstr "LISTENING" >nul
-if %errorlevel% neq 0 (
-    echo [3/4] Dang bat Frontend Server (Port 5173)...
-    start "AUTOBOT - Frontend (Port 5173)" cmd /k "cd /d "%~dp0" && npm run preview --prefix frontend"
-    timeout /t 3 /nobreak >nul
-) else (
-    echo [3/4] Frontend Server (Port 5173) dang chay san.
-)
+if not errorlevel 1 goto FRONTEND_RUNNING
+echo [3/4] Dang bat Frontend Server [Port 5173]...
+start "AUTOBOT - Frontend" cmd /k "cd /d "%~dp0" && npm run preview --prefix frontend"
+timeout /t 3 /nobreak >nul
+goto CHECK_TUNNEL
 
-:: 4. Kiem tra cong cu Cloudflare Tunnel va mo link cong khai
-if not exist "%TEMP%\cloudflared.exe" (
-    echo [4/4] Dang tai cong cu Cloudflare Tunnel ve may...
-    powershell -Command "Invoke-WebRequest -Uri 'https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe' -OutFile '$env:TEMP\cloudflared.exe'"
-)
+:FRONTEND_RUNNING
+echo [3/4] Frontend Server [Port 5173] dang chay san.
 
+:CHECK_TUNNEL
+if exist "%TEMP%\cloudflared.exe" goto RUN_TUNNEL
+echo [4/4] Dang tai cong cu Cloudflare Tunnel ve may...
+powershell -Command "Invoke-WebRequest -Uri 'https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe' -OutFile '$env:TEMP\cloudflared.exe'"
+
+:RUN_TUNNEL
 echo.
 echo ==============================================================
-echo   DANG TAO DUONG LINK WEB CONG KHAI (*.trycloudflare.com)...
+echo   DANG TAO DUONG LINK WEB CONG KHAI [*.trycloudflare.com]...
 echo   Hay copy duong link https://....trycloudflare.com ben duoi
 echo   de gui cho ban be truy cap tren Dien thoai hoac May tinh!
-echo   (Giu cua so nay mo trong suot qua trinh su dung)
+echo   [Giu cua so nay mo trong suot qua trinh su dung]
 echo ==============================================================
 echo.
 
