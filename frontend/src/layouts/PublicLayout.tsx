@@ -4,7 +4,6 @@ import type { MenuProps } from 'antd';
 import {
   RocketOutlined,
   ShoppingCartOutlined,
-  ShoppingOutlined,
   HeartOutlined,
   AppstoreOutlined,
   UserOutlined,
@@ -63,11 +62,6 @@ export const PublicLayout: React.FC = () => {
       key: 'profile',
       icon: <UserOutlined />,
       label: <Link to="/profile">Hồ sơ & Sổ địa chỉ</Link>,
-    },
-    {
-      key: 'my-orders',
-      icon: <ShoppingOutlined />,
-      label: <Link to="/my-orders">Đơn hàng của tôi</Link>,
     },
     ...(isAdmin
       ? [
@@ -129,7 +123,7 @@ export const PublicLayout: React.FC = () => {
             },
             {
               key: '/my-orders',
-              label: <Link to="/my-orders">Mô Hình Đã Mua</Link>,
+              label: <Link to="/my-orders">Đơn Hàng Của Tôi</Link>,
             },
             {
               key: '/quotations',
