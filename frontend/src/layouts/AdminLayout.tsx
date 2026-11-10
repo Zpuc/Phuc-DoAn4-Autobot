@@ -107,7 +107,7 @@ export const AdminLayout: React.FC = () => {
         trigger={null}
         collapsible
         collapsed={collapsed}
-        width={240}
+        width={255}
         collapsedWidth={80}
         theme="dark"
         style={{
@@ -125,14 +125,14 @@ export const AdminLayout: React.FC = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: collapsed ? 'center' : 'flex-start',
-            padding: collapsed ? '0' : '0 18px',
+            padding: collapsed ? '0' : '0 14px',
             background: '#002140',
             borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
             overflow: 'hidden',
           }}
         >
           <Link to="/admin" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-            <GundamLogo size={34} collapsed={collapsed} badge="ADMIN" />
+            <GundamLogo size="small" collapsed={collapsed} />
           </Link>
         </div>
 
