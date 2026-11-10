@@ -19,7 +19,7 @@ import { Role } from '@prisma/client';
 @ApiTags('Inventory - Quản lý Kho & Tồn Kho Gunpla')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(Role.ADMIN, Role.STAFF)
+@Roles(Role.ADMIN)
 @Controller('inventory')
 export class InventoryController {
   constructor(private readonly inventoryService: InventoryService) {}

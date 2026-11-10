@@ -13,6 +13,8 @@ import {
   Alert,
   Image,
   Breadcrumb,
+  Popconfirm,
+  message,
 } from 'antd';
 import {
   ShoppingOutlined,
@@ -21,6 +23,8 @@ import {
   ArrowRightOutlined,
   CalendarOutlined,
   UserOutlined,
+  EnvironmentOutlined,
+  CloseCircleOutlined,
 } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -57,10 +61,10 @@ interface Order {
 
 const statusMap: Record<string, { label: string; color: string }> = {
   PENDING: { label: 'Chờ xác nhận', color: 'orange' },
-  CONFIRMED: { label: 'Đã xác nhận', color: 'blue' },
-  PACKING: { label: 'Đang đóng gói', color: 'cyan' },
-  SHIPPING: { label: 'Đang vận chuyển', color: 'purple' },
-  COMPLETED: { label: 'Giao thành công', color: 'green' },
+  CONFIRMED: { label: 'Đơn hàng đang được giao', color: 'purple' },
+  PACKING: { label: 'Đơn hàng đang được giao', color: 'purple' },
+  SHIPPING: { label: 'Đơn hàng đang được giao', color: 'purple' },
+  COMPLETED: { label: 'Hoàn thành', color: 'green' },
   CANCELLED: { label: 'Đã hủy', color: 'red' },
   RETURNED: { label: 'Hoàn trả hàng', color: 'default' },
 };
@@ -70,24 +74,39 @@ export const MyOrdersPage: React.FC = () => {
   const { user, isAuthenticated } = useAuthStore();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
+
+  const fetchOrders = async () => {
+    setLoading(true);
+    try {
+      const data: any = await apiClient.get('/orders/my-orders');
+      setOrders(data || []);
+    } catch {
+      // bỏ qua lỗi
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!isAuthenticated) return;
-
-    const fetchOrders = async () => {
-      setLoading(true);
-      try {
-        const data: any = await apiClient.get('/orders/my-orders');
-        setOrders(data || []);
-      } catch {
-        // bỏ qua lỗi
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchOrders();
   }, [isAuthenticated]);
+
+  const handleCancelOrder = async (orderId: string) => {
+    try {
+      setCancellingId(orderId);
+      await apiClient.patch(`/orders/${orderId}/cancel`, {
+        reason: 'Khách hàng chủ động hủy đơn trên hệ thống',
+      });
+      message.success('Đã hủy đơn hàng và hoàn lại số lượng kho thành công');
+      fetchOrders();
+    } catch (err: any) {
+      message.error(err.message || 'Không thể hủy đơn hàng này');
+    } finally {
+      setCancellingId(null);
+    }
+  };
 
   if (!isAuthenticated) {
     return (
@@ -274,10 +293,40 @@ export const MyOrdersPage: React.FC = () => {
                       </Text>
                     </div>
                     {order.trackingCode && (
-                      <div style={{ fontSize: 12, color: '#595959' }}>
+                      <div style={{ fontSize: 12, color: '#595959', marginBottom: 8 }}>
                         Đơn vị vận chuyển / Mã vận đơn: <Text strong style={{ color: '#13c2c2' }}>{order.trackingCode}</Text>
                       </div>
                     )}
+                    <Space size={8} wrap>
+                      <Button
+                        size="small"
+                        type="primary"
+                        ghost
+                        icon={<EnvironmentOutlined />}
+                        onClick={() => navigate(`/track-order?code=${order.code}`)}
+                      >
+                        Xem lộ trình đơn hàng
+                      </Button>
+                      {order.status === 'PENDING' && (
+                        <Popconfirm
+                          title="Xác nhận hủy đơn hàng?"
+                          description="Đơn hàng sẽ được hủy và hoàn lại số lượng vào kho."
+                          onConfirm={() => handleCancelOrder(order.id)}
+                          okText="Đồng ý hủy"
+                          cancelText="Không"
+                          okButtonProps={{ danger: true }}
+                        >
+                          <Button
+                            size="small"
+                            danger
+                            icon={<CloseCircleOutlined />}
+                            loading={cancellingId === order.id}
+                          >
+                            Hủy đơn hàng
+                          </Button>
+                        </Popconfirm>
+                      )}
+                    </Space>
                   </div>
                 </div>
               </Card>

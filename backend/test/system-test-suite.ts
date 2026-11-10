@@ -87,7 +87,7 @@ async function runTestSuite() {
     });
   }
 
-  const roles = [Role.ADMIN, Role.STAFF, Role.CUSTOMER];
+  const roles = [Role.ADMIN, Role.CUSTOMER];
   for (const r of roles) {
     await testCase('Auth', `Phân quyền Role hợp lệ trong hệ thống: ${r}`, () => {
       assert(Object.values(Role).includes(r), 'Role phải nằm trong enum Role');
@@ -96,14 +96,23 @@ async function runTestSuite() {
 
   for (const r of roles) {
     await testCase('Auth', `Kiểm tra quyền truy cập Admin của role: ${r}`, () => {
-      const canAccessAdmin = r === Role.ADMIN || r === Role.STAFF;
+      const canAccessAdmin = r === Role.ADMIN;
       if (r === Role.CUSTOMER) {
         assert(!canAccessAdmin, 'Khách hàng không được vào Admin');
       } else {
-        assert(canAccessAdmin, 'Admin và Staff phải có quyền vào Admin');
+        assert(canAccessAdmin, 'Admin phải có quyền vào Admin');
       }
     });
   }
+
+  await testCase('Auth', 'Đảm bảo hệ thống chỉ tồn tại đúng 2 quyền duy nhất (ADMIN và CUSTOMER)', () => {
+    assertEqual(Object.values(Role).length, 2, 'Chỉ có đúng 2 Role: ADMIN và CUSTOMER');
+  });
+
+  await testCase('Auth', 'Chặn truy cập trái phép vào khu vực quản trị khi không có quyền ADMIN', () => {
+    const isAuthorized = (role?: string) => role === 'ADMIN';
+    assert(!isAuthorized('CUSTOMER') && !isAuthorized(undefined), 'Chỉ ADMIN mới được phép truy cập');
+  });
 
   for (let len = 1; len <= 4; len++) {
     await testCase('Auth', `Từ chối mật khẩu quá ngắn (< 6 ký tự) - Độ dài ${len}`, () => {

@@ -132,9 +132,9 @@ export const OrderManagePage: React.FC = () => {
   const getStatusTag = (status: string) => {
     const map: Record<string, { color: string; label: string }> = {
       PENDING: { color: 'gold', label: 'Chờ xác nhận' },
-      CONFIRMED: { color: 'blue', label: 'Đã xác nhận' },
-      PACKING: { color: 'cyan', label: 'Đang đóng gói' },
-      SHIPPING: { color: 'purple', label: 'Đang giao hàng' },
+      CONFIRMED: { color: 'purple', label: 'Đơn hàng đang được giao' },
+      PACKING: { color: 'purple', label: 'Đơn hàng đang được giao' },
+      SHIPPING: { color: 'purple', label: 'Đơn hàng đang được giao' },
       COMPLETED: { color: 'green', label: 'Hoàn thành' },
       CANCELLED: { color: 'red', label: 'Đã hủy (Hoàn kho)' },
       RETURNED: { color: 'magenta', label: 'Trả hàng' },
@@ -279,12 +279,10 @@ export const OrderManagePage: React.FC = () => {
                 setPage(1);
               }}
             >
-              <Option value="PENDING">Chờ xác nhận (Pending)</Option>
-              <Option value="CONFIRMED">Đã xác nhận (Confirmed)</Option>
-              <Option value="PACKING">Đang đóng gói (Packing)</Option>
-              <Option value="SHIPPING">Đang giao hàng (Shipping)</Option>
-              <Option value="COMPLETED">Hoàn thành (Completed)</Option>
-              <Option value="CANCELLED">Đã hủy (Cancelled)</Option>
+              <Option value="PENDING">Chờ xác nhận</Option>
+              <Option value="SHIPPING">Đơn hàng đang được giao</Option>
+              <Option value="COMPLETED">Hoàn thành</Option>
+              <Option value="CANCELLED">Đã hủy</Option>
             </Select>
           </Col>
         </Row>
@@ -319,15 +317,13 @@ export const OrderManagePage: React.FC = () => {
         <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
           <Form.Item
             name="status"
-            label="Trạng thái đơn hàng"
+            label="Trạng thái tiến độ đơn hàng"
             rules={[{ required: true, message: 'Vui lòng chọn trạng thái mới' }]}
           >
             <Select size="large">
-              <Option value="PENDING">Chờ xác nhận (Pending)</Option>
-              <Option value="CONFIRMED">Đã xác nhận với khách (Confirmed)</Option>
-              <Option value="PACKING">Đang đóng gói chống sốc (Packing)</Option>
-              <Option value="SHIPPING">Đã bàn giao shipper / Bưu cục (Shipping)</Option>
-              <Option value="COMPLETED">Khách đã nhận hàng & Hoàn thành (Completed)</Option>
+              <Option value="PENDING">1. Chờ xác nhận</Option>
+              <Option value="SHIPPING">2. Đơn hàng đang được giao</Option>
+              <Option value="COMPLETED">3. Hoàn thành</Option>
               <Option value="CANCELLED">Hủy đơn (Tự động hoàn lại tồn kho)</Option>
             </Select>
           </Form.Item>

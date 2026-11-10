@@ -5,7 +5,7 @@ export interface User {
   name: string;
   email: string;
   phone?: string;
-  role: 'ADMIN' | 'STAFF' | 'CUSTOMER';
+  role: 'ADMIN' | 'CUSTOMER';
   createdAt?: string;
 }
 
@@ -14,7 +14,6 @@ interface AuthState {
   token: string | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
-  isStaffOrAdmin: boolean;
   setAuth: (user: User, token: string) => void;
   logout: () => void;
   loadFromStorage: () => void;
@@ -32,7 +31,6 @@ const getInitialAuth = () => {
         token,
         isAuthenticated: true,
         isAdmin: user.role === 'ADMIN',
-        isStaffOrAdmin: user.role === 'ADMIN' || user.role === 'STAFF',
       };
     }
   } catch {
@@ -44,7 +42,6 @@ const getInitialAuth = () => {
     token: null,
     isAuthenticated: false,
     isAdmin: false,
-    isStaffOrAdmin: false,
   };
 };
 
@@ -61,7 +58,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       token,
       isAuthenticated: true,
       isAdmin: user.role === 'ADMIN',
-      isStaffOrAdmin: user.role === 'ADMIN' || user.role === 'STAFF',
     });
   },
 
@@ -73,7 +69,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       token: null,
       isAuthenticated: false,
       isAdmin: false,
-      isStaffOrAdmin: false,
     });
   },
 

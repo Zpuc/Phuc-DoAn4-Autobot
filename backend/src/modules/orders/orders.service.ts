@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
@@ -357,6 +357,52 @@ export class OrdersService {
         productImage: i.product?.images[0]?.url || null,
       })),
     }));
+  }
+
+  async cancelMyOrder(id: string, userId: string, reason?: string) {
+    const order = await this.findOne(id);
+
+    if (order.userId !== userId) {
+      throw new ForbiddenException('Bạn không có quyền hủy đơn hàng này');
+    }
+
+    if (order.status !== OrderStatus.PENDING) {
+      throw new BadRequestException('Chỉ có thể hủy đơn hàng khi đang ở trạng thái Chờ xác nhận');
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      for (const item of order.items) {
+        await tx.inventory.update({
+          where: { productId: item.productId },
+          data: { quantity: { increment: item.quantity } },
+        });
+
+        await tx.inventoryLog.create({
+          data: {
+            productId: item.productId,
+            change: item.quantity,
+            reason: InventoryChangeReason.RETURN,
+            refId: `CANCEL_${order.code}`,
+          },
+        });
+      }
+
+      const updated = await tx.order.update({
+        where: { id },
+        data: { status: OrderStatus.CANCELLED },
+      });
+
+      await tx.orderStatusHistory.create({
+        data: {
+          orderId: id,
+          status: OrderStatus.CANCELLED,
+          changedBy: userId,
+          note: reason || 'Khách hàng chủ động hủy đơn hàng',
+        },
+      });
+
+      return updated;
+    });
   }
 }
 

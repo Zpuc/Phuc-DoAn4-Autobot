@@ -43,10 +43,11 @@ export class ReviewsController {
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Quản trị viên xóa bình luận vi phạm' })
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.reviewsService.remove(id);
   }
 }
+

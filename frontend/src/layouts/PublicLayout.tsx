@@ -28,7 +28,7 @@ const { Text } = Typography;
 export const PublicLayout: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, isAuthenticated, isStaffOrAdmin, logout } = useAuthStore();
+  const { user, isAuthenticated, isAdmin, logout } = useAuthStore();
   const cartCount = useCartStore((state) => state.getTotalCount());
   const loadCartFromStorage = useCartStore((state) => state.loadFromStorage);
   const wishlistItems = useWishlistStore((state) => state.items);
@@ -69,7 +69,7 @@ export const PublicLayout: React.FC = () => {
       icon: <ShoppingOutlined />,
       label: <Link to="/my-orders">Đơn hàng của tôi</Link>,
     },
-    ...(isStaffOrAdmin
+    ...(isAdmin
       ? [
           {
             key: 'admin',
@@ -122,6 +122,10 @@ export const PublicLayout: React.FC = () => {
             {
               key: '/products',
               label: <Link to="/products">Danh Mục Gundam</Link>,
+            },
+            {
+              key: '/track-order',
+              label: <Link to="/track-order">Tra Cứu Tiến Độ</Link>,
             },
             {
               key: '/quotations',

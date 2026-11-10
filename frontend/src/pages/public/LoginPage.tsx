@@ -35,7 +35,7 @@ export const LoginPage: React.FC = () => {
       setAuth(res.user, res.accessToken);
       message.success(`Đăng nhập thành công! Chào mừng ${res.user.name}`);
 
-      if (res.user.role === 'ADMIN' || res.user.role === 'STAFF') {
+      if (res.user.role === 'ADMIN') {
         navigate('/admin');
       } else {
         navigate(from, { replace: true });
@@ -145,14 +145,7 @@ export const LoginPage: React.FC = () => {
             block
             onClick={() => handleQuickLogin('admin@autobot.vn', 'Admin123@')}
           >
-            Điền tài khoản Admin (admin@autobot.vn)
-          </Button>
-          <Button
-            size="small"
-            block
-            onClick={() => handleQuickLogin('staff@autobot.vn', 'Staff123@')}
-          >
-            Điền tài khoản Staff (staff@autobot.vn)
+            Điền tài khoản Chủ cửa hàng (admin@autobot.vn)
           </Button>
           <Button
             size="small"
