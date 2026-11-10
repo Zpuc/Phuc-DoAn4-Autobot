@@ -118,12 +118,12 @@ export const PublicLayout: React.FC = () => {
               label: <Link to="/products">Danh Mục Gundam</Link>,
             },
             {
-              key: '/track-order',
-              label: <Link to="/track-order">Tra Cứu Tiến Độ</Link>,
-            },
-            {
               key: '/my-orders',
               label: <Link to="/my-orders">Đơn Hàng Của Tôi</Link>,
+            },
+            {
+              key: '/track-order',
+              label: <Link to="/track-order">Tra Cứu Tiến Độ</Link>,
             },
             {
               key: '/quotations',
