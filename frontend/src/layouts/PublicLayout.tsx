@@ -367,155 +367,175 @@ export const PublicLayout: React.FC = () => {
 
   return (
     <Layout style={{ minHeight: '100vh', background: '#f5f7fa' }}>
-      <Header
-        style={{
-          position: 'sticky',
-          top: 0,
-          zIndex: 1000,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          background: '#141414',
-          padding: isMobile ? '0 12px' : '0 20px',
-          height: 64,
-          lineHeight: '64px',
-        }}
-      >
-        <Link to="/" style={{ display: 'flex', alignItems: 'center', height: '100%', textDecoration: 'none', lineHeight: 1 }}>
-          <GundamLogo size={isMobile ? 'small' : 'medium'} />
-        </Link>
-
-        {!isMobile && (
-          <Menu
-            theme="dark"
-            mode="horizontal"
-            selectedKeys={[location.pathname]}
-            style={{ background: 'transparent', flex: 1, marginLeft: 16, borderBottom: 'none', lineHeight: '64px', height: 64, minWidth: 0 }}
-            items={navItems}
-          />
-        )}
-
-        <Space size={isMobile ? 8 : 10}>
-          {!isMobile && (
-            <Input
-              placeholder="Tìm tên Gunpla, SKU..."
-              allowClear
-              value={headerSearch}
-              onChange={(e) => setHeaderSearch(e.target.value)}
-              onPressEnter={() => handleHeaderSearch(headerSearch)}
-              suffix={
-                <SearchOutlined
-                  style={{ color: '#e53935', cursor: 'pointer' }}
-                  onClick={() => handleHeaderSearch(headerSearch)}
-                />
-              }
-              style={{
-                width: 210,
-                borderRadius: 20,
-                background: '#262626',
-                borderColor: '#434343',
-                color: '#fff',
-              }}
-            />
-          )}
-
-          {!isMobile && (
-            <Link to="/wishlist">
-              <Badge count={wishlistItems.length} showZero={false} offset={[-2, 6]}>
-                <Button
-                  icon={<HeartOutlined />}
-                  ghost
-                  style={{ color: '#fff', borderColor: '#434343' }}
-                >
-                  Yêu Thích
-                </Button>
-              </Badge>
-            </Link>
-          )}
-
-          <Link to="/cart">
-            <Badge count={cartCount} showZero={false} offset={[-2, 6]}>
-              {isMobile ? (
-                <Button
-                  type="primary"
-                  shape="circle"
-                  icon={<ShoppingCartOutlined style={{ fontSize: 17 }} />}
-                  style={{ background: '#e53935' }}
-                />
-              ) : (
-                <Button type="primary" icon={<ShoppingCartOutlined />} style={{ background: '#e53935' }}>
-                  Giỏ Hàng
-                </Button>
-              )}
-            </Badge>
+      <div style={{ position: 'sticky', top: 0, zIndex: 1000, boxShadow: '0 2px 8px rgba(0,0,0,0.25)' }}>
+        <Header
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            background: '#141414',
+            padding: isMobile ? '0 12px' : '0 24px',
+            height: 64,
+            lineHeight: '64px',
+          }}
+        >
+          <Link to="/" style={{ display: 'flex', alignItems: 'center', height: '100%', textDecoration: 'none', lineHeight: 1, flexShrink: 0 }}>
+            <GundamLogo size={isMobile ? 'small' : 'medium'} />
           </Link>
 
-          {isAuthenticated && user && (
-            <Popover
-              content={notificationContent}
-              trigger="click"
-              placement="bottomRight"
-              arrow={!isMobile}
-              overlayClassName="autobot-notif-popover"
-              styles={{
-                container: {
-                  padding: 0,
-                  borderRadius: 12,
-                  overflow: 'hidden',
-                  boxShadow: '0 8px 28px rgba(0, 0, 0, 0.18)',
-                },
-              }}
-              open={notifOpen}
-              onOpenChange={(v) => {
-                setNotifOpen(v);
-                if (v) fetchNotifications();
-              }}
-            >
-              <Badge count={unreadCount} showZero={false} offset={[-2, 6]}>
-                <Button
-                  shape="circle"
-                  icon={<BellOutlined style={{ fontSize: 17 }} />}
-                  ghost
-                  style={{ color: '#fff', borderColor: '#434343' }}
-                />
-              </Badge>
-            </Popover>
-          )}
-
           {!isMobile && (
-            isAuthenticated && user ? (
-              <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" arrow>
-                <Button type="text" style={{ color: '#fff', display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Avatar style={{ backgroundColor: '#e53935' }} icon={<UserOutlined />} />
-                  <span>{user.name}</span>
-                </Button>
-              </Dropdown>
-            ) : (
-              <Space>
-                <Link to="/login">
-                  <Button type="text" icon={<LoginOutlined />} style={{ color: '#fff' }}>
-                    Đăng Nhập
-                  </Button>
-                </Link>
-                <Link to="/register">
-                  <Button ghost style={{ color: '#fff', borderColor: '#e53935' }}>
-                    Đăng Ký
-                  </Button>
-                </Link>
-              </Space>
-            )
+            <div style={{ flex: 1, maxWidth: 460, margin: '0 24px', display: 'flex', alignItems: 'center' }}>
+              <Input
+                placeholder="Tìm kiếm tên mô hình Gunpla, mã SKU, Series..."
+                allowClear
+                size="middle"
+                value={headerSearch}
+                onChange={(e) => setHeaderSearch(e.target.value)}
+                onPressEnter={() => handleHeaderSearch(headerSearch)}
+                suffix={
+                  <SearchOutlined
+                    style={{ color: '#e53935', fontSize: 16, cursor: 'pointer' }}
+                    onClick={() => handleHeaderSearch(headerSearch)}
+                  />
+                }
+                style={{
+                  width: '100%',
+                  borderRadius: 20,
+                  background: '#262626',
+                  borderColor: '#434343',
+                  color: '#fff',
+                  padding: '5px 14px',
+                }}
+              />
+            </div>
           )}
 
-          {isMobile && (
-            <Button
-              icon={<MenuOutlined style={{ fontSize: 18 }} />}
-              ghost
-              style={{ color: '#fff', borderColor: '#434343' }}
-              onClick={() => setMobileMenuOpen(true)}
-            />
-          )}
-        </Space>
-      </Header>
+          <Space size={isMobile ? 8 : 12} style={{ flexShrink: 0 }}>
+            {!isMobile && (
+              <Link to="/wishlist">
+                <Badge count={wishlistItems.length} showZero={false} offset={[-2, 6]}>
+                  <Button
+                    icon={<HeartOutlined />}
+                    ghost
+                    style={{ color: '#fff', borderColor: '#434343' }}
+                  >
+                    Yêu Thích
+                  </Button>
+                </Badge>
+              </Link>
+            )}
+
+            <Link to="/cart">
+              <Badge count={cartCount} showZero={false} offset={[-2, 6]}>
+                {isMobile ? (
+                  <Button
+                    type="primary"
+                    shape="circle"
+                    icon={<ShoppingCartOutlined style={{ fontSize: 17 }} />}
+                    style={{ background: '#e53935' }}
+                  />
+                ) : (
+                  <Button type="primary" icon={<ShoppingCartOutlined />} style={{ background: '#e53935' }}>
+                    Giỏ Hàng
+                  </Button>
+                )}
+              </Badge>
+            </Link>
+
+            {isAuthenticated && user && (
+              <Popover
+                content={notificationContent}
+                trigger="click"
+                placement="bottomRight"
+                arrow={!isMobile}
+                overlayClassName="autobot-notif-popover"
+                styles={{
+                  container: {
+                    padding: 0,
+                    borderRadius: 12,
+                    overflow: 'hidden',
+                    boxShadow: '0 8px 28px rgba(0, 0, 0, 0.18)',
+                  },
+                }}
+                open={notifOpen}
+                onOpenChange={(v) => {
+                  setNotifOpen(v);
+                  if (v) fetchNotifications();
+                }}
+              >
+                <Badge count={unreadCount} showZero={false} offset={[-2, 6]}>
+                  <Button
+                    shape="circle"
+                    icon={<BellOutlined style={{ fontSize: 17 }} />}
+                    ghost
+                    style={{ color: '#fff', borderColor: '#434343' }}
+                  />
+                </Badge>
+              </Popover>
+            )}
+
+            {!isMobile && (
+              isAuthenticated && user ? (
+                <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" arrow>
+                  <Button type="text" style={{ color: '#fff', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Avatar style={{ backgroundColor: '#e53935' }} icon={<UserOutlined />} />
+                    <span>{user.name}</span>
+                  </Button>
+                </Dropdown>
+              ) : (
+                <Space>
+                  <Link to="/login">
+                    <Button type="text" icon={<LoginOutlined />} style={{ color: '#fff' }}>
+                      Đăng Nhập
+                    </Button>
+                  </Link>
+                  <Link to="/register">
+                    <Button ghost style={{ color: '#fff', borderColor: '#e53935' }}>
+                      Đăng Ký
+                    </Button>
+                  </Link>
+                </Space>
+              )
+            )}
+
+            {isMobile && (
+              <Button
+                icon={<MenuOutlined style={{ fontSize: 18 }} />}
+                ghost
+                style={{ color: '#fff', borderColor: '#434343' }}
+                onClick={() => setMobileMenuOpen(true)}
+              />
+            )}
+          </Space>
+        </Header>
+
+        {!isMobile && (
+          <div
+            style={{
+              background: '#1d1d1d',
+              borderTop: '1px solid #2b2b2b',
+              padding: '0 24px',
+            }}
+          >
+            <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+              <Menu
+                theme="dark"
+                mode="horizontal"
+                disabledOverflow
+                selectedKeys={[location.pathname]}
+                style={{
+                  background: 'transparent',
+                  borderBottom: 'none',
+                  lineHeight: '44px',
+                  height: 44,
+                  fontSize: 14,
+                }}
+                items={navItems}
+              />
+            </div>
+          </div>
+        )}
+      </div>
 
       <Drawer
         title={<GundamLogo size="small" />}
