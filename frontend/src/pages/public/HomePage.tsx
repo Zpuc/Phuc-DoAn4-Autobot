@@ -1,42 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Row, Col, Card, Button, Tag, Space, Badge, Spin, message, Image } from 'antd';
+import { Typography, Row, Col, Card, Button, Tag, Space, Spin, Image } from 'antd';
 import {
   RocketOutlined,
   ThunderboltOutlined,
   FireOutlined,
   CheckCircleOutlined,
-  ShoppingOutlined,
   FileProtectOutlined,
-  EyeOutlined,
   ArrowRightOutlined,
 } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { apiClient } from '../../api/client';
-import { useCartStore } from '../../store/useCartStore';
+import { ProductCard, ProductCardData } from '../../components/ProductCard';
 
 const { Title, Text, Paragraph } = Typography;
 
-interface ProductItem {
-  id: string;
-  name: string;
-  slug: string;
-  sku: string;
-  grade?: string;
-  scale?: string;
-  series?: string;
-  condition?: string;
-  currentPrice: number;
-  isPreorder: boolean;
-  quantity: number;
-  brand?: { name: string };
-  images?: { url: string }[];
-}
-
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
-  const addToCart = useCartStore((state) => state.addToCart);
-
-  const [products, setProducts] = useState<ProductItem[]>([]);
+  const [products, setProducts] = useState<ProductCardData[]>([]);
   const [loading, setLoading] = useState(true);
 
   const grades = [
@@ -58,32 +38,6 @@ export const HomePage: React.FC = () => {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
-
-  const handleQuickBuy = (p: ProductItem) => {
-    if (p.isPreorder) {
-      navigate('/quotations');
-      return;
-    }
-    if (p.quantity <= 0) {
-      message.warning(`Mô hình "${p.name}" hiện đang tạm hết hàng!`);
-      return;
-    }
-    addToCart({
-      id: p.id,
-      name: p.name,
-      slug: p.slug,
-      sku: p.sku,
-      grade: p.grade,
-      scale: p.scale,
-      price: p.currentPrice,
-      quantity: 1,
-      maxStock: p.quantity,
-      imageUrl: p.images?.[0]?.url,
-      isPreorder: p.isPreorder,
-    });
-    message.success(`Đã thêm "${p.name}" vào giỏ hàng`);
-    navigate('/checkout');
-  };
 
   return (
     <div style={{ padding: '24px 32px', maxWidth: 1280, margin: '0 auto' }}>
@@ -193,71 +147,7 @@ export const HomePage: React.FC = () => {
           <Row gutter={[20, 20]}>
             {products.map((p) => (
               <Col xs={24} sm={12} md={6} key={p.id}>
-                <Badge.Ribbon
-                  text={p.isPreorder ? 'Hàng Order' : 'Có sẵn'}
-                  color={p.isPreorder ? 'purple' : 'red'}
-                >
-                  <Card
-                    hoverable
-                    style={{ borderRadius: 8, overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' }}
-                    cover={
-                      <Link to={`/products/${p.slug}`}>
-                        <div style={{ height: 210, background: '#262626', overflow: 'hidden' }}>
-                          <Image
-                            preview={false}
-                            alt={p.name}
-                            src={p.images?.[0]?.url || 'https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?w=500'}
-                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                            fallback="https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?w=500"
-                          />
-                        </div>
-                      </Link>
-                    }
-                    actions={[
-                      <Button
-                        type="link"
-                        icon={<EyeOutlined />}
-                        onClick={() => navigate(`/products/${p.slug}`)}
-                      >
-                        Chi Tiết
-                      </Button>,
-                      <Button
-                        type="link"
-                        icon={<ShoppingOutlined />}
-                        disabled={!p.isPreorder && p.quantity <= 0}
-                        style={{
-                          color: !p.isPreorder && p.quantity <= 0 ? '#bfbfbf' : '#e53935',
-                          fontWeight: 600,
-                        }}
-                        onClick={() => handleQuickBuy(p)}
-                      >
-                        {p.isPreorder ? 'Đặt Báo Giá' : p.quantity <= 0 ? 'Hết Hàng' : 'Mua Ngay'}
-                      </Button>,
-                    ]}
-                  >
-                    <Space direction="vertical" size={4} style={{ width: '100%' }}>
-                      <div style={{ display: 'flex', gap: 6, marginBottom: 4 }}>
-                        <Tag color="blue">{p.grade || 'Gunpla'}</Tag>
-                        {p.brand && <Tag>{p.brand.name}</Tag>}
-                      </div>
-                      <Link to={`/products/${p.slug}`} style={{ color: 'inherit' }}>
-                        <Text strong ellipsis style={{ fontSize: 15, display: 'block' }}>
-                          {p.name}
-                        </Text>
-                      </Link>
-                      <Text type="secondary" style={{ fontSize: 12 }}>
-                        {p.scale ? `Tỉ lệ: ${p.scale}` : ''} {p.condition === 'NEW_SEAL' ? '• Mới 100%' : ''}
-                      </Text>
-                      <div style={{ marginTop: 8 }}>
-                        <Text style={{ fontSize: 18, fontWeight: 700, color: '#e53935' }}>
-                          {p.currentPrice > 0
-                            ? `${p.currentPrice.toLocaleString('vi-VN')} đ`
-                            : 'Liên hệ báo giá'}
-                        </Text>
-                      </div>
-                    </Space>
-                  </Card>
-                </Badge.Ribbon>
+                <ProductCard product={p} />
               </Col>
             ))}
           </Row>

@@ -8,30 +8,21 @@ import {
   Select,
   Checkbox,
   Button,
-  Badge,
-  Tag,
   Space,
   Pagination,
   Spin,
   Empty,
   Breadcrumb,
-  Image,
 } from 'antd';
 import {
   SearchOutlined,
   FilterOutlined,
-  ShoppingOutlined,
-  EyeOutlined,
   HomeOutlined,
   ClearOutlined,
-  HeartOutlined,
-  HeartFilled,
 } from '@ant-design/icons';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { apiClient } from '../../api/client';
-import { useWishlistStore } from '../../store/useWishlistStore';
-import { useCartStore } from '../../store/useCartStore';
-import { message } from 'antd';
+import { ProductCard } from '../../components/ProductCard';
 
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
@@ -56,9 +47,6 @@ interface Product {
 
 export const ProductListPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const { isInWishlist, toggleWishlist } = useWishlistStore();
-  const addToCart = useCartStore((state) => state.addToCart);
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
@@ -387,128 +375,7 @@ export const ProductListPage: React.FC = () => {
               <Row gutter={[16, 16]}>
                 {products.map((p) => (
                   <Col xs={24} sm={12} lg={8} key={p.id}>
-                    <Badge.Ribbon
-                      text={p.isPreorder ? 'Hàng Order' : 'Có sẵn'}
-                      color={p.isPreorder ? 'purple' : '#e53935'}
-                    >
-                      <Card
-                        hoverable
-                        style={{ borderRadius: 8, overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column' }}
-                        cover={
-                          <Link to={`/products/${p.slug}`}>
-                            <div style={{ height: 210, background: '#1c1c1c', overflow: 'hidden' }}>
-                              <Image
-                                preview={false}
-                                alt={p.name}
-                                src={p.images[0]?.url || 'https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?w=500'}
-                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                fallback="https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?w=500"
-                              />
-                            </div>
-                          </Link>
-                        }
-                        actions={[
-                          <Button
-                            type="link"
-                            icon={
-                              isInWishlist(p.id) ? (
-                                <HeartFilled style={{ color: '#e53935' }} />
-                              ) : (
-                                <HeartOutlined />
-                              )
-                            }
-                            onClick={() => {
-                              const alreadyIn = isInWishlist(p.id);
-                              toggleWishlist({
-                                id: p.id,
-                                name: p.name,
-                                slug: p.slug,
-                                sku: p.sku,
-                                grade: p.grade,
-                                scale: p.scale,
-                                brand: p.brand?.name,
-                                price: p.currentPrice,
-                                imageUrl: p.images[0]?.url,
-                                isPreorder: p.isPreorder,
-                              });
-                              if (alreadyIn) {
-                                message.info(`Đã bỏ "${p.name}" khỏi danh sách yêu thích`);
-                              } else {
-                                message.success(`Đã thêm "${p.name}" vào danh sách yêu thích!`);
-                              }
-                            }}
-                          >
-                            {isInWishlist(p.id) ? 'Đã lưu' : 'Lưu'}
-                          </Button>,
-                          <Button
-                            type="link"
-                            icon={<EyeOutlined />}
-                            onClick={() => navigate(`/products/${p.slug}`)}
-                          >
-                            Chi tiết
-                          </Button>,
-                          <Button
-                            type="link"
-                            icon={<ShoppingOutlined />}
-                            disabled={!p.isPreorder && p.quantity <= 0}
-                            style={{
-                              color: !p.isPreorder && p.quantity <= 0 ? '#bfbfbf' : '#e53935',
-                              fontWeight: 600,
-                            }}
-                            onClick={() => {
-                              if (p.isPreorder) {
-                                navigate(`/quotations?product=${p.id}`);
-                              } else if (p.quantity <= 0) {
-                                message.warning(`Mô hình "${p.name}" hiện đang tạm hết hàng!`);
-                              } else {
-                                addToCart({
-                                  id: p.id,
-                                  name: p.name,
-                                  slug: p.slug,
-                                  sku: p.sku,
-                                  grade: p.grade,
-                                  scale: p.scale,
-                                  price: p.currentPrice,
-                                  quantity: 1,
-                                  maxStock: p.quantity,
-                                  imageUrl: p.images[0]?.url,
-                                  isPreorder: false,
-                                });
-                                message.success(`Đã thêm "${p.name}" vào giỏ hàng`);
-                                navigate('/checkout');
-                              }
-                            }}
-                          >
-                            {p.isPreorder ? 'Báo Giá' : p.quantity <= 0 ? 'Hết Hàng' : 'Mua Ngay'}
-                          </Button>,
-                        ]}
-                      >
-                        <Space orientation="vertical" size={4} style={{ width: '100%' }}>
-                          <Space size={4}>
-                            <Tag color="blue">{p.grade || 'Gunpla'}</Tag>
-                            <Tag color="geekblue">{p.brand?.name}</Tag>
-                          </Space>
-
-                          <Link to={`/products/${p.slug}`} style={{ color: 'inherit' }}>
-                            <Text strong ellipsis style={{ fontSize: 15, display: 'block' }}>
-                              {p.name}
-                            </Text>
-                          </Link>
-
-                          <Text type="secondary" style={{ fontSize: 12 }}>
-                            SKU: {p.sku} | Tỉ lệ: {p.scale || 'N/A'}
-                          </Text>
-
-                          <div style={{ marginTop: 8 }}>
-                            <Text style={{ fontSize: 18, fontWeight: 700, color: '#e53935' }}>
-                              {p.currentPrice > 0
-                                ? `${p.currentPrice.toLocaleString('vi-VN')} đ`
-                                : 'Liên hệ báo giá'}
-                            </Text>
-                          </div>
-                        </Space>
-                      </Card>
-                    </Badge.Ribbon>
+                    <ProductCard product={p} />
                   </Col>
                 ))}
               </Row>
