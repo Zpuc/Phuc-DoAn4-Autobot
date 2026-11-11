@@ -72,6 +72,8 @@ export const ProductListPage: React.FC = () => {
   const [isPreorder, setIsPreorder] = useState<boolean | undefined>(
     searchParams.get('isPreorder') ? searchParams.get('isPreorder') === 'true' : undefined,
   );
+  const [priceRange, setPriceRange] = useState<string | undefined>(undefined);
+  const [sortBy, setSortBy] = useState<string>('newest');
   const [page, setPage] = useState(Number(searchParams.get('page')) || 1);
 
   const [brands, setBrands] = useState<{ id: string; name: string }[]>([]);
@@ -83,15 +85,34 @@ export const ProductListPage: React.FC = () => {
       .catch(() => {});
   }, []);
 
+  useEffect(() => {
+    const urlSearch = searchParams.get('search') || '';
+    const urlGrade = searchParams.get('grade') || undefined;
+    setSearch(urlSearch);
+    setGrade(urlGrade);
+    setPage(1);
+  }, [searchParams]);
+
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const params: any = { page, limit: 12 };
+      const params: any = { page, limit: 12, sortBy };
       if (search) params.search = search;
       if (grade) params.grade = grade;
       if (brandId) params.brandId = brandId;
       if (series) params.series = series;
       if (isPreorder !== undefined) params.isPreorder = isPreorder;
+      if (priceRange === 'under_500') {
+        params.maxPrice = 500000;
+      } else if (priceRange === '500_1500') {
+        params.minPrice = 500000;
+        params.maxPrice = 1500000;
+      } else if (priceRange === '1500_3000') {
+        params.minPrice = 1500000;
+        params.maxPrice = 3000000;
+      } else if (priceRange === 'over_3000') {
+        params.minPrice = 3000000;
+      }
 
       const res: any = await apiClient.get('/products', { params });
       setProducts(res.items || []);
@@ -105,7 +126,7 @@ export const ProductListPage: React.FC = () => {
 
   useEffect(() => {
     fetchProducts();
-  }, [page, grade, brandId, series, isPreorder]);
+  }, [page, grade, brandId, series, isPreorder, priceRange, sortBy, search]);
 
   const handleResetFilters = () => {
     setSearch('');
@@ -113,6 +134,8 @@ export const ProductListPage: React.FC = () => {
     setBrandId(undefined);
     setSeries(undefined);
     setIsPreorder(undefined);
+    setPriceRange(undefined);
+    setSortBy('newest');
     setPage(1);
     setSearchParams({});
   };
@@ -255,6 +278,28 @@ export const ProductListPage: React.FC = () => {
               </Select>
             </div>
 
+            {/* Khoảng giá */}
+            <div style={{ marginBottom: 18 }}>
+              <Text strong style={{ display: 'block', marginBottom: 8 }}>
+                Khoảng giá (VND)
+              </Text>
+              <Select
+                placeholder="Tất cả mức giá"
+                allowClear
+                style={{ width: '100%' }}
+                value={priceRange}
+                onChange={(val) => {
+                  setPriceRange(val);
+                  setPage(1);
+                }}
+              >
+                <Option value="under_500">Dưới 500.000 đ</Option>
+                <Option value="500_1500">500.000 đ - 1.500.000 đ</Option>
+                <Option value="1500_3000">1.500.000 đ - 3.000.000 đ</Option>
+                <Option value="over_3000">Trên 3.000.000 đ</Option>
+              </Select>
+            </div>
+
             {/* Trạng thái hàng */}
             <div style={{ marginBottom: 18 }}>
               <Text strong style={{ display: 'block', marginBottom: 8 }}>
@@ -313,12 +358,30 @@ export const ProductListPage: React.FC = () => {
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: 12,
                   marginBottom: 16,
                 }}
               >
                 <Text type="secondary">
                   Tìm thấy <strong>{total}</strong> mô hình phù hợp
                 </Text>
+
+                <Space>
+                  <Text type="secondary" style={{ fontSize: 13 }}>Sắp xếp:</Text>
+                  <Select
+                    value={sortBy}
+                    style={{ width: 170 }}
+                    onChange={(val) => {
+                      setSortBy(val);
+                      setPage(1);
+                    }}
+                  >
+                    <Option value="newest">Mới nhất</Option>
+                    <Option value="price_asc">Giá: Thấp → Cao</Option>
+                    <Option value="price_desc">Giá: Cao → Thấp</Option>
+                  </Select>
+                </Space>
               </div>
 
               <Row gutter={[16, 16]}>
@@ -387,10 +450,16 @@ export const ProductListPage: React.FC = () => {
                           <Button
                             type="link"
                             icon={<ShoppingOutlined />}
-                            style={{ color: '#e53935', fontWeight: 600 }}
+                            disabled={!p.isPreorder && p.quantity <= 0}
+                            style={{
+                              color: !p.isPreorder && p.quantity <= 0 ? '#bfbfbf' : '#e53935',
+                              fontWeight: 600,
+                            }}
                             onClick={() => {
                               if (p.isPreorder) {
                                 navigate(`/quotations?product=${p.id}`);
+                              } else if (p.quantity <= 0) {
+                                message.warning(`Mô hình "${p.name}" hiện đang tạm hết hàng!`);
                               } else {
                                 addToCart({
                                   id: p.id,
@@ -401,6 +470,7 @@ export const ProductListPage: React.FC = () => {
                                   scale: p.scale,
                                   price: p.currentPrice,
                                   quantity: 1,
+                                  maxStock: p.quantity,
                                   imageUrl: p.images[0]?.url,
                                   isPreorder: false,
                                 });
@@ -409,7 +479,7 @@ export const ProductListPage: React.FC = () => {
                               }
                             }}
                           >
-                            {p.isPreorder ? 'Báo Giá' : 'Mua Ngay'}
+                            {p.isPreorder ? 'Báo Giá' : p.quantity <= 0 ? 'Hết Hàng' : 'Mua Ngay'}
                           </Button>,
                         ]}
                       >

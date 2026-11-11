@@ -84,7 +84,7 @@ export const CartPage: React.FC = () => {
       render: (_: any, record: CartItem) => (
         <InputNumber
           min={1}
-          max={99}
+          max={record.isPreorder ? 99 : Math.max(1, record.maxStock ?? 99)}
           value={record.quantity}
           onChange={(val) => updateQuantity(record.id, val || 1)}
         />

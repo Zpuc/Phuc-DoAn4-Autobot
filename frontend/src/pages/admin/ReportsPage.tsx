@@ -13,6 +13,10 @@ import {
   Divider,
   Alert,
   Spin,
+  Segmented,
+  Tooltip,
+  Empty,
+  message,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import {
@@ -23,9 +27,9 @@ import {
   PrinterOutlined,
   ReloadOutlined,
   CheckCircleOutlined,
-  SyncOutlined,
   CloseCircleOutlined,
-  InboxOutlined,
+  DownloadOutlined,
+  BarChartOutlined,
 } from '@ant-design/icons';
 import { apiClient } from '../../api/client';
 
@@ -38,6 +42,8 @@ interface DashboardData {
   totalRevenue: number;
   totalCost: number;
   grossProfit: number;
+  dailyRevenue?: { date: string; label: string; revenue: number; profit: number; ordersCount: number }[];
+  monthlyRevenue?: { month: string; label: string; revenue: number; profit: number; ordersCount: number }[];
   lowStockCount: number;
   lowStockProducts: {
     id: string;
@@ -60,6 +66,47 @@ interface DashboardData {
 export const ReportsPage: React.FC = () => {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(false);
+  const [chartMode, setChartMode] = useState<'daily' | 'monthly'>('daily');
+
+  const handleExportCsv = () => {
+    if (!data) {
+      message.warning('Chưa có dữ liệu báo cáo để xuất');
+      return;
+    }
+    const rows: string[][] = [
+      ['BÁO CÁO DOANH THU & TỒN KHO - GUNDAM AUTOBOT'],
+      ['Ngày xuất báo cáo', new Date().toLocaleString('vi-VN')],
+      [],
+      ['Chỉ số tổng quan', 'Giá trị'],
+      ['Tổng số sản phẩm', String(data.totalProducts)],
+      ['Tổng số đơn hàng', String(data.totalOrders)],
+      ['Đơn hoàn thành', String(data.statusCounts?.COMPLETED || 0)],
+      ['Tổng doanh thu (VND)', String(data.totalRevenue)],
+      ['Tổng giá vốn (VND)', String(data.totalCost)],
+      ['Lợi nhuận gộp (VND)', String(data.grossProfit)],
+      [],
+      ['DOANH THU THEO NGÀY', 'Số đơn', 'Doanh thu (VND)', 'Lợi nhuận (VND)'],
+      ...(data.dailyRevenue || []).map((d) => [d.label, String(d.ordersCount), String(d.revenue), String(d.profit)]),
+      [],
+      ['DOANH THU THEO THÁNG', 'Số đơn', 'Doanh thu (VND)', 'Lợi nhuận (VND)'],
+      ...(data.monthlyRevenue || []).map((m) => [m.label, String(m.ordersCount), String(m.revenue), String(m.profit)]),
+      [],
+      ['CẢNH BÁO TỒN KHO THẤP', 'SKU', 'Grade', 'Số lượng còn'],
+      ...(data.lowStockProducts || []).map((p) => [p.name, p.sku, p.grade || '', String(p.quantity)]),
+    ];
+
+    const csvContent =
+      '\uFEFF' +
+      rows.map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `BaoCaoDoanhThu_AUTOBOT_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+    message.success('Đã xuất file báo cáo Excel (CSV) thành công!');
+  };
 
   const fetchReport = async () => {
     setLoading(true);
@@ -151,9 +198,12 @@ export const ReportsPage: React.FC = () => {
           </Text>
         </div>
 
-        <Space>
+        <Space wrap>
           <Button icon={<ReloadOutlined />} onClick={fetchReport} loading={loading}>
             Làm mới số liệu
+          </Button>
+          <Button icon={<DownloadOutlined />} onClick={handleExportCsv} style={{ borderColor: '#52c41a', color: '#52c41a' }}>
+            Xuất Excel (CSV)
           </Button>
           <Button type="primary" icon={<PrinterOutlined />} onClick={() => window.print()}>
             In báo cáo
@@ -224,6 +274,120 @@ export const ReportsPage: React.FC = () => {
           </Card>
         </Col>
       </Row>
+
+      {/* Biểu đồ Doanh thu & Lợi nhuận */}
+      <Card
+        bordered={false}
+        style={{ borderRadius: 8, marginBottom: 24, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}
+        title={
+          <Space>
+            <BarChartOutlined style={{ color: '#e53935' }} />
+            <span>Biểu Đồ Doanh Thu & Lợi Nhuận Gộp</span>
+          </Space>
+        }
+        extra={
+          <Segmented
+            value={chartMode}
+            onChange={(v) => setChartMode(v as 'daily' | 'monthly')}
+            options={[
+              { label: 'Theo ngày', value: 'daily' },
+              { label: 'Theo tháng', value: 'monthly' },
+            ]}
+          />
+        }
+      >
+        {(() => {
+          const chartSeries = chartMode === 'daily' ? data?.dailyRevenue || [] : data?.monthlyRevenue || [];
+          if (chartSeries.length === 0) {
+            return <Empty description="Chưa có dữ liệu đơn hoàn thành để vẽ biểu đồ" />;
+          }
+          const maxVal = Math.max(...chartSeries.map((s) => Math.max(s.revenue, s.profit, 1)));
+          return (
+            <div>
+              <Space size="large" style={{ marginBottom: 16 }}>
+                <Space size={6}>
+                  <span style={{ width: 12, height: 12, borderRadius: 3, background: '#1677ff', display: 'inline-block' }} />
+                  <Text type="secondary" style={{ fontSize: 12 }}>Doanh thu</Text>
+                </Space>
+                <Space size={6}>
+                  <span style={{ width: 12, height: 12, borderRadius: 3, background: '#52c41a', display: 'inline-block' }} />
+                  <Text type="secondary" style={{ fontSize: 12 }}>Lợi nhuận gộp</Text>
+                </Space>
+              </Space>
+
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-end',
+                  gap: 14,
+                  height: 230,
+                  padding: '20px 12px 10px',
+                  borderBottom: '1px solid #f0f0f0',
+                  borderLeft: '1px solid #f0f0f0',
+                  overflowX: 'auto',
+                }}
+              >
+                {chartSeries.map((item, idx) => {
+                  const revHeight = Math.max(6, Math.round((item.revenue / maxVal) * 165));
+                  const profHeight = Math.max(4, Math.round((Math.max(0, item.profit) / maxVal) * 165));
+                  return (
+                    <Tooltip
+                      key={idx}
+                      title={
+                        <div>
+                          <div><strong>{item.label}</strong> ({item.ordersCount} đơn hoàn thành)</div>
+                          <div>Doanh thu: {item.revenue.toLocaleString('vi-VN')} đ</div>
+                          <div>Lợi nhuận: {item.profit.toLocaleString('vi-VN')} đ</div>
+                        </div>
+                      }
+                    >
+                      <div
+                        style={{
+                          minWidth: 58,
+                          flex: 1,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <Text style={{ fontSize: 11, color: '#595959', marginBottom: 4 }}>
+                          {item.revenue >= 1000000
+                            ? `${(item.revenue / 1000000).toFixed(1)}tr`
+                            : `${Math.round(item.revenue / 1000)}k`}
+                        </Text>
+                        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 165 }}>
+                          <div
+                            style={{
+                              width: 18,
+                              height: revHeight,
+                              background: 'linear-gradient(180deg, #1677ff 0%, #69b1ff 100%)',
+                              borderRadius: '4px 4px 0 0',
+                              transition: 'height 0.3s',
+                            }}
+                          />
+                          <div
+                            style={{
+                              width: 18,
+                              height: profHeight,
+                              background: 'linear-gradient(180deg, #52c41a 0%, #95de64 100%)',
+                              borderRadius: '4px 4px 0 0',
+                              transition: 'height 0.3s',
+                            }}
+                          />
+                        </div>
+                        <Text type="secondary" style={{ fontSize: 11, marginTop: 8, whiteSpace: 'nowrap' }}>
+                          {item.label}
+                        </Text>
+                      </div>
+                    </Tooltip>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })()}
+      </Card>
 
       {/* Tình hình xử lý đơn hàng */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>

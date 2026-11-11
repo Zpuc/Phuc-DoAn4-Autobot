@@ -49,7 +49,7 @@ import {
 } from '@ant-design/icons';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { apiClient } from '../../api/client';
-import { reviewApi, ProductReviewsResponse } from '../../api/reviews';
+import { reviewApi, ProductReviewsResponse, CanReviewResponse } from '../../api/reviews';
 import { useCartStore } from '../../store/useCartStore';
 import { useWishlistStore } from '../../store/useWishlistStore';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -86,10 +86,12 @@ export const ProductDetailPage: React.FC = () => {
   const navigate = useNavigate();
 
   const [product, setProduct] = useState<ProductDetail | null>(null);
+  const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState<string>('');
   const [buyQuantity, setBuyQuantity] = useState<number>(1);
   const [reviewData, setReviewData] = useState<ProductReviewsResponse | null>(null);
+  const [canReviewInfo, setCanReviewInfo] = useState<CanReviewResponse | null>(null);
   const [reviewLoading, setReviewLoading] = useState(false);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [submittingReview, setSubmittingReview] = useState(false);
@@ -103,6 +105,14 @@ export const ProductDetailPage: React.FC = () => {
     try {
       const data = await reviewApi.getByProduct(productId);
       setReviewData(data);
+      if (user) {
+        reviewApi
+          .canReview(productId)
+          .then((info) => setCanReviewInfo(info))
+          .catch(() => setCanReviewInfo(null));
+      } else {
+        setCanReviewInfo(null);
+      }
     } catch {
       // ignore
     } finally {
@@ -114,10 +124,13 @@ export const ProductDetailPage: React.FC = () => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' as ScrollBehavior });
     if (!slug) return;
     setLoading(true);
-    apiClient
-      .get(`/products/slug/${slug}`)
-      .then((res: any) => {
+    Promise.all([
+      apiClient.get(`/products/slug/${slug}`),
+      apiClient.get(`/products/slug/${slug}/related`).catch(() => []),
+    ])
+      .then(([res, related]: any[]) => {
         setProduct(res);
+        setRelatedProducts(related || []);
         if (res.images && res.images.length > 0) {
           setSelectedImage(res.images[0].url);
         }
@@ -227,6 +240,7 @@ export const ProductDetailPage: React.FC = () => {
       scale: product.scale,
       price: product.currentPrice,
       quantity: buyQuantity,
+      maxStock: product.quantity,
       imageUrl: product.images[0]?.url,
       isPreorder: product.isPreorder,
     });
@@ -244,6 +258,7 @@ export const ProductDetailPage: React.FC = () => {
       scale: product.scale,
       price: product.currentPrice,
       quantity: buyQuantity,
+      maxStock: product.quantity,
       imageUrl: product.images[0]?.url,
       isPreorder: product.isPreorder,
     });
@@ -467,11 +482,11 @@ export const ProductDetailPage: React.FC = () => {
 
               <Button
                 size="large"
-                icon={<FilePdfOutlined />}
+                icon={<MessageOutlined />}
                 style={{ height: 48 }}
                 onClick={handleRequestQuotation}
               >
-                Yêu Cầu Báo Giá PDF
+                Liên Hệ Báo Giá
               </Button>
 
               <Button
@@ -590,34 +605,52 @@ export const ProductDetailPage: React.FC = () => {
                       <div style={{ marginTop: 16 }}>
                         {(() => {
                           const hasReviewed = Boolean(
-                            user &&
-                              reviewData?.reviews?.some(
-                                (r) => r.userId === user.id || (user.email && r.userEmail === user.email),
-                              ),
+                            canReviewInfo?.hasReviewed ||
+                              (user &&
+                                reviewData?.reviews?.some(
+                                  (r) => r.userId === user.id || (user.email && r.userEmail === user.email),
+                                )),
                           );
+                          const cannotReviewNoOrder = Boolean(user && canReviewInfo && !canReviewInfo.hasCompletedOrder);
                           return (
-                            <Button
-                              type="primary"
-                              disabled={hasReviewed}
-                              icon={hasReviewed ? <CheckCircleOutlined /> : <EditOutlined />}
-                              style={{ background: hasReviewed ? undefined : '#e53935', fontWeight: 600 }}
-                              onClick={() => {
-                                if (!user) {
-                                  message.warning('Vui lòng đăng nhập tài khoản để gửi đánh giá sản phẩm!');
-                                  navigate('/login');
-                                  return;
-                                }
-                                reviewForm.resetFields();
-                                reviewForm.setFieldsValue({
-                                  userName: user.name,
-                                  userEmail: user.email,
-                                  rating: 5,
-                                });
-                                setReviewModalOpen(true);
-                              }}
-                            >
-                              {hasReviewed ? 'Bạn Đã Đánh Giá Mô Hình Này' : 'Viết Đánh Giá Của Bạn'}
-                            </Button>
+                            <>
+                              <Button
+                                type="primary"
+                                disabled={hasReviewed || cannotReviewNoOrder}
+                                icon={hasReviewed ? <CheckCircleOutlined /> : <EditOutlined />}
+                                style={{
+                                  background: hasReviewed || cannotReviewNoOrder ? undefined : '#e53935',
+                                  fontWeight: 600,
+                                }}
+                                onClick={() => {
+                                  if (!user) {
+                                    message.warning('Vui lòng đăng nhập tài khoản để gửi đánh giá sản phẩm!');
+                                    navigate('/login');
+                                    return;
+                                  }
+                                  reviewForm.resetFields();
+                                  reviewForm.setFieldsValue({
+                                    userName: user.name,
+                                    userEmail: user.email,
+                                    rating: 5,
+                                  });
+                                  setReviewModalOpen(true);
+                                }}
+                              >
+                                {hasReviewed
+                                  ? 'Bạn Đã Đánh Giá Mô Hình Này'
+                                  : cannotReviewNoOrder
+                                    ? 'Cần Mua & Hoàn Thành Đơn Để Đánh Giá'
+                                    : 'Viết Đánh Giá Của Bạn'}
+                              </Button>
+                              {cannotReviewNoOrder && (
+                                <div style={{ marginTop: 8 }}>
+                                  <Text type="secondary" style={{ fontSize: 12 }}>
+                                    Chỉ khách hàng đã mua và hoàn thành đơn hàng cho mẫu này mới có thể đánh giá.
+                                  </Text>
+                                </div>
+                              )}
+                            </>
                           );
                         })()}
                       </div>
@@ -727,6 +760,55 @@ export const ProductDetailPage: React.FC = () => {
           ]}
         />
       </Card>
+
+      {/* Sản phẩm liên quan */}
+      {relatedProducts.length > 0 && (
+        <div style={{ marginTop: 32 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <Title level={4} style={{ margin: 0 }}>
+              Mô Hình Gundam Liên Quan
+            </Title>
+            <Link to={product.grade ? `/products?grade=${encodeURIComponent(product.grade)}` : '/products'}>
+              <Button type="link" style={{ color: '#e53935', fontWeight: 600, padding: 0 }}>
+                Xem thêm cùng phân khúc →
+              </Button>
+            </Link>
+          </div>
+          <Row gutter={[16, 16]}>
+            {relatedProducts.map((rp) => (
+              <Col xs={24} sm={12} md={6} key={rp.id}>
+                <Card
+                  hoverable
+                  style={{ borderRadius: 10, overflow: 'hidden', height: '100%' }}
+                  onClick={() => navigate(`/products/${rp.slug}`)}
+                  cover={
+                    <div style={{ height: 180, background: '#1c1c1c', overflow: 'hidden' }}>
+                      <Image
+                        preview={false}
+                        alt={rp.name}
+                        src={rp.images?.[0]?.url || 'https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?w=500'}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        fallback="https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?w=500"
+                      />
+                    </div>
+                  }
+                >
+                  <Space size={4} style={{ marginBottom: 6 }}>
+                    <Tag color="blue">{rp.grade || 'Gunpla'}</Tag>
+                    {rp.brand?.name && <Tag color="geekblue">{rp.brand.name}</Tag>}
+                  </Space>
+                  <Text strong ellipsis style={{ display: 'block', fontSize: 14, marginBottom: 6 }}>
+                    {rp.name}
+                  </Text>
+                  <Text strong style={{ color: '#e53935', fontSize: 16 }}>
+                    {rp.currentPrice > 0 ? `${Number(rp.currentPrice).toLocaleString('vi-VN')} đ` : 'Liên hệ báo giá'}
+                  </Text>
+                </Card>
+              </Col>
+            ))}
+          </Row>
+        </div>
+      )}
 
       {/* Modal Viết Đánh Giá */}
       <Modal

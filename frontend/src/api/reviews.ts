@@ -50,11 +50,20 @@ export interface CreateReviewPayload {
   gradeTag?: string;
 }
 
+export interface CanReviewResponse {
+  canReview: boolean;
+  hasReviewed: boolean;
+  hasCompletedOrder: boolean;
+  reason?: string;
+}
+
 export const reviewApi = {
   getByProduct: (productId: string): Promise<ProductReviewsResponse> =>
     apiClient.get(`/reviews/product/${productId}`),
   getMyReviewedProducts: (): Promise<{ productIds: string[] }> =>
     apiClient.get('/reviews/my-reviewed-products'),
+  canReview: (productId: string): Promise<CanReviewResponse> =>
+    apiClient.get(`/reviews/can-review/${productId}`),
   create: (payload: CreateReviewPayload): Promise<ReviewItem> =>
     apiClient.post('/reviews', payload),
   like: (id: string): Promise<ReviewItem> =>

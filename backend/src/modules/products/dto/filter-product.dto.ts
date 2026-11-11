@@ -39,6 +39,23 @@ export class FilterProductDto {
   @IsBoolean()
   isPreorder?: boolean;
 
+  @ApiProperty({ required: false, description: 'Giá tối thiểu (VND)' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  minPrice?: number;
+
+  @ApiProperty({ required: false, description: 'Giá tối đa (VND)' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  maxPrice?: number;
+
+  @ApiProperty({ required: false, description: 'Sắp xếp: newest | price_asc | price_desc' })
+  @IsOptional()
+  @IsString()
+  sortBy?: string;
+
   @ApiProperty({ required: false, description: 'Trang hiện tại (Mặc định 1)' })
   @IsOptional()
   @Type(() => Number)

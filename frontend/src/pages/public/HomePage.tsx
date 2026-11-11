@@ -60,6 +60,14 @@ export const HomePage: React.FC = () => {
   }, []);
 
   const handleQuickBuy = (p: ProductItem) => {
+    if (p.isPreorder) {
+      navigate('/quotations');
+      return;
+    }
+    if (p.quantity <= 0) {
+      message.warning(`Mô hình "${p.name}" hiện đang tạm hết hàng!`);
+      return;
+    }
     addToCart({
       id: p.id,
       name: p.name,
@@ -69,6 +77,7 @@ export const HomePage: React.FC = () => {
       scale: p.scale,
       price: p.currentPrice,
       quantity: 1,
+      maxStock: p.quantity,
       imageUrl: p.images?.[0]?.url,
       isPreorder: p.isPreorder,
     });
@@ -215,10 +224,14 @@ export const HomePage: React.FC = () => {
                       <Button
                         type="link"
                         icon={<ShoppingOutlined />}
-                        style={{ color: '#e53935', fontWeight: 600 }}
+                        disabled={!p.isPreorder && p.quantity <= 0}
+                        style={{
+                          color: !p.isPreorder && p.quantity <= 0 ? '#bfbfbf' : '#e53935',
+                          fontWeight: 600,
+                        }}
                         onClick={() => handleQuickBuy(p)}
                       >
-                        {p.isPreorder ? 'Đặt Báo Giá' : 'Mua Ngay'}
+                        {p.isPreorder ? 'Đặt Báo Giá' : p.quantity <= 0 ? 'Hết Hàng' : 'Mua Ngay'}
                       </Button>,
                     ]}
                   >

@@ -72,6 +72,66 @@ export class ReviewsService {
     return { productIds };
   }
 
+  async checkCanReview(productId: string, userId?: string, userEmail?: string) {
+    if (!userId && !userEmail) {
+      return {
+        canReview: false,
+        hasReviewed: false,
+        hasCompletedOrder: false,
+        reason: 'Vui lòng đăng nhập tài khoản để gửi đánh giá.',
+      };
+    }
+
+    const existingReview = await this.prisma.review.findFirst({
+      where: {
+        productId,
+        OR: [
+          ...(userId ? [{ userId }] : []),
+          ...(userEmail ? [{ userEmail }] : []),
+        ],
+      },
+      select: { id: true },
+    });
+
+    if (existingReview) {
+      return {
+        canReview: false,
+        hasReviewed: true,
+        hasCompletedOrder: true,
+        reason: 'Tài khoản của bạn đã đánh giá mô hình này rồi.',
+      };
+    }
+
+    const completedOrder = await this.prisma.order.findFirst({
+      where: {
+        status: 'COMPLETED',
+        OR: [
+          ...(userId ? [{ userId }] : []),
+          ...(userEmail ? [{ customerEmail: userEmail }] : []),
+        ],
+        items: {
+          some: { productId },
+        },
+      },
+      select: { id: true },
+    });
+
+    if (!completedOrder) {
+      return {
+        canReview: false,
+        hasReviewed: false,
+        hasCompletedOrder: false,
+        reason: 'Chỉ khách hàng đã mua và hoàn thành đơn hàng cho sản phẩm này mới có thể đánh giá.',
+      };
+    }
+
+    return {
+      canReview: true,
+      hasReviewed: false,
+      hasCompletedOrder: true,
+    };
+  }
+
   async create(dto: CreateReviewDto, userId?: string, authEmail?: string) {
     if (!userId) {
       throw new BadRequestException('Vui lòng đăng nhập tài khoản để gửi đánh giá sản phẩm');
@@ -90,19 +150,10 @@ export class ReviewsService {
     }
 
     const emailToCheck = authEmail || dto.userEmail?.trim();
-    const existingReview = await this.prisma.review.findFirst({
-      where: {
-        productId: dto.productId,
-        OR: [
-          { userId },
-          ...(emailToCheck ? [{ userEmail: emailToCheck }] : []),
-        ],
-      },
-    });
-
-    if (existingReview) {
+    const eligibility = await this.checkCanReview(dto.productId, userId, emailToCheck);
+    if (!eligibility.canReview) {
       throw new BadRequestException(
-        'Tài khoản của bạn đã đánh giá sản phẩm này rồi (mỗi sản phẩm chỉ được đánh giá 1 lần)',
+        eligibility.reason || 'Bạn không đủ điều kiện đánh giá sản phẩm này',
       );
     }
 

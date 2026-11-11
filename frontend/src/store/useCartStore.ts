@@ -9,6 +9,7 @@ export interface CartItem {
   scale?: string;
   price: number;
   quantity: number;
+  maxStock?: number;
   imageUrl?: string;
   isPreorder: boolean;
 }
@@ -43,7 +44,17 @@ export const useCartStore = create<CartState>((set, get) => ({
     let updatedItems: CartItem[];
     if (existingIndex > -1) {
       updatedItems = [...currentItems];
-      updatedItems[existingIndex].quantity += newItem.quantity;
+      const existing = updatedItems[existingIndex];
+      const effectiveMax = newItem.maxStock ?? existing.maxStock;
+      const nextQty = existing.quantity + newItem.quantity;
+      updatedItems[existingIndex] = {
+        ...existing,
+        maxStock: effectiveMax,
+        quantity:
+          !existing.isPreorder && effectiveMax !== undefined && effectiveMax > 0
+            ? Math.min(nextQty, effectiveMax)
+            : nextQty,
+      };
     } else {
       updatedItems = [...currentItems, newItem];
     }

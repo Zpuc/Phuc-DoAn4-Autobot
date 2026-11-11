@@ -11,6 +11,10 @@ body {
   overflow-x: hidden;
 }
 
+.ant-layout-header input::placeholder {
+  color: #999 !important;
+}
+
 @media (max-width: 768px) {
   .ant-layout-content > div {
     padding-left: 12px !important;

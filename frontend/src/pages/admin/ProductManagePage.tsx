@@ -17,6 +17,7 @@ import {
   Row,
   Col,
   Image,
+  Upload,
 } from 'antd';
 import {
   PlusOutlined,
@@ -25,6 +26,7 @@ import {
   HistoryOutlined,
   SearchOutlined,
   ReloadOutlined,
+  UploadOutlined,
 } from '@ant-design/icons';
 import { apiClient } from '../../api/client';
 
@@ -73,6 +75,7 @@ export const ProductManagePage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string>('');
   const [form] = Form.useForm();
 
   // Modal lịch sử giá
@@ -120,6 +123,7 @@ export const ProductManagePage: React.FC = () => {
 
   const handleOpenCreateModal = () => {
     setEditingProduct(null);
+    setPreviewImage('');
     form.resetFields();
     form.setFieldsValue({
       status: 'ACTIVE',
@@ -134,6 +138,8 @@ export const ProductManagePage: React.FC = () => {
 
   const handleOpenEditModal = (record: Product) => {
     setEditingProduct(record);
+    const imgUrl = record.images[0]?.url || '';
+    setPreviewImage(imgUrl);
     form.resetFields();
     form.setFieldsValue({
       name: record.name,
@@ -150,9 +156,27 @@ export const ProductManagePage: React.FC = () => {
       price: record.currentPrice,
       costPrice: record.costPrice,
       quantity: record.quantity,
-      imageUrl: record.images[0]?.url || '',
+      imageUrl: imgUrl,
     });
     setIsModalOpen(true);
+  };
+
+  const handleProductImageUpload = (file: File) => {
+    if (file.size > 5 * 1024 * 1024) {
+      message.error('Ảnh vượt quá 5MB, vui lòng chọn ảnh nhỏ hơn!');
+      return false;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target?.result as string;
+      if (dataUrl) {
+        setPreviewImage(dataUrl);
+        form.setFieldsValue({ imageUrl: dataUrl });
+        message.success('Đã tải ảnh từ máy thành công');
+      }
+    };
+    reader.readAsDataURL(file);
+    return false;
   };
 
   const handleSaveProduct = async () => {
@@ -558,8 +582,46 @@ export const ProductManagePage: React.FC = () => {
 
           <Row gutter={16}>
             <Col span={16}>
-              <Form.Item name="imageUrl" label="URL hình ảnh sản phẩm">
-                <Input placeholder="https://images.unsplash.com/..." />
+              <Form.Item label="Hình ảnh sản phẩm (Tải từ máy hoặc dán URL)">
+                <Space direction="vertical" style={{ width: '100%' }} size={8}>
+                  <Space wrap>
+                    <Upload
+                      accept="image/*"
+                      showUploadList={false}
+                      beforeUpload={handleProductImageUpload}
+                    >
+                      <Button icon={<UploadOutlined />}>Tải ảnh từ máy tính</Button>
+                    </Upload>
+                    {previewImage && (
+                      <Button
+                        danger
+                        size="small"
+                        icon={<DeleteOutlined />}
+                        onClick={() => {
+                          setPreviewImage('');
+                          form.setFieldsValue({ imageUrl: '' });
+                        }}
+                      >
+                        Xóa ảnh
+                      </Button>
+                    )}
+                  </Space>
+                  <Form.Item name="imageUrl" noStyle>
+                    <Input
+                      placeholder="Hoặc dán URL hình ảnh (https://...)"
+                      onChange={(e) => setPreviewImage(e.target.value)}
+                    />
+                  </Form.Item>
+                  {previewImage && (
+                    <Image
+                      src={previewImage}
+                      alt="Preview"
+                      width={96}
+                      height={96}
+                      style={{ objectFit: 'cover', borderRadius: 8, border: '1px solid #d9d9d9' }}
+                    />
+                  )}
+                </Space>
               </Form.Item>
             </Col>
             <Col span={4}>
