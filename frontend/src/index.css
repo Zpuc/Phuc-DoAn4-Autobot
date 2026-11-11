@@ -43,6 +43,10 @@ body {
     padding: 14px !important;
   }
 
+  .autobot-product-card .ant-card-body {
+    padding: 10px 10px 12px !important;
+  }
+
   .ant-table-wrapper {
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch;
