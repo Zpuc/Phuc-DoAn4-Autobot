@@ -367,7 +367,10 @@ export const PublicLayout: React.FC = () => {
 
   return (
     <Layout style={{ minHeight: '100vh', background: '#f5f7fa' }}>
-      <div style={{ position: 'sticky', top: 0, zIndex: 1000, boxShadow: '0 2px 8px rgba(0,0,0,0.25)' }}>
+      <div
+        className="autobot-sticky-header"
+        style={{ position: 'sticky', top: 0, zIndex: 1000, boxShadow: '0 2px 8px rgba(0,0,0,0.25)' }}
+      >
         <Header
           style={{
             display: 'flex',
@@ -509,6 +512,38 @@ export const PublicLayout: React.FC = () => {
           </Space>
         </Header>
 
+        {isMobile && (
+          <div
+            style={{
+              background: '#1a1a1a',
+              borderTop: '1px solid #262626',
+              padding: '8px 12px 10px',
+            }}
+          >
+            <Input
+              placeholder="Tìm tên mô hình Gunpla, SKU..."
+              allowClear
+              value={headerSearch}
+              onChange={(e) => setHeaderSearch(e.target.value)}
+              onPressEnter={() => handleHeaderSearch(headerSearch)}
+              suffix={
+                <SearchOutlined
+                  style={{ color: '#e53935', fontSize: 16, cursor: 'pointer' }}
+                  onClick={() => handleHeaderSearch(headerSearch)}
+                />
+              }
+              style={{
+                width: '100%',
+                borderRadius: 20,
+                background: '#262626',
+                borderColor: '#3a3a3a',
+                color: '#fff',
+                padding: '5px 14px',
+              }}
+            />
+          </div>
+        )}
+
         {!isMobile && (
           <div
             style={{
@@ -517,7 +552,7 @@ export const PublicLayout: React.FC = () => {
               padding: '0 24px',
             }}
           >
-            <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+            <div style={{ maxWidth: 1280, margin: '0 auto', display: 'flex', justifyContent: 'center' }}>
               <Menu
                 theme="dark"
                 mode="horizontal"
@@ -529,6 +564,9 @@ export const PublicLayout: React.FC = () => {
                   lineHeight: '44px',
                   height: 44,
                   fontSize: 14,
+                  width: '100%',
+                  display: 'flex',
+                  justifyContent: 'center',
                 }}
                 items={navItems}
               />
@@ -550,17 +588,6 @@ export const PublicLayout: React.FC = () => {
         }}
         closeIcon={<span style={{ color: '#fff', fontSize: 18 }}>✕</span>}
       >
-        <div style={{ marginBottom: 14 }}>
-          <Input.Search
-            placeholder="Tìm kiếm Gunpla, SKU..."
-            allowClear
-            enterButton={<SearchOutlined />}
-            value={headerSearch}
-            onChange={(e) => setHeaderSearch(e.target.value)}
-            onSearch={handleHeaderSearch}
-          />
-        </div>
-
         {isAuthenticated && user ? (
           <div
             style={{
