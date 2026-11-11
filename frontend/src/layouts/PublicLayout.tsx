@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Layout, Menu, Button, Space, Badge, Dropdown, Avatar, Typography, Row, Col, Divider, Tag, Popover, Empty, Drawer, Grid } from 'antd';
+import { Layout, Menu, Button, Space, Badge, Dropdown, Avatar, Typography, Row, Col, Divider, Tag, Popover, Empty, Drawer, Grid, Input } from 'antd';
 import type { MenuProps } from 'antd';
 import {
   RocketOutlined,
@@ -11,7 +11,6 @@ import {
   LogoutOutlined,
   LoginOutlined,
   EnvironmentOutlined,
-  PhoneOutlined,
   SafetyCertificateOutlined,
   BellOutlined,
   CheckOutlined,
@@ -19,6 +18,7 @@ import {
   OrderedListOutlined,
   CarOutlined,
   CustomerServiceOutlined,
+  SearchOutlined,
 } from '@ant-design/icons';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
@@ -53,8 +53,19 @@ export const PublicLayout: React.FC = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifOpen, setNotifOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [headerSearch, setHeaderSearch] = useState('');
   const screens = Grid.useBreakpoint();
   const isMobile = !screens.lg;
+
+  const handleHeaderSearch = (value: string) => {
+    const keyword = value.trim();
+    setMobileMenuOpen(false);
+    if (keyword) {
+      navigate(`/products?search=${encodeURIComponent(keyword)}`);
+    } else {
+      navigate('/products');
+    }
+  };
 
   const fetchNotifications = useCallback(async () => {
     if (!isAuthenticated) {
@@ -379,12 +390,35 @@ export const PublicLayout: React.FC = () => {
             theme="dark"
             mode="horizontal"
             selectedKeys={[location.pathname]}
-            style={{ background: 'transparent', flex: 1, marginLeft: 20, borderBottom: 'none', lineHeight: '64px', height: 64 }}
+            style={{ background: 'transparent', flex: 1, marginLeft: 16, borderBottom: 'none', lineHeight: '64px', height: 64, minWidth: 0 }}
             items={navItems}
           />
         )}
 
         <Space size={isMobile ? 8 : 10}>
+          {!isMobile && (
+            <Input
+              placeholder="Tìm tên Gunpla, SKU..."
+              allowClear
+              value={headerSearch}
+              onChange={(e) => setHeaderSearch(e.target.value)}
+              onPressEnter={() => handleHeaderSearch(headerSearch)}
+              suffix={
+                <SearchOutlined
+                  style={{ color: '#e53935', cursor: 'pointer' }}
+                  onClick={() => handleHeaderSearch(headerSearch)}
+                />
+              }
+              style={{
+                width: 210,
+                borderRadius: 20,
+                background: '#262626',
+                borderColor: '#434343',
+                color: '#fff',
+              }}
+            />
+          )}
+
           {!isMobile && (
             <Link to="/wishlist">
               <Badge count={wishlistItems.length} showZero={false} offset={[-2, 6]}>
@@ -496,6 +530,17 @@ export const PublicLayout: React.FC = () => {
         }}
         closeIcon={<span style={{ color: '#fff', fontSize: 18 }}>✕</span>}
       >
+        <div style={{ marginBottom: 14 }}>
+          <Input.Search
+            placeholder="Tìm kiếm Gunpla, SKU..."
+            allowClear
+            enterButton={<SearchOutlined />}
+            value={headerSearch}
+            onChange={(e) => setHeaderSearch(e.target.value)}
+            onSearch={handleHeaderSearch}
+          />
+        </div>
+
         {isAuthenticated && user ? (
           <div
             style={{

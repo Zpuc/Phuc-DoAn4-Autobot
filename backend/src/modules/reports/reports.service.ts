@@ -50,16 +50,49 @@ export class ReportsService {
       }),
     ]);
 
-    // Tính tổng doanh thu và giá vốn
+    // Tính tổng doanh thu và giá vốn + nhóm dữ liệu theo ngày & theo tháng cho biểu đồ
     let totalRevenue = 0;
     let totalCost = 0;
+    const dailyMap = new Map<string, { label: string; revenue: number; profit: number; ordersCount: number }>();
+    const monthlyMap = new Map<string, { label: string; revenue: number; profit: number; ordersCount: number }>();
 
     for (const order of completedOrders) {
-      totalRevenue += Number(order.subtotal);
+      const orderRev = Number(order.subtotal);
+      let orderCost = 0;
       for (const item of order.items) {
-        totalCost += Number(item.unitCost) * item.quantity;
+        orderCost += Number(item.unitCost) * item.quantity;
       }
+      const orderProfit = orderRev - orderCost;
+      totalRevenue += orderRev;
+      totalCost += orderCost;
+
+      const d = new Date(order.createdAt);
+      const dayKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      const dayLabel = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const curDay = dailyMap.get(dayKey) || { label: dayLabel, revenue: 0, profit: 0, ordersCount: 0 };
+      curDay.revenue += orderRev;
+      curDay.profit += orderProfit;
+      curDay.ordersCount += 1;
+      dailyMap.set(dayKey, curDay);
+
+      const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const monthLabel = `T${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+      const curMonth = monthlyMap.get(monthKey) || { label: monthLabel, revenue: 0, profit: 0, ordersCount: 0 };
+      curMonth.revenue += orderRev;
+      curMonth.profit += orderProfit;
+      curMonth.ordersCount += 1;
+      monthlyMap.set(monthKey, curMonth);
     }
+
+    const dailyRevenue = Array.from(dailyMap.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .slice(-14)
+      .map(([date, v]) => ({ date, ...v }));
+
+    const monthlyRevenue = Array.from(monthlyMap.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .slice(-12)
+      .map(([month, v]) => ({ month, ...v }));
 
     const grossProfit = totalRevenue - totalCost;
 
@@ -84,6 +117,8 @@ export class ReportsService {
       totalRevenue,
       totalCost,
       grossProfit,
+      dailyRevenue,
+      monthlyRevenue,
       lowStockCount: lowStockProducts.length,
       lowStockProducts: lowStockProducts.map((inv) => ({
         id: inv.productId,

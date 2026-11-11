@@ -50,28 +50,25 @@ export class ProductsService {
       where.isPreorder = filter.isPreorder;
     }
 
-    const [total, items] = await Promise.all([
-      this.prisma.product.count({ where }),
-      this.prisma.product.findMany({
-        where,
-        skip,
-        take: limit,
-        include: {
-          category: { select: { id: true, name: true, slug: true } },
-          brand: { select: { id: true, name: true, slug: true, logoUrl: true } },
-          images: { orderBy: { sortOrder: 'asc' } },
-          inventory: { select: { quantity: true, minStock: true } },
-          prices: {
-            orderBy: { effectiveFrom: 'desc' },
-            take: 1,
-          },
-        },
-        orderBy: { createdAt: 'desc' },
-      }),
-    ]);
+    const hasPriceFilter = filter.minPrice !== undefined || filter.maxPrice !== undefined;
+    const isPriceSort = filter.sortBy === 'price_asc' || filter.sortBy === 'price_desc';
 
-    // Format current price
-    const formattedItems = items.map((item) => {
+    const rawItems = await this.prisma.product.findMany({
+      where,
+      include: {
+        category: { select: { id: true, name: true, slug: true } },
+        brand: { select: { id: true, name: true, slug: true, logoUrl: true } },
+        images: { orderBy: { sortOrder: 'asc' } },
+        inventory: { select: { quantity: true, minStock: true } },
+        prices: {
+          orderBy: { effectiveFrom: 'desc' },
+          take: 1,
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    let formattedItems = rawItems.map((item) => {
       const currentPrice = item.prices[0] || null;
       return {
         ...item,
@@ -81,13 +78,78 @@ export class ProductsService {
       };
     });
 
+    if (hasPriceFilter) {
+      formattedItems = formattedItems.filter((item) => {
+        if (filter.minPrice !== undefined && item.currentPrice < filter.minPrice) return false;
+        if (filter.maxPrice !== undefined && item.currentPrice > filter.maxPrice) return false;
+        return true;
+      });
+    }
+
+    if (isPriceSort) {
+      formattedItems.sort((a, b) =>
+        filter.sortBy === 'price_asc'
+          ? a.currentPrice - b.currentPrice
+          : b.currentPrice - a.currentPrice,
+      );
+    }
+
+    const total = formattedItems.length;
+    const paginatedItems = formattedItems.slice(skip, skip + limit);
+
     return {
-      items: formattedItems,
+      items: paginatedItems,
       total,
       page,
       limit,
       totalPages: Math.ceil(total / limit),
     };
+  }
+
+  async findRelated(slug: string) {
+    const product = await this.prisma.product.findFirst({
+      where: { slug, deletedAt: null },
+      select: { id: true, grade: true, series: true, categoryId: true },
+    });
+
+    if (!product) {
+      return [];
+    }
+
+    const orConditions: Prisma.ProductWhereInput[] = [];
+    if (product.grade) orConditions.push({ grade: product.grade });
+    if (product.series) orConditions.push({ series: product.series });
+    if (product.categoryId) orConditions.push({ categoryId: product.categoryId });
+
+    const related = await this.prisma.product.findMany({
+      where: {
+        deletedAt: null,
+        status: 'ACTIVE',
+        id: { not: product.id },
+        ...(orConditions.length > 0 ? { OR: orConditions } : {}),
+      },
+      take: 4,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        category: { select: { id: true, name: true } },
+        brand: { select: { id: true, name: true } },
+        images: { orderBy: { sortOrder: 'asc' } },
+        inventory: { select: { quantity: true } },
+        prices: {
+          orderBy: { effectiveFrom: 'desc' },
+          take: 1,
+        },
+      },
+    });
+
+    return related.map((item) => {
+      const currentPrice = item.prices[0] || null;
+      return {
+        ...item,
+        currentPrice: currentPrice ? Number(currentPrice.price) : 0,
+        quantity: item.inventory ? item.inventory.quantity : 0,
+      };
+    });
   }
 
   async findBySlug(slug: string) {
@@ -278,7 +340,23 @@ export class ProductsService {
         });
       }
 
-      // 3. Cập nhật thông tin sản phẩm
+      // 3. Cập nhật ảnh sản phẩm nếu có truyền danh sách ảnh
+      if (dto.images !== undefined) {
+        await tx.productImage.deleteMany({ where: { productId: id } });
+        const validImages = dto.images.filter((url) => Boolean(url && url.trim()));
+        if (validImages.length > 0) {
+          await tx.productImage.createMany({
+            data: validImages.map((url, index) => ({
+              productId: id,
+              url: url.trim(),
+              sortOrder: index,
+              isThumbnail: index === 0,
+            })),
+          });
+        }
+      }
+
+      // 4. Cập nhật thông tin sản phẩm
       return tx.product.update({
         where: { id },
         data: {

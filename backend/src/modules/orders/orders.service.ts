@@ -23,6 +23,7 @@ export class OrdersService {
         quantity: number;
         unitPrice: number;
         unitCost: number;
+        isPreorder: boolean;
       }[] = [];
 
       for (const item of dto.items) {
@@ -63,6 +64,7 @@ export class OrdersService {
           quantity: item.quantity,
           unitPrice,
           unitCost,
+          isPreorder: product.isPreorder,
         });
       }
 
@@ -146,23 +148,25 @@ export class OrdersService {
           },
         });
 
-        // Trừ kho nếu là hàng có sẵn
-        await tx.inventory.update({
-          where: { productId: item.productId },
-          data: {
-            quantity: { decrement: item.quantity },
-          },
-        });
+        // Trừ kho nếu là hàng có sẵn (không trừ âm cho hàng pre-order)
+        if (!item.isPreorder) {
+          await tx.inventory.update({
+            where: { productId: item.productId },
+            data: {
+              quantity: { decrement: item.quantity },
+            },
+          });
 
-        // Ghi vết nhật ký xuất kho
-        await tx.inventoryLog.create({
-          data: {
-            productId: item.productId,
-            change: -item.quantity,
-            reason: InventoryChangeReason.SALE,
-            refId: orderCode,
-          },
-        });
+          // Ghi vết nhật ký xuất kho
+          await tx.inventoryLog.create({
+            data: {
+              productId: item.productId,
+              change: -item.quantity,
+              reason: InventoryChangeReason.SALE,
+              refId: orderCode,
+            },
+          });
+        }
       }
 
       // 5. Ghi vết lịch sử trạng thái ban đầu
@@ -267,7 +271,11 @@ export class OrdersService {
     const order = await this.prisma.order.findUnique({
       where: { id },
       include: {
-        items: true,
+        items: {
+          include: {
+            product: { select: { isPreorder: true } },
+          },
+        },
         statusHistory: {
           include: { user: { select: { name: true, role: true } } },
           orderBy: { changedAt: 'desc' },
@@ -292,22 +300,24 @@ export class OrdersService {
     const order = await this.findOne(id);
 
     return this.prisma.$transaction(async (tx) => {
-      // Nếu hủy đơn hàng mà trước đó chưa hủy -> Hoàn trả tồn kho
+      // Nếu hủy đơn hàng mà trước đó chưa hủy -> Hoàn trả tồn kho (chỉ hoàn cho hàng có sẵn)
       if (dto.status === OrderStatus.CANCELLED && order.status !== OrderStatus.CANCELLED) {
         for (const item of order.items) {
-          await tx.inventory.update({
-            where: { productId: item.productId },
-            data: { quantity: { increment: item.quantity } },
-          });
+          if (!item.product?.isPreorder) {
+            await tx.inventory.update({
+              where: { productId: item.productId },
+              data: { quantity: { increment: item.quantity } },
+            });
 
-          await tx.inventoryLog.create({
-            data: {
-              productId: item.productId,
-              change: item.quantity,
-              reason: InventoryChangeReason.RETURN,
-              refId: `CANCEL_${order.code}`,
-            },
-          });
+            await tx.inventoryLog.create({
+              data: {
+                productId: item.productId,
+                change: item.quantity,
+                reason: InventoryChangeReason.RETURN,
+                refId: `CANCEL_${order.code}`,
+              },
+            });
+          }
         }
       }
 
@@ -420,19 +430,21 @@ export class OrdersService {
 
     return this.prisma.$transaction(async (tx) => {
       for (const item of order.items) {
-        await tx.inventory.update({
-          where: { productId: item.productId },
-          data: { quantity: { increment: item.quantity } },
-        });
+        if (!item.product?.isPreorder) {
+          await tx.inventory.update({
+            where: { productId: item.productId },
+            data: { quantity: { increment: item.quantity } },
+          });
 
-        await tx.inventoryLog.create({
-          data: {
-            productId: item.productId,
-            change: item.quantity,
-            reason: InventoryChangeReason.RETURN,
-            refId: `CANCEL_${order.code}`,
-          },
-        });
+          await tx.inventoryLog.create({
+            data: {
+              productId: item.productId,
+              change: item.quantity,
+              reason: InventoryChangeReason.RETURN,
+              refId: `CANCEL_${order.code}`,
+            },
+          });
+        }
       }
 
       const updated = await tx.order.update({

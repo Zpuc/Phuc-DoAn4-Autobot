@@ -36,6 +36,12 @@ export class ProductsController {
     return this.productsService.findBySlug(slug);
   }
 
+  @ApiOperation({ summary: 'Lấy danh sách mô hình liên quan (cùng Grade hoặc Series)' })
+  @Get('slug/:slug/related')
+  findRelated(@Param('slug') slug: string) {
+    return this.productsService.findRelated(slug);
+  }
+
   @ApiOperation({ summary: 'Xem chi tiết sản phẩm theo ID' })
   @Get(':id')
   findOne(@Param('id') id: string) {

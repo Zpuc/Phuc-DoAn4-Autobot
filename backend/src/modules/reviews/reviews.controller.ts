@@ -39,7 +39,17 @@ export class ReviewsController {
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Gửi đánh giá và bình luận mô hình (Mỗi tài khoản chỉ đánh giá 1 lần / sản phẩm)' })
+  @ApiOperation({ summary: 'Kiểm tra tài khoản hiện tại có đủ điều kiện đánh giá sản phẩm (đã mua hoàn thành & chưa đánh giá)' })
+  @Get('can-review/:productId')
+  canReview(@Param('productId') productId: string, @Req() req: any) {
+    const userId = req.user?.id || req.user?.userId;
+    const userEmail = req.user?.email;
+    return this.reviewsService.checkCanReview(productId, userId, userEmail);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Gửi đánh giá và bình luận mô hình (Mỗi tài khoản chỉ đánh giá 1 lần / sản phẩm sau khi nhận hàng)' })
   @Post()
   create(@Body() dto: CreateReviewDto, @Req() req: any) {
     const userId = req.user?.id || req.user?.userId;
