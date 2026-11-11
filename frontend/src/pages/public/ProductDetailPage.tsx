@@ -53,6 +53,7 @@ import { reviewApi, ProductReviewsResponse, CanReviewResponse } from '../../api/
 import { useCartStore } from '../../store/useCartStore';
 import { useWishlistStore } from '../../store/useWishlistStore';
 import { useAuthStore } from '../../store/useAuthStore';
+import { ProductCard } from '../../components/ProductCard';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -777,33 +778,7 @@ export const ProductDetailPage: React.FC = () => {
           <Row gutter={[16, 16]}>
             {relatedProducts.map((rp) => (
               <Col xs={24} sm={12} md={6} key={rp.id}>
-                <Card
-                  hoverable
-                  style={{ borderRadius: 10, overflow: 'hidden', height: '100%' }}
-                  onClick={() => navigate(`/products/${rp.slug}`)}
-                  cover={
-                    <div style={{ height: 180, background: '#1c1c1c', overflow: 'hidden' }}>
-                      <Image
-                        preview={false}
-                        alt={rp.name}
-                        src={rp.images?.[0]?.url || 'https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?w=500'}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                        fallback="https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?w=500"
-                      />
-                    </div>
-                  }
-                >
-                  <Space size={4} style={{ marginBottom: 6 }}>
-                    <Tag color="blue">{rp.grade || 'Gunpla'}</Tag>
-                    {rp.brand?.name && <Tag color="geekblue">{rp.brand.name}</Tag>}
-                  </Space>
-                  <Text strong ellipsis style={{ display: 'block', fontSize: 14, marginBottom: 6 }}>
-                    {rp.name}
-                  </Text>
-                  <Text strong style={{ color: '#e53935', fontSize: 16 }}>
-                    {rp.currentPrice > 0 ? `${Number(rp.currentPrice).toLocaleString('vi-VN')} đ` : 'Liên hệ báo giá'}
-                  </Text>
-                </Card>
+                <ProductCard product={rp} />
               </Col>
             ))}
           </Row>
