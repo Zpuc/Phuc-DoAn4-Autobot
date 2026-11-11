@@ -37,6 +37,7 @@ import {
 } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/useAuthStore';
+import { useCartStore } from '../../store/useCartStore';
 import { apiClient } from '../../api/client';
 import { reviewApi } from '../../api/reviews';
 
@@ -84,9 +85,28 @@ const statusMap: Record<string, { label: string; color: string }> = {
 export const MyOrdersPage: React.FC = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuthStore();
+  const addToCart = useCartStore((state) => state.addToCart);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+
+  const handleReorder = (order: Order) => {
+    order.items.forEach((item) => {
+      addToCart({
+        id: item.productId,
+        name: item.productName,
+        slug: item.productSlug || item.productId,
+        sku: item.productId.slice(0, 8).toUpperCase(),
+        grade: item.productGrade || undefined,
+        price: item.unitPrice,
+        quantity: item.quantity,
+        imageUrl: item.productImage || undefined,
+        isPreorder: false,
+      });
+    });
+    message.success(`Đã thêm lại ${order.items.length} sản phẩm từ đơn ${order.code} vào giỏ hàng!`);
+    navigate('/cart');
+  };
 
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [reviewTarget, setReviewTarget] = useState<{ item: OrderItem; orderCode: string } | null>(null);
@@ -415,6 +435,15 @@ export const MyOrdersPage: React.FC = () => {
                       >
                         Xem lộ trình đơn hàng
                       </Button>
+                      {(order.status === 'COMPLETED' || order.status === 'CANCELLED') && (
+                        <Button
+                          size="small"
+                          icon={<ShoppingOutlined />}
+                          onClick={() => handleReorder(order)}
+                        >
+                          Mua lại đơn này
+                        </Button>
+                      )}
                       {order.status === 'PENDING' && (
                         <Popconfirm
                           title="Xác nhận hủy đơn hàng?"

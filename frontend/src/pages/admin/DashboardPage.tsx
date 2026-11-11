@@ -163,7 +163,7 @@ export const DashboardPage: React.FC = () => {
           icon={<WarningOutlined />}
           style={{ marginBottom: 24, borderRadius: 8 }}
           action={
-            <Link to="/admin/products">
+            <Link to="/admin/inventory">
               <Button size="small" type="primary" ghost>
                 Nhập hàng
               </Button>

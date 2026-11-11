@@ -78,10 +78,23 @@ export const CheckoutPage: React.FC = () => {
   const [couponInput, setCouponInput] = useState('');
   const [couponLoading, setCouponLoading] = useState(false);
   const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
+  const [availableCoupons, setAvailableCoupons] = useState<
+    { code: string; description?: string; minOrder: number }[]
+  >([]);
 
   const subtotal = getTotalPrice();
 
   useEffect(() => {
+    // Tải danh sách mã giảm giá đang hoạt động
+    apiClient
+      .get('/coupons')
+      .then((res: any) => {
+        if (Array.isArray(res)) {
+          setAvailableCoupons(res);
+        }
+      })
+      .catch(() => {});
+
     // Tải danh sách khu vực giao hàng
     apiClient
       .get('/shipping/zones')
@@ -527,17 +540,29 @@ export const CheckoutPage: React.FC = () => {
                     {/* Gợi ý mã có sẵn */}
                     <Space size={6} wrap>
                       <Text type="secondary" style={{ fontSize: 11 }}>Gợi ý:</Text>
-                      {['AUTOBOT10', 'GUNPLA50K', 'FREESHIP'].map((code) => (
+                      {(availableCoupons.length > 0
+                        ? availableCoupons
+                        : [
+                            { code: 'AUTOBOT10', description: 'Giảm giá đơn hàng', minOrder: 0 },
+                            { code: 'GUNPLA50K', description: 'Giảm 50K', minOrder: 0 },
+                            { code: 'FREESHIP', description: 'Hỗ trợ phí ship', minOrder: 0 },
+                          ]
+                      ).map((c) => (
                         <Tag
-                          key={code}
+                          key={c.code}
                           color="blue"
+                          title={
+                            c.description
+                              ? `${c.description}${c.minOrder > 0 ? ` (Đơn từ ${c.minOrder.toLocaleString('vi-VN')}đ)` : ''}`
+                              : c.code
+                          }
                           style={{ cursor: 'pointer' }}
                           onClick={() => {
-                            setCouponInput(code);
-                            handleApplyCoupon(code);
+                            setCouponInput(c.code);
+                            handleApplyCoupon(c.code);
                           }}
                         >
-                          {code}
+                          {c.code}
                         </Tag>
                       ))}
                     </Space>

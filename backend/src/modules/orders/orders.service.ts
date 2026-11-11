@@ -319,6 +319,13 @@ export class OrdersService {
             });
           }
         }
+
+        if (order.couponCode) {
+          await tx.coupon.updateMany({
+            where: { code: order.couponCode, usedCount: { gt: 0 } },
+            data: { usedCount: { decrement: 1 } },
+          });
+        }
       }
 
       // Cập nhật trạng thái
@@ -445,6 +452,13 @@ export class OrdersService {
             },
           });
         }
+      }
+
+      if (order.couponCode) {
+        await tx.coupon.updateMany({
+          where: { code: order.couponCode, usedCount: { gt: 0 } },
+          data: { usedCount: { decrement: 1 } },
+        });
       }
 
       const updated = await tx.order.update({
