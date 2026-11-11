@@ -1,5 +1,21 @@
-import React from 'react';
-import { Card, Button, Typography, Space, Breadcrumb, Row, Col, Divider, Tag } from 'antd';
+import React, { useState, useEffect } from 'react';
+import {
+  Card,
+  Button,
+  Typography,
+  Space,
+  Breadcrumb,
+  Row,
+  Col,
+  Divider,
+  Tag,
+  Form,
+  Input,
+  Select,
+  InputNumber,
+  Alert,
+  message,
+} from 'antd';
 import {
   HomeOutlined,
   PhoneFilled,
@@ -7,12 +23,92 @@ import {
   MessageFilled,
   CustomerServiceOutlined,
   CheckCircleOutlined,
+  FileTextOutlined,
+  SendOutlined,
 } from '@ant-design/icons';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
+import { apiClient } from '../../api/client';
+import { useAuthStore } from '../../store/useAuthStore';
 
 const { Title, Text, Paragraph } = Typography;
 
+interface ProductOption {
+  id: string;
+  name: string;
+  sku: string;
+  grade?: string;
+  currentPrice: number;
+}
+
 export const QuotationPage: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const preselectedProductId = searchParams.get('product');
+  const { user } = useAuthStore();
+  const [form] = Form.useForm();
+
+  const [products, setProducts] = useState<ProductOption[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [createdQuoteCode, setCreatedQuoteCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    apiClient
+      .get('/products', { params: { limit: 100 } })
+      .then((res: any) => {
+        const list: ProductOption[] = res?.items || [];
+        setProducts(list);
+        if (preselectedProductId) {
+          const found = list.find((p) => p.id === preselectedProductId);
+          if (found) {
+            form.setFieldsValue({
+              productId: found.id,
+              unitPrice: found.currentPrice || 0,
+            });
+          }
+        }
+      })
+      .catch(() => {});
+  }, [preselectedProductId, form]);
+
+  useEffect(() => {
+    if (user) {
+      form.setFieldsValue({
+        customerName: user.name,
+        customerPhone: user.phone || '',
+      });
+    }
+  }, [user, form]);
+
+  const handleSubmitQuote = async (values: any) => {
+    const selectedProduct = products.find((p) => p.id === values.productId);
+    if (!selectedProduct) {
+      message.warning('Vui lòng chọn mô hình cần báo giá');
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      const res: any = await apiClient.post('/quotations', {
+        customerName: values.customerName,
+        customerPhone: values.customerPhone,
+        note: values.note,
+        items: [
+          {
+            productId: selectedProduct.id,
+            quantity: Number(values.quantity) || 1,
+            unitPrice: Number(selectedProduct.currentPrice) || 0,
+          },
+        ],
+      });
+      setCreatedQuoteCode(res.code);
+      message.success(`Đã gửi yêu cầu báo giá thành công! Mã phiếu: ${res.code}`);
+      form.resetFields(['note']);
+    } catch (err: any) {
+      message.error(err.message || 'Không thể gửi phiếu yêu cầu báo giá');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div style={{ maxWidth: 900, margin: '32px auto', padding: '0 20px' }}>
       <Breadcrumb
@@ -36,6 +132,7 @@ export const QuotationPage: React.FC = () => {
           borderTop: '4px solid #e53935',
           textAlign: 'center',
           padding: '28px 16px',
+          marginBottom: 24,
         }}
       >
         <div
@@ -188,6 +285,114 @@ export const QuotationPage: React.FC = () => {
             </Card>
           </Col>
         </Row>
+      </Card>
+
+      {/* Form Gửi Phiếu Yêu Cầu Báo Giá Trực Tuyến */}
+      <Card
+        title={
+          <Space>
+            <FileTextOutlined style={{ color: '#e53935' }} />
+            <span>Gửi Phiếu Yêu Cầu Báo Giá Nhanh Trên Hệ Thống</span>
+          </Space>
+        }
+        style={{
+          borderRadius: 12,
+          boxShadow: '0 4px 16px rgba(0,0,0,0.05)',
+        }}
+      >
+        {createdQuoteCode && (
+          <Alert
+            type="success"
+            showIcon
+            closable
+            style={{ marginBottom: 20, borderRadius: 8 }}
+            message={
+              <span>
+                Đã tạo phiếu yêu cầu báo giá thành công! Mã phiếu của bạn:{' '}
+                <Text copyable strong style={{ color: '#e53935' }}>
+                  {createdQuoteCode}
+                </Text>
+              </span>
+            }
+            description="Shop đã nhận được thông tin trên hệ thống quản trị và sẽ liên hệ lại với bạn qua Số điện thoại / Zalo."
+          />
+        )}
+
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmitQuote}
+          initialValues={{ quantity: 1 }}
+        >
+          <Row gutter={16}>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="customerName"
+                label="Họ và tên của bạn"
+                rules={[{ required: true, message: 'Vui lòng nhập họ tên' }]}
+              >
+                <Input placeholder="Nguyễn Văn A" />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="customerPhone"
+                label="Số điện thoại / Zalo nhận báo giá"
+                rules={[
+                  { required: true, message: 'Vui lòng nhập số điện thoại' },
+                  { pattern: /^[0-9]{9,11}$/, message: 'Số điện thoại không hợp lệ' },
+                ]}
+              >
+                <Input placeholder="0912345678" />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col xs={24} sm={18}>
+              <Form.Item
+                name="productId"
+                label="Chọn mô hình Gundam cần báo giá"
+                rules={[{ required: true, message: 'Vui lòng chọn mô hình' }]}
+              >
+                <Select
+                  showSearch
+                  optionFilterProp="label"
+                  placeholder="Tìm chọn mẫu Gunpla..."
+                  options={products.map((p) => ({
+                    value: p.id,
+                    label: `[${p.grade || 'Gunpla'}] ${p.name} - ${
+                      p.currentPrice > 0 ? `${p.currentPrice.toLocaleString('vi-VN')} đ` : 'Hàng Order'
+                    }`,
+                  }))}
+                />
+              </Form.Item>
+            </Col>
+            <Col xs={24} sm={6}>
+              <Form.Item
+                name="quantity"
+                label="Số lượng (hộp)"
+                rules={[{ required: true, message: 'Nhập số lượng' }]}
+              >
+                <InputNumber min={1} max={100} style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Form.Item name="note" label="Ghi chú thêm (Yêu cầu tìm mẫu hiếm, báo giá sỉ, phụ kiện kèm theo...)">
+            <Input.TextArea rows={2} placeholder="Nhập yêu cầu chi tiết của bạn..." />
+          </Form.Item>
+
+          <Button
+            type="primary"
+            htmlType="submit"
+            icon={<SendOutlined />}
+            loading={submitting}
+            style={{ background: '#e53935', fontWeight: 600 }}
+          >
+            Gửi Yêu Cầu Báo Giá
+          </Button>
+        </Form>
       </Card>
     </div>
   );

@@ -70,6 +70,58 @@ export const ProductManagePage: React.FC = () => {
 
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [brands, setBrands] = useState<{ id: string; name: string }[]>([]);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [newBrandName, setNewBrandName] = useState('');
+  const [addingMeta, setAddingMeta] = useState(false);
+
+  const toSlug = (str: string) =>
+    str
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/g, 'd')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+
+  const handleQuickAddCategory = async () => {
+    const name = newCategoryName.trim();
+    if (!name) return;
+    try {
+      setAddingMeta(true);
+      const created: any = await apiClient.post('/categories', {
+        name,
+        slug: `${toSlug(name)}-${Date.now().toString().slice(-4)}`,
+      });
+      setCategories((prev) => [...prev, created]);
+      form.setFieldsValue({ categoryId: created.id });
+      setNewCategoryName('');
+      message.success(`Đã thêm danh mục "${name}"`);
+    } catch (err: any) {
+      message.error(err.message || 'Không thể thêm danh mục');
+    } finally {
+      setAddingMeta(false);
+    }
+  };
+
+  const handleQuickAddBrand = async () => {
+    const name = newBrandName.trim();
+    if (!name) return;
+    try {
+      setAddingMeta(true);
+      const created: any = await apiClient.post('/brands', {
+        name,
+        slug: `${toSlug(name)}-${Date.now().toString().slice(-4)}`,
+      });
+      setBrands((prev) => [...prev, created]);
+      form.setFieldsValue({ brandId: created.id });
+      setNewBrandName('');
+      message.success(`Đã thêm hãng "${name}"`);
+    } catch (err: any) {
+      message.error(err.message || 'Không thể thêm hãng sản xuất');
+    } finally {
+      setAddingMeta(false);
+    }
+  };
 
   // Modal thêm/sửa
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -481,7 +533,32 @@ export const ProductManagePage: React.FC = () => {
                 label="Danh mục"
                 rules={[{ required: true, message: 'Chọn danh mục' }]}
               >
-                <Select placeholder="Chọn danh mục">
+                <Select
+                  placeholder="Chọn danh mục"
+                  popupRender={(menu) => (
+                    <>
+                      {menu}
+                      <div style={{ display: 'flex', gap: 6, padding: 8, borderTop: '1px solid #f0f0f0' }}>
+                        <Input
+                          size="small"
+                          placeholder="Danh mục mới..."
+                          value={newCategoryName}
+                          onChange={(e) => setNewCategoryName(e.target.value)}
+                          onKeyDown={(e) => e.stopPropagation()}
+                        />
+                        <Button
+                          type="primary"
+                          size="small"
+                          icon={<PlusOutlined />}
+                          loading={addingMeta}
+                          onClick={handleQuickAddCategory}
+                        >
+                          Thêm
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                >
                   {categories.map((c) => (
                     <Option key={c.id} value={c.id}>
                       {c.name}
@@ -496,7 +573,32 @@ export const ProductManagePage: React.FC = () => {
                 label="Hãng sản xuất"
                 rules={[{ required: true, message: 'Chọn hãng' }]}
               >
-                <Select placeholder="Chọn hãng">
+                <Select
+                  placeholder="Chọn hãng"
+                  popupRender={(menu) => (
+                    <>
+                      {menu}
+                      <div style={{ display: 'flex', gap: 6, padding: 8, borderTop: '1px solid #f0f0f0' }}>
+                        <Input
+                          size="small"
+                          placeholder="Hãng mới..."
+                          value={newBrandName}
+                          onChange={(e) => setNewBrandName(e.target.value)}
+                          onKeyDown={(e) => e.stopPropagation()}
+                        />
+                        <Button
+                          type="primary"
+                          size="small"
+                          icon={<PlusOutlined />}
+                          loading={addingMeta}
+                          onClick={handleQuickAddBrand}
+                        >
+                          Thêm
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                >
                   {brands.map((b) => (
                     <Option key={b.id} value={b.id}>
                       {b.name}

@@ -363,6 +363,7 @@ export const InventoryManagePage: React.FC = () => {
       render: (reason: string) => {
         const map: Record<string, { label: string; color: string }> = {
           IMPORT: { label: 'Nhập hàng', color: 'blue' },
+          SALE: { label: 'Xuất bán theo đơn', color: 'orange' },
           ORDER_PLACED: { label: 'Khách đặt đơn', color: 'orange' },
           RETURN: { label: 'Hủy đơn hoàn kho', color: 'cyan' },
           ADJUST: { label: 'Kiểm kê định kỳ', color: 'purple' },
