@@ -13,6 +13,9 @@ import {
   Spin,
   Empty,
   Breadcrumb,
+  Drawer,
+  Badge,
+  Grid,
 } from 'antd';
 import {
   SearchOutlined,
@@ -26,6 +29,7 @@ import { ProductCard } from '../../components/ProductCard';
 
 const { Title, Text, Paragraph } = Typography;
 const { Option } = Select;
+const { useBreakpoint } = Grid;
 
 interface Product {
   id: string;
@@ -47,10 +51,13 @@ interface Product {
 
 export const ProductListPage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const screens = useBreakpoint();
+  const isDesktop = !!screens.md;
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
+  const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
 
   // Filters state
   const [search, setSearch] = useState(searchParams.get('search') || '');
@@ -65,6 +72,9 @@ export const ProductListPage: React.FC = () => {
   const [page, setPage] = useState(Number(searchParams.get('page')) || 1);
 
   const [brands, setBrands] = useState<{ id: string; name: string }[]>([]);
+
+  const activeFilterCount = [search, grade, brandId, series, priceRange, isPreorder !== undefined ? 'status' : '']
+    .filter(Boolean).length;
 
   useEffect(() => {
     apiClient
@@ -131,7 +141,151 @@ export const ProductListPage: React.FC = () => {
   const handleSearchSubmit = () => {
     setPage(1);
     fetchProducts();
+    setFilterDrawerOpen(false);
   };
+
+  const filterFormContent = (
+    <>
+      {/* Tìm kiếm */}
+      <div style={{ marginBottom: 18 }}>
+        <Text strong style={{ display: 'block', marginBottom: 8 }}>
+          Tìm kiếm từ khóa
+        </Text>
+        <Input
+          placeholder="Tên Gunpla, SKU..."
+          prefix={<SearchOutlined />}
+          allowClear
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          onPressEnter={handleSearchSubmit}
+        />
+      </div>
+
+      {/* Phân khúc (Grade) */}
+      <div style={{ marginBottom: 18 }}>
+        <Text strong style={{ display: 'block', marginBottom: 8 }}>
+          Phân khúc (Grade)
+        </Text>
+        <Select
+          placeholder="Tất cả phân khúc"
+          allowClear
+          style={{ width: '100%' }}
+          value={grade}
+          onChange={(val) => {
+            setGrade(val);
+            setPage(1);
+          }}
+        >
+          <Option value="HG">High Grade (HG 1/144)</Option>
+          <Option value="RG">Real Grade (RG 1/144)</Option>
+          <Option value="MG">Master Grade (MG 1/100)</Option>
+          <Option value="PG">Perfect Grade (PG 1/60)</Option>
+          <Option value="SD">Super Deformed (SD)</Option>
+          <Option value="Metal Build">Metal Build / Hợp kim</Option>
+          <Option value="Mega Size">Mega Size (1/48)</Option>
+        </Select>
+      </div>
+
+      {/* Hãng sản xuất */}
+      <div style={{ marginBottom: 18 }}>
+        <Text strong style={{ display: 'block', marginBottom: 8 }}>
+          Hãng sản xuất (Brand)
+        </Text>
+        <Select
+          placeholder="Tất cả các hãng"
+          allowClear
+          style={{ width: '100%' }}
+          value={brandId}
+          onChange={(val) => {
+            setBrandId(val);
+            setPage(1);
+          }}
+        >
+          {brands.map((b) => (
+            <Option key={b.id} value={b.id}>
+              {b.name}
+            </Option>
+          ))}
+        </Select>
+      </div>
+
+      {/* Dòng phim / Vũ trụ (Series) */}
+      <div style={{ marginBottom: 18 }}>
+        <Text strong style={{ display: 'block', marginBottom: 8 }}>
+          Vũ trụ / Series
+        </Text>
+        <Select
+          placeholder="Chọn Series phim"
+          allowClear
+          style={{ width: '100%' }}
+          value={series}
+          onChange={(val) => {
+            setSeries(val);
+            setPage(1);
+          }}
+        >
+          <Option value="Mobile Suit Gundam SEED">Gundam SEED / Destiny</Option>
+          <Option value="Mobile Suit Gundam 00">Gundam 00</Option>
+          <Option value="Universal Century">Universal Century (UC)</Option>
+          <Option value="Mobile Suit Gundam: The Witch from Mercury">Witch from Mercury</Option>
+          <Option value="Iron-Blooded Orphans">Iron-Blooded Orphans (IBO)</Option>
+        </Select>
+      </div>
+
+      {/* Khoảng giá */}
+      <div style={{ marginBottom: 18 }}>
+        <Text strong style={{ display: 'block', marginBottom: 8 }}>
+          Khoảng giá (VND)
+        </Text>
+        <Select
+          placeholder="Tất cả mức giá"
+          allowClear
+          style={{ width: '100%' }}
+          value={priceRange}
+          onChange={(val) => {
+            setPriceRange(val);
+            setPage(1);
+          }}
+        >
+          <Option value="under_500">Dưới 500.000 đ</Option>
+          <Option value="500_1500">500.000 đ - 1.500.000 đ</Option>
+          <Option value="1500_3000">1.500.000 đ - 3.000.000 đ</Option>
+          <Option value="over_3000">Trên 3.000.000 đ</Option>
+        </Select>
+      </div>
+
+      {/* Trạng thái hàng */}
+      <div style={{ marginBottom: 18 }}>
+        <Text strong style={{ display: 'block', marginBottom: 8 }}>
+          Tình trạng hàng hóa
+        </Text>
+        <Space direction="vertical">
+          <Checkbox
+            checked={isPreorder === false}
+            onChange={(e) => {
+              setIsPreorder(e.target.checked ? false : undefined);
+              setPage(1);
+            }}
+          >
+            Có sẵn trong kho
+          </Checkbox>
+          <Checkbox
+            checked={isPreorder === true}
+            onChange={(e) => {
+              setIsPreorder(e.target.checked ? true : undefined);
+              setPage(1);
+            }}
+          >
+            Hàng Order (Pre-order)
+          </Checkbox>
+        </Space>
+      </div>
+
+      <Button type="primary" block style={{ background: '#e53935' }} onClick={handleSearchSubmit}>
+        Áp Dụng Lọc
+      </Button>
+    </>
+  );
 
   return (
     <div style={{ maxWidth: 1280, margin: '0 auto', padding: '24px 20px' }}>
@@ -149,180 +303,85 @@ export const ProductListPage: React.FC = () => {
         style={{
           background: 'linear-gradient(135deg, #1f1f1f 0%, #2e2e2e 100%)',
           borderRadius: 8,
-          padding: '24px 32px',
+          padding: isDesktop ? '24px 32px' : '16px 18px',
           color: '#fff',
-          marginBottom: 24,
+          marginBottom: 20,
         }}
       >
         <Title level={2} style={{ color: '#fff', margin: 0 }}>
           Danh Mục Mô Hình Gundam (Gunpla)
         </Title>
-        <Paragraph style={{ color: '#aaa', margin: '8px 0 0 0', maxWidth: 650 }}>
+        <Paragraph style={{ color: '#aaa', margin: '8px 0 0 0', maxWidth: 650, fontSize: isDesktop ? 14 : 13 }}>
           Tra cứu đầy đủ các dòng HG, RG, MG, PG, Metal Build chính hãng. Giá niêm yết theo tỉ giá thực tế
           kèm dịch vụ báo giá theo yêu cầu với hàng đặt trước.
         </Paragraph>
       </div>
 
       <Row gutter={[24, 24]}>
-        {/* Bộ lọc bên trái (Sidebar Filter) */}
-        <Col xs={24} md={6}>
-          <Card
-            title={
-              <Space>
-                <FilterOutlined style={{ color: '#e53935' }} />
-                <span>Bộ Lọc Sản Phẩm</span>
-              </Space>
-            }
-            extra={
-              <Button type="link" size="small" icon={<ClearOutlined />} onClick={handleResetFilters}>
-                Đặt lại
-              </Button>
-            }
-            style={{ borderRadius: 8 }}
-          >
-            {/* Tìm kiếm */}
-            <div style={{ marginBottom: 18 }}>
-              <Text strong style={{ display: 'block', marginBottom: 8 }}>
-                Tìm kiếm từ khóa
-              </Text>
-              <Input
-                placeholder="Tên Gunpla, SKU..."
-                prefix={<SearchOutlined />}
-                allowClear
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                onPressEnter={handleSearchSubmit}
-              />
-            </div>
-
-            {/* Phân khúc (Grade) */}
-            <div style={{ marginBottom: 18 }}>
-              <Text strong style={{ display: 'block', marginBottom: 8 }}>
-                Phân khúc (Grade)
-              </Text>
-              <Select
-                placeholder="Tất cả phân khúc"
-                allowClear
-                style={{ width: '100%' }}
-                value={grade}
-                onChange={(val) => {
-                  setGrade(val);
-                  setPage(1);
-                }}
-              >
-                <Option value="HG">High Grade (HG 1/144)</Option>
-                <Option value="RG">Real Grade (RG 1/144)</Option>
-                <Option value="MG">Master Grade (MG 1/100)</Option>
-                <Option value="PG">Perfect Grade (PG 1/60)</Option>
-                <Option value="SD">Super Deformed (SD)</Option>
-                <Option value="Metal Build">Metal Build / Hợp kim</Option>
-                <Option value="Mega Size">Mega Size (1/48)</Option>
-              </Select>
-            </div>
-
-            {/* Hãng sản xuất */}
-            <div style={{ marginBottom: 18 }}>
-              <Text strong style={{ display: 'block', marginBottom: 8 }}>
-                Hãng sản xuất (Brand)
-              </Text>
-              <Select
-                placeholder="Tất cả các hãng"
-                allowClear
-                style={{ width: '100%' }}
-                value={brandId}
-                onChange={(val) => {
-                  setBrandId(val);
-                  setPage(1);
-                }}
-              >
-                {brands.map((b) => (
-                  <Option key={b.id} value={b.id}>
-                    {b.name}
-                  </Option>
-                ))}
-              </Select>
-            </div>
-
-            {/* Dòng phim / Vũ trụ (Series) */}
-            <div style={{ marginBottom: 18 }}>
-              <Text strong style={{ display: 'block', marginBottom: 8 }}>
-                Vũ trụ / Series
-              </Text>
-              <Select
-                placeholder="Chọn Series phim"
-                allowClear
-                style={{ width: '100%' }}
-                value={series}
-                onChange={(val) => {
-                  setSeries(val);
-                  setPage(1);
-                }}
-              >
-                <Option value="Mobile Suit Gundam SEED">Gundam SEED / Destiny</Option>
-                <Option value="Mobile Suit Gundam 00">Gundam 00</Option>
-                <Option value="Universal Century">Universal Century (UC)</Option>
-                <Option value="Mobile Suit Gundam: The Witch from Mercury">Witch from Mercury</Option>
-                <Option value="Iron-Blooded Orphans">Iron-Blooded Orphans (IBO)</Option>
-              </Select>
-            </div>
-
-            {/* Khoảng giá */}
-            <div style={{ marginBottom: 18 }}>
-              <Text strong style={{ display: 'block', marginBottom: 8 }}>
-                Khoảng giá (VND)
-              </Text>
-              <Select
-                placeholder="Tất cả mức giá"
-                allowClear
-                style={{ width: '100%' }}
-                value={priceRange}
-                onChange={(val) => {
-                  setPriceRange(val);
-                  setPage(1);
-                }}
-              >
-                <Option value="under_500">Dưới 500.000 đ</Option>
-                <Option value="500_1500">500.000 đ - 1.500.000 đ</Option>
-                <Option value="1500_3000">1.500.000 đ - 3.000.000 đ</Option>
-                <Option value="over_3000">Trên 3.000.000 đ</Option>
-              </Select>
-            </div>
-
-            {/* Trạng thái hàng */}
-            <div style={{ marginBottom: 18 }}>
-              <Text strong style={{ display: 'block', marginBottom: 8 }}>
-                Tình trạng hàng hóa
-              </Text>
-              <Space direction="vertical">
-                <Checkbox
-                  checked={isPreorder === false}
-                  onChange={(e) => {
-                    setIsPreorder(e.target.checked ? false : undefined);
-                    setPage(1);
-                  }}
-                >
-                  Có sẵn trong kho
-                </Checkbox>
-                <Checkbox
-                  checked={isPreorder === true}
-                  onChange={(e) => {
-                    setIsPreorder(e.target.checked ? true : undefined);
-                    setPage(1);
-                  }}
-                >
-                  Hàng Order (Pre-order)
-                </Checkbox>
-              </Space>
-            </div>
-
-            <Button type="primary" block style={{ background: '#e53935' }} onClick={handleSearchSubmit}>
-              Áp Dụng Lọc
-            </Button>
-          </Card>
-        </Col>
+        {/* Bộ lọc bên trái (Sidebar Filter trên Desktop) */}
+        {isDesktop && (
+          <Col md={6}>
+            <Card
+              title={
+                <Space>
+                  <FilterOutlined style={{ color: '#e53935' }} />
+                  <span>Bộ Lọc Sản Phẩm</span>
+                </Space>
+              }
+              extra={
+                <Button type="link" size="small" icon={<ClearOutlined />} onClick={handleResetFilters}>
+                  Đặt lại
+                </Button>
+              }
+              style={{ borderRadius: 8 }}
+            >
+              {filterFormContent}
+            </Card>
+          </Col>
+        )}
 
         {/* Danh sách sản phẩm bên phải */}
         <Col xs={24} md={18}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: 10,
+              marginBottom: 16,
+            }}
+          >
+            <Text type="secondary" style={{ fontSize: isDesktop ? 14 : 13 }}>
+              Tìm thấy <strong>{total}</strong> mô hình phù hợp
+            </Text>
+
+            <Space size={8} wrap>
+              {!isDesktop && (
+                <Badge count={activeFilterCount} size="small" color="#e53935">
+                  <Button
+                    icon={<FilterOutlined />}
+                    onClick={() => setFilterDrawerOpen(true)}
+                  >
+                    Bộ lọc
+                  </Button>
+                </Badge>
+              )}
+              <Select
+                value={sortBy}
+                style={{ width: isDesktop ? 170 : 148 }}
+                onChange={(val) => {
+                  setSortBy(val);
+                  setPage(1);
+                }}
+              >
+                <Option value="newest">Mới nhất</Option>
+                <Option value="price_asc">Giá: Thấp → Cao</Option>
+                <Option value="price_desc">Giá: Cao → Thấp</Option>
+              </Select>
+            </Space>
+          </div>
+
           {loading ? (
             <div style={{ textAlign: 'center', padding: '60px 0' }}>
               <Spin size="large" />
@@ -341,59 +400,49 @@ export const ProductListPage: React.FC = () => {
             </Card>
           ) : (
             <>
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  flexWrap: 'wrap',
-                  gap: 12,
-                  marginBottom: 16,
-                }}
-              >
-                <Text type="secondary">
-                  Tìm thấy <strong>{total}</strong> mô hình phù hợp
-                </Text>
-
-                <Space>
-                  <Text type="secondary" style={{ fontSize: 13 }}>Sắp xếp:</Text>
-                  <Select
-                    value={sortBy}
-                    style={{ width: 170 }}
-                    onChange={(val) => {
-                      setSortBy(val);
-                      setPage(1);
-                    }}
-                  >
-                    <Option value="newest">Mới nhất</Option>
-                    <Option value="price_asc">Giá: Thấp → Cao</Option>
-                    <Option value="price_desc">Giá: Cao → Thấp</Option>
-                  </Select>
-                </Space>
-              </div>
-
-              <Row gutter={[16, 16]}>
+              <Row gutter={screens.sm ? [16, 16] : [10, 12]}>
                 {products.map((p) => (
-                  <Col xs={24} sm={12} lg={8} key={p.id}>
+                  <Col xs={12} sm={12} lg={8} key={p.id}>
                     <ProductCard product={p} />
                   </Col>
                 ))}
               </Row>
 
-              <div style={{ textAlign: 'center', marginTop: 32 }}>
+              <div style={{ textAlign: 'center', marginTop: 28 }}>
                 <Pagination
                   current={page}
                   total={total}
                   pageSize={12}
+                  size={isDesktop ? undefined : 'small'}
                   onChange={(p) => setPage(p)}
-                  showTotal={(t) => `Tổng ${t} mô hình Gunpla`}
+                  showTotal={isDesktop ? (t) => `Tổng ${t} mô hình Gunpla` : undefined}
                 />
               </div>
             </>
           )}
         </Col>
       </Row>
+
+      {/* Drawer Bộ lọc trên Mobile */}
+      <Drawer
+        title={
+          <Space>
+            <FilterOutlined style={{ color: '#e53935' }} />
+            <span>Bộ Lọc Sản Phẩm</span>
+          </Space>
+        }
+        placement="right"
+        width={300}
+        open={filterDrawerOpen}
+        onClose={() => setFilterDrawerOpen(false)}
+        extra={
+          <Button type="link" size="small" icon={<ClearOutlined />} onClick={handleResetFilters}>
+            Đặt lại
+          </Button>
+        }
+      >
+        {filterFormContent}
+      </Drawer>
     </div>
   );
 };
-

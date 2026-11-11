@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Typography, Row, Col, Card, Button, Tag, Space, Spin, Image } from 'antd';
+import { Typography, Row, Col, Card, Button, Tag, Space, Spin, Image, Grid } from 'antd';
 import {
   RocketOutlined,
   ThunderboltOutlined,
@@ -13,9 +13,12 @@ import { apiClient } from '../../api/client';
 import { ProductCard, ProductCardData } from '../../components/ProductCard';
 
 const { Title, Text, Paragraph } = Typography;
+const { useBreakpoint } = Grid;
 
 export const HomePage: React.FC = () => {
   const navigate = useNavigate();
+  const screens = useBreakpoint();
+  const isMobile = !screens.sm;
   const [products, setProducts] = useState<ProductCardData[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -130,7 +133,16 @@ export const HomePage: React.FC = () => {
 
       {/* Sản phẩm tiêu biểu thời gian thực từ Database */}
       <div style={{ marginBottom: 36 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: 8,
+            marginBottom: 16,
+          }}
+        >
           <Title level={3} style={{ margin: 0 }}>
             Mô Hình Nổi Bật & Có Sẵn Tại Kho
           </Title>
@@ -144,9 +156,9 @@ export const HomePage: React.FC = () => {
             <Spin size="large" tip="Đang tải danh sách mô hình Gundam..." />
           </div>
         ) : (
-          <Row gutter={[20, 20]}>
+          <Row gutter={isMobile ? [10, 12] : [20, 20]}>
             {products.map((p) => (
-              <Col xs={24} sm={12} md={6} key={p.id}>
+              <Col xs={12} sm={12} md={6} key={p.id}>
                 <ProductCard product={p} />
               </Col>
             ))}

@@ -765,7 +765,16 @@ export const ProductDetailPage: React.FC = () => {
       {/* Sản phẩm liên quan */}
       {relatedProducts.length > 0 && (
         <div style={{ marginTop: 32 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: 8,
+              marginBottom: 16,
+            }}
+          >
             <Title level={4} style={{ margin: 0 }}>
               Mô Hình Gundam Liên Quan
             </Title>
@@ -775,9 +784,9 @@ export const ProductDetailPage: React.FC = () => {
               </Button>
             </Link>
           </div>
-          <Row gutter={[16, 16]}>
+          <Row gutter={[10, 12]}>
             {relatedProducts.map((rp) => (
-              <Col xs={24} sm={12} md={6} key={rp.id}>
+              <Col xs={12} sm={12} md={6} key={rp.id}>
                 <ProductCard product={rp} />
               </Col>
             ))}
