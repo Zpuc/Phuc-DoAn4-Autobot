@@ -66,14 +66,14 @@ export const AdminLayout: React.FC = () => {
 
   const menuItems: MenuProps['items'] = [
     {
-      key: '/admin/users',
-      icon: <TeamOutlined />,
-      label: <Link to="/admin/users">Quản Lý Khách Hàng</Link>,
-    },
-    {
       key: '/admin',
       icon: <DashboardOutlined />,
       label: <Link to="/admin">Tổng Quan (Dashboard)</Link>,
+    },
+    {
+      key: '/admin/users',
+      icon: <TeamOutlined />,
+      label: <Link to="/admin/users">Quản Lý Khách Hàng</Link>,
     },
     {
       key: '/admin/products',
