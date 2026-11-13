@@ -839,3 +839,180 @@ export async function exportInventoryExcel(
 
   await saveWorkbook(wb, `KiemKeTonKho_AUTOBOT_${new Date().toISOString().slice(0, 10)}.xlsx`);
 }
+
+// -------------------------------------------------------------
+// 4. XUẤT DANH SÁCH THÀNH VIÊN & KHÁCH HÀNG (USER MANAGEMENT)
+// -------------------------------------------------------------
+export async function exportUsersExcel(users: Array<{
+  name: string;
+  email: string;
+  phone?: string | null;
+  role: string;
+  rank: string;
+  ordersCount: number;
+  reviewsCount: number;
+  totalSpent: number;
+  createdAt: string;
+}>) {
+  const wb = new ExcelJS.Workbook();
+  wb.creator = 'Gundam Autobot Store';
+  wb.created = new Date();
+
+  const ws = wb.addWorksheet('Danh Sách Thành Viên', {
+    views: [{ showGridLines: true }],
+  });
+
+  // Header Tiêu đề
+  ws.mergeCells('A1:J1');
+  const title = ws.getCell('A1');
+  title.value = 'HỆ THỐNG GUNDAM AUTOBOT - BẢNG KÊ DANH SÁCH KHÁCH HÀNG & THÀNH VIÊN';
+  title.font = { name: FONT_FAMILY, size: 13, bold: true, color: { argb: 'FFFFFFFF' } };
+  title.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF991B1B' } };
+  title.alignment = { horizontal: 'center', vertical: 'middle' };
+  ws.getRow(1).height = 34;
+
+  ws.mergeCells('A2:J2');
+  const subTitle = ws.getCell('A2');
+  subTitle.value = `Thời gian xuất: ${new Date().toLocaleString('vi-VN')} | Tổng số tài khoản: ${users.length}`;
+  subTitle.font = { name: FONT_FAMILY, size: 9, italic: true, color: { argb: 'FF4B5563' } };
+  subTitle.alignment = { horizontal: 'center', vertical: 'middle' };
+  ws.getRow(2).height = 20;
+
+  ws.addRow([]);
+
+  const headers = [
+    'STT',
+    'HỌ VÀ TÊN',
+    'ĐỊA CHỈ EMAIL',
+    'SỐ ĐIỆN THOẠI',
+    'PHÂN HẠNG VIP',
+    'VAI TRÒ',
+    'SỐ ĐƠN HÀNG',
+    'SỐ ĐÁNH GIÁ',
+    'TỔNG CHI TIÊU TÍCH LŨY',
+    'NGÀY THAM GIA',
+  ];
+
+  const headerRow = ws.addRow(headers);
+  headerRow.height = 26;
+  styleRowCells(headerRow, 10, {
+    font: { name: FONT_FAMILY, size: 10, bold: true, color: { argb: 'FFFFFFFF' } },
+    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDC2626' } },
+    alignment: { horizontal: 'center', vertical: 'middle' },
+    border: headerBorder,
+  });
+
+  let grandTotalSpent = 0;
+  let grandTotalOrders = 0;
+
+  users.forEach((u, idx) => {
+    grandTotalSpent += u.totalSpent || 0;
+    grandTotalOrders += u.ordersCount || 0;
+
+    const row = ws.addRow([
+      idx + 1,
+      u.name,
+      u.email,
+      u.phone || '---',
+      u.rank,
+      u.role === 'ADMIN' ? 'Quản trị viên' : 'Khách hàng',
+      u.ordersCount,
+      u.reviewsCount,
+      u.totalSpent,
+      new Date(u.createdAt).toLocaleDateString('vi-VN'),
+    ]);
+
+    row.height = 22;
+    row.font = { name: FONT_FAMILY, size: 9.5 };
+
+    row.getCell(1).alignment = { horizontal: 'center', vertical: 'middle' };
+    row.getCell(2).alignment = { horizontal: 'left', vertical: 'middle' };
+    row.getCell(2).font = { name: FONT_FAMILY, size: 9.5, bold: true };
+    row.getCell(3).alignment = { horizontal: 'left', vertical: 'middle' };
+    row.getCell(4).alignment = { horizontal: 'center', vertical: 'middle' };
+
+    row.getCell(5).alignment = { horizontal: 'center', vertical: 'middle' };
+    row.getCell(5).font = {
+      name: FONT_FAMILY,
+      size: 9.5,
+      bold: true,
+      color: {
+        argb:
+          u.rank === 'VIP Kim Cương'
+            ? 'FF9333EA'
+            : u.rank === 'VIP Vàng'
+            ? 'FFD97706'
+            : u.rank === 'Thành Viên Bạc'
+            ? 'FF2563EB'
+            : 'FF4B5563',
+      },
+    };
+
+    row.getCell(6).alignment = { horizontal: 'center', vertical: 'middle' };
+    row.getCell(6).font = {
+      name: FONT_FAMILY,
+      size: 9.5,
+      bold: true,
+      color: { argb: u.role === 'ADMIN' ? 'FFDC2626' : 'FF16A34A' },
+    };
+
+    row.getCell(7).alignment = { horizontal: 'right', vertical: 'middle' };
+    row.getCell(7).numFmt = '#,##0';
+    row.getCell(8).alignment = { horizontal: 'right', vertical: 'middle' };
+    row.getCell(8).numFmt = '#,##0';
+
+    row.getCell(9).alignment = { horizontal: 'right', vertical: 'middle' };
+    row.getCell(9).numFmt = '#,##0 "đ"';
+    row.getCell(9).font = { name: FONT_FAMILY, size: 9.5, bold: true, color: { argb: 'FFB91C1C' } };
+
+    row.getCell(10).alignment = { horizontal: 'center', vertical: 'middle' };
+
+    const isEven = idx % 2 === 1;
+    row.eachCell((cell) => {
+      cell.border = thinBorder;
+      if (isEven && !cell.fill) {
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF9FAFB' } };
+      }
+    });
+  });
+
+  const totalRow = ws.addRow([
+    '',
+    'TỔNG CỘNG DOANH THU TỪ THÀNH VIÊN',
+    '',
+    '',
+    '',
+    '',
+    grandTotalOrders,
+    '',
+    grandTotalSpent,
+    '',
+  ]);
+  totalRow.height = 26;
+  styleRowCells(totalRow, 10, {
+    font: { name: FONT_FAMILY, size: 10, bold: true },
+    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEF3C7' } },
+    border: totalBorder,
+  });
+  totalRow.getCell(2).alignment = { horizontal: 'center', vertical: 'middle' };
+  totalRow.getCell(7).numFmt = '#,##0';
+  totalRow.getCell(7).alignment = { horizontal: 'right', vertical: 'middle' };
+  totalRow.getCell(9).numFmt = '#,##0 "đ"';
+  totalRow.getCell(9).alignment = { horizontal: 'right', vertical: 'middle' };
+  totalRow.getCell(9).font = { name: FONT_FAMILY, size: 11, bold: true, color: { argb: 'FFB91C1C' } };
+
+  ws.columns = [
+    { width: 6 },
+    { width: 26 },
+    { width: 28 },
+    { width: 16 },
+    { width: 18 },
+    { width: 16 },
+    { width: 15 },
+    { width: 14 },
+    { width: 24 },
+    { width: 16 },
+  ];
+
+  await saveWorkbook(wb, `DanhSachKhachHang_AUTOBOT_${new Date().toISOString().slice(0, 10)}.xlsx`);
+}

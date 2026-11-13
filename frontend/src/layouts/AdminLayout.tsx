@@ -14,6 +14,7 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   CarOutlined,
+  TeamOutlined,
 } from '@ant-design/icons';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/useAuthStore';
@@ -98,6 +99,11 @@ export const AdminLayout: React.FC = () => {
       key: '/admin/reports',
       icon: <BarChartOutlined />,
       label: <Link to="/admin/reports">Báo Cáo Doanh Thu</Link>,
+    },
+    {
+      key: '/admin/users',
+      icon: <TeamOutlined />,
+      label: <Link to="/admin/users">Quản Lý Khách Hàng</Link>,
     },
   ];
 
