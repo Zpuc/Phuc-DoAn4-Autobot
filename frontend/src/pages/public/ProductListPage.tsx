@@ -144,6 +144,11 @@ export const ProductListPage: React.FC = () => {
     setFilterDrawerOpen(false);
   };
 
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+  };
+
   const filterFormContent = (
     <>
       {/* Tìm kiếm */}
@@ -414,7 +419,7 @@ export const ProductListPage: React.FC = () => {
                   total={total}
                   pageSize={12}
                   size={isDesktop ? undefined : 'small'}
-                  onChange={(p) => setPage(p)}
+                  onChange={handlePageChange}
                   showTotal={isDesktop ? (t) => `Tổng ${t} mô hình Gunpla` : undefined}
                 />
               </div>
