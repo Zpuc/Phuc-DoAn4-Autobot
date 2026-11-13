@@ -218,6 +218,7 @@ export const UserManagePage: React.FC = () => {
       dataIndex: 'role',
       key: 'role',
       width: 130,
+      sorter: (a, b) => a.role.localeCompare(b.role),
       render: (role: string) => (
         <Tag
           color={role === 'ADMIN' ? 'red' : 'blue'}
@@ -232,6 +233,7 @@ export const UserManagePage: React.FC = () => {
       title: 'Đơn Hàng / Đánh Giá',
       key: 'activity',
       width: 160,
+      sorter: (a, b) => a.ordersCount - b.ordersCount,
       render: (_, record) => (
         <Space direction="vertical" size={2}>
           <Link to={`/admin/orders?search=${encodeURIComponent(record.email)}`}>
