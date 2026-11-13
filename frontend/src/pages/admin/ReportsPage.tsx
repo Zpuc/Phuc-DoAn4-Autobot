@@ -30,8 +30,10 @@ import {
   CloseCircleOutlined,
   DownloadOutlined,
   BarChartOutlined,
+  FileExcelOutlined,
 } from '@ant-design/icons';
 import { apiClient } from '../../api/client';
+import { exportRevenueReportExcel } from '../../utils/excelExport';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -66,46 +68,23 @@ interface DashboardData {
 export const ReportsPage: React.FC = () => {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [chartMode, setChartMode] = useState<'daily' | 'monthly'>('daily');
 
-  const handleExportCsv = () => {
+  const handleExportExcel = async () => {
     if (!data) {
       message.warning('Chưa có dữ liệu báo cáo để xuất');
       return;
     }
-    const rows: string[][] = [
-      ['BÁO CÁO DOANH THU & TỒN KHO - GUNDAM AUTOBOT'],
-      ['Ngày xuất báo cáo', new Date().toLocaleString('vi-VN')],
-      [],
-      ['Chỉ số tổng quan', 'Giá trị'],
-      ['Tổng số sản phẩm', String(data.totalProducts)],
-      ['Tổng số đơn hàng', String(data.totalOrders)],
-      ['Đơn hoàn thành', String(data.statusCounts?.COMPLETED || 0)],
-      ['Tổng doanh thu (VND)', String(data.totalRevenue)],
-      ['Tổng giá vốn (VND)', String(data.totalCost)],
-      ['Lợi nhuận gộp (VND)', String(data.grossProfit)],
-      [],
-      ['DOANH THU THEO NGÀY', 'Số đơn', 'Doanh thu (VND)', 'Lợi nhuận (VND)'],
-      ...(data.dailyRevenue || []).map((d) => [d.label, String(d.ordersCount), String(d.revenue), String(d.profit)]),
-      [],
-      ['DOANH THU THEO THÁNG', 'Số đơn', 'Doanh thu (VND)', 'Lợi nhuận (VND)'],
-      ...(data.monthlyRevenue || []).map((m) => [m.label, String(m.ordersCount), String(m.revenue), String(m.profit)]),
-      [],
-      ['CẢNH BÁO TỒN KHO THẤP', 'SKU', 'Grade', 'Số lượng còn'],
-      ...(data.lowStockProducts || []).map((p) => [p.name, p.sku, p.grade || '', String(p.quantity)]),
-    ];
-
-    const csvContent =
-      '\uFEFF' +
-      rows.map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `BaoCaoDoanhThu_AUTOBOT_${new Date().toISOString().slice(0, 10)}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
-    message.success('Đã xuất file báo cáo Excel (CSV) thành công!');
+    try {
+      setExporting(true);
+      await exportRevenueReportExcel(data);
+      message.success('Đã xuất file báo cáo doanh thu Excel (.xlsx) chuẩn doanh nghiệp thành công!');
+    } catch (err: any) {
+      message.error(err.message || 'Lỗi khi xuất file báo cáo Excel');
+    } finally {
+      setExporting(false);
+    }
   };
 
   const fetchReport = async () => {
@@ -202,8 +181,8 @@ export const ReportsPage: React.FC = () => {
           <Button icon={<ReloadOutlined />} onClick={fetchReport} loading={loading}>
             Làm mới số liệu
           </Button>
-          <Button icon={<DownloadOutlined />} onClick={handleExportCsv} style={{ borderColor: '#52c41a', color: '#52c41a' }}>
-            Xuất Excel (CSV)
+          <Button icon={<FileExcelOutlined />} onClick={handleExportExcel} loading={exporting} style={{ borderColor: '#52c41a', color: '#52c41a', fontWeight: 600 }}>
+            Xuất Báo Cáo Excel (.xlsx)
           </Button>
           <Button type="primary" icon={<PrinterOutlined />} onClick={() => window.print()}>
             In báo cáo
