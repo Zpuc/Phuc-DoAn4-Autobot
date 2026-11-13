@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Put, Body, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Get, Put, Patch, Body, Query, Param, UseGuards, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
@@ -6,6 +6,9 @@ import { LoginDto } from './dto/login.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { Role } from '@prisma/client';
 
 @ApiTags('Auth - Xác thực người dùng')
 @Controller('auth')
@@ -52,6 +55,37 @@ export class AuthController {
   @Put('change-password')
   changePassword(@Request() req: any, @Body() dto: ChangePasswordDto) {
     return this.authService.changePassword(req.user.id, dto.currentPassword, dto.newPassword);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Admin lấy thống kê thành viên cửa hàng' })
+  @Get('admin/overview')
+  getUsersOverview() {
+    return this.authService.getUsersOverview();
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Admin lấy danh sách tài khoản thành viên & khách hàng' })
+  @Get('admin/users')
+  findAllUsers(@Query() query: any) {
+    return this.authService.findAllUsers(query);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Admin phân quyền tài khoản (ADMIN / CUSTOMER)' })
+  @Patch('admin/users/:id/role')
+  updateUserRole(
+    @Param('id') id: string,
+    @Body('role') role: Role,
+    @Request() req: any,
+  ) {
+    return this.authService.updateUserRole(id, role, req.user.id);
   }
 }
 

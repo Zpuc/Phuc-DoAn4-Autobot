@@ -1,10 +1,16 @@
-import { Injectable, ConflictException, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  UnauthorizedException,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../common/prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import * as bcrypt from 'bcrypt';
-import { Role } from '@prisma/client';
+import { Role, Prisma } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -146,6 +152,134 @@ export class AuthService {
     });
 
     return { message: 'Đổi mật khẩu thành công' };
+  }
+
+  async getUsersOverview() {
+    const [totalUsers, adminCount, customerCount, allCompletedOrders] = await Promise.all([
+      this.prisma.user.count(),
+      this.prisma.user.count({ where: { role: Role.ADMIN } }),
+      this.prisma.user.count({ where: { role: Role.CUSTOMER } }),
+      this.prisma.order.aggregate({
+        _sum: { total: true },
+        where: { status: 'COMPLETED', userId: { not: null } },
+      }),
+    ]);
+
+    return {
+      totalUsers,
+      adminCount,
+      customerCount,
+      totalMemberSpent: Number(allCompletedOrders._sum.total) || 0,
+    };
+  }
+
+  async findAllUsers(query: { search?: string; role?: Role; page?: number; limit?: number }) {
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const where: Prisma.UserWhereInput = {};
+    if (query.role) {
+      where.role = query.role;
+    }
+    if (query.search) {
+      where.OR = [
+        { name: { contains: query.search, mode: 'insensitive' } },
+        { email: { contains: query.search, mode: 'insensitive' } },
+        { phone: { contains: query.search, mode: 'insensitive' } },
+      ];
+    }
+
+    const [total, users] = await Promise.all([
+      this.prisma.user.count({ where }),
+      this.prisma.user.findMany({
+        where,
+        skip,
+        take: limit,
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          role: true,
+          createdAt: true,
+          _count: {
+            select: {
+              orders: true,
+              reviews: true,
+              addresses: true,
+            },
+          },
+          orders: {
+            where: { status: 'COMPLETED' },
+            select: { total: true },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+    ]);
+
+    const items = users.map((u) => {
+      const totalSpent = u.orders.reduce((sum, o) => sum + Number(o.total), 0);
+      return {
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        phone: u.phone,
+        role: u.role,
+        createdAt: u.createdAt,
+        ordersCount: u._count.orders,
+        reviewsCount: u._count.reviews,
+        addressesCount: u._count.addresses,
+        totalSpent,
+        rank:
+          totalSpent >= 20000000
+            ? 'VIP Kim Cương'
+            : totalSpent >= 10000000
+            ? 'VIP Vàng'
+            : totalSpent >= 3000000
+            ? 'Thành Viên Bạc'
+            : 'Thành Viên Mới',
+      };
+    });
+
+    return {
+      items,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  async updateUserRole(targetUserId: string, newRole: Role, currentAdminId: string) {
+    if (targetUserId === currentAdminId && newRole !== Role.ADMIN) {
+      throw new BadRequestException('Bạn không thể tự hạ quyền Admin của chính tài khoản mình');
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: targetUserId },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Không tìm thấy tài khoản người dùng');
+    }
+
+    const updated = await this.prisma.user.update({
+      where: { id: targetUserId },
+      data: { role: newRole },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+      },
+    });
+
+    return {
+      message: `Đã cập nhật vai trò người dùng thành ${newRole}`,
+      user: updated,
+    };
   }
 
   private generateToken(userId: string, email: string, role: string): string {

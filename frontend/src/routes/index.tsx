@@ -22,6 +22,7 @@ import { OrderProgressManagePage } from '../pages/admin/OrderProgressManagePage'
 import { QuotationManagePage } from '../pages/admin/QuotationManagePage';
 import { ReportsPage } from '../pages/admin/ReportsPage';
 import { CouponManagePage } from '../pages/admin/CouponManagePage';
+import { UserManagePage } from '../pages/admin/UserManagePage';
 
 export const router = createBrowserRouter([
   // Public Routes
@@ -60,6 +61,7 @@ export const router = createBrowserRouter([
           { path: 'quotations', element: <QuotationManagePage /> },
           { path: 'coupons', element: <CouponManagePage /> },
           { path: 'reports', element: <ReportsPage /> },
+          { path: 'users', element: <UserManagePage /> },
         ],
       },
     ],
