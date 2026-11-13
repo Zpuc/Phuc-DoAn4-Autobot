@@ -23,8 +23,10 @@ import {
   EyeOutlined,
   CarOutlined,
   DownloadOutlined,
+  FileExcelOutlined,
 } from '@ant-design/icons';
 import { apiClient } from '../../api/client';
+import { exportOrdersExcel } from '../../utils/excelExport';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -60,6 +62,7 @@ export const OrderManagePage: React.FC = () => {
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
   const [search, setSearch] = useState('');
+  const [exporting, setExporting] = useState(false);
 
   // Modal Đổi trạng thái
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
@@ -242,36 +245,29 @@ export const OrderManagePage: React.FC = () => {
     },
   ];
 
-  const handleExportOrdersCsv = () => {
+  const handleExportOrdersExcel = async () => {
     if (orders.length === 0) {
       message.warning('Không có đơn hàng nào để xuất');
       return;
     }
-    const headers = ['Mã đơn', 'Khách hàng', 'SĐT', 'Địa chỉ', 'Tổng tiền (VND)', 'Thanh toán', 'Trạng thái', 'Mã vận đơn', 'Ngày đặt'];
-    const rows = orders.map((o) => [
-      o.code,
-      o.customerName,
-      o.customerPhone,
-      o.shippingAddress,
-      String(o.total),
-      o.paymentMethod,
-      o.status,
-      o.trackingCode || '',
-      new Date(o.createdAt).toLocaleString('vi-VN'),
-    ]);
-    const csvContent =
-      '\uFEFF' +
-      [headers, ...rows]
-        .map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
-        .join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `DonHang_AUTOBOT_${new Date().toISOString().slice(0, 10)}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
-    message.success('Đã xuất danh sách đơn hàng ra file Excel (CSV)!');
+    try {
+      setExporting(true);
+      // Lấy toàn bộ đơn hàng (hoặc 100 đơn gần nhất) nếu cần
+      const res: any = await apiClient.get('/orders', {
+        params: {
+          limit: 200,
+          status: statusFilter,
+          search: search || undefined,
+        },
+      });
+      const orderList = res.items || orders;
+      await exportOrdersExcel(orderList);
+      message.success('Đã xuất danh sách đơn hàng Excel (.xlsx) chuẩn kế toán thành công!');
+    } catch (err: any) {
+      message.error(err.message || 'Lỗi khi xuất file Excel');
+    } finally {
+      setExporting(false);
+    }
   };
 
   return (
@@ -288,8 +284,8 @@ export const OrderManagePage: React.FC = () => {
           </Col>
           <Col xs={24} md={12} style={{ textAlign: 'right' }}>
             <Space wrap>
-              <Button icon={<DownloadOutlined />} onClick={handleExportOrdersCsv} style={{ borderColor: '#52c41a', color: '#52c41a' }}>
-                Xuất Excel (CSV)
+              <Button icon={<FileExcelOutlined />} onClick={handleExportOrdersExcel} loading={exporting} style={{ borderColor: '#52c41a', color: '#52c41a', fontWeight: 600 }}>
+                Xuất Đơn Hàng Excel (.xlsx)
               </Button>
               <Button icon={<ReloadOutlined />} onClick={fetchOrders}>
                 Làm mới danh sách

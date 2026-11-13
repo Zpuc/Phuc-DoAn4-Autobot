@@ -29,8 +29,10 @@ import {
   HistoryOutlined,
   ReloadOutlined,
   SearchOutlined,
+  FileExcelOutlined,
 } from '@ant-design/icons';
 import { apiClient } from '../../api/client';
+import { exportInventoryExcel } from '../../utils/excelExport';
 
 const { Title, Text } = Typography;
 
@@ -84,6 +86,32 @@ export const InventoryManagePage: React.FC = () => {
   const [search, setSearch] = useState('');
   const [warningOnly, setWarningOnly] = useState(false);
   const [activeTab, setActiveTab] = useState('inventory');
+  const [exporting, setExporting] = useState(false);
+
+  const handleExportInventoryExcel = async () => {
+    if (items.length === 0) {
+      message.warning('Không có dữ liệu tồn kho để xuất');
+      return;
+    }
+    try {
+      setExporting(true);
+      // Fetch full inventory if needed
+      const data: any = await apiClient.get('/inventory', {
+        params: {
+          search: search || undefined,
+          warningOnly: warningOnly ? 'true' : undefined,
+          limit: 500,
+        },
+      });
+      const fullItems = data.items || items;
+      await exportInventoryExcel(fullItems, logs);
+      message.success('Đã xuất file kiểm kê tồn kho Excel (.xlsx) chuẩn kho bãi thành công!');
+    } catch (err: any) {
+      message.error(err.message || 'Lỗi khi xuất file kiểm kê Excel');
+    } finally {
+      setExporting(false);
+    }
+  };
 
   // Modal Nhập Kho
   const [importModalVisible, setImportModalVisible] = useState(false);
@@ -446,16 +474,26 @@ export const InventoryManagePage: React.FC = () => {
           activeKey={activeTab}
           onChange={setActiveTab}
           tabBarExtraContent={
-            <Button
-              icon={<ReloadOutlined />}
-              onClick={() => {
-                fetchOverview();
-                if (activeTab === 'inventory') fetchInventory();
-                else fetchLogs();
-              }}
-            >
-              Làm mới
-            </Button>
+            <Space>
+              <Button
+                icon={<FileExcelOutlined />}
+                onClick={handleExportInventoryExcel}
+                loading={exporting}
+                style={{ borderColor: '#52c41a', color: '#52c41a', fontWeight: 600 }}
+              >
+                Xuất Kiểm Kê Excel (.xlsx)
+              </Button>
+              <Button
+                icon={<ReloadOutlined />}
+                onClick={() => {
+                  fetchOverview();
+                  if (activeTab === 'inventory') fetchInventory();
+                  else fetchLogs();
+                }}
+              >
+                Làm mới
+              </Button>
+            </Space>
           }
           items={[
             {
