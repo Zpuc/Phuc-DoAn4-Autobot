@@ -24,6 +24,26 @@ const totalBorder: Partial<ExcelJS.Borders> = {
   right: { style: 'thin', color: { argb: 'FFD1D5DB' } },
 };
 
+// Helper chỉ tô style cho đúng số cột của bảng, không để tràn sang mép phải Excel
+function styleRowCells(
+  row: ExcelJS.Row,
+  colCount: number,
+  styles: {
+    font?: Partial<ExcelJS.Font>;
+    fill?: ExcelJS.Fill;
+    alignment?: Partial<ExcelJS.Alignment>;
+    border?: Partial<ExcelJS.Borders>;
+  },
+) {
+  for (let c = 1; c <= colCount; c++) {
+    const cell = row.getCell(c);
+    if (styles.font) cell.font = styles.font;
+    if (styles.fill) cell.fill = styles.fill;
+    if (styles.alignment) cell.alignment = styles.alignment;
+    if (styles.border) cell.border = styles.border;
+  }
+}
+
 // Hàm download buffer về trình duyệt
 async function saveWorkbook(workbook: ExcelJS.Workbook, fileName: string) {
   const buffer = await workbook.xlsx.writeBuffer();
@@ -91,10 +111,13 @@ export async function exportRevenueReportExcel(data: {
   // Bảng Chỉ số tài chính
   wsKpi.addRow([]);
   const kpiHeaderRow = wsKpi.addRow(['STT', 'CHỈ SỐ TÀI CHÍNH / VẬN HÀNH', 'GIÁ TRỊ THỰC TẾ', 'ĐƠN VỊ TÍNH', 'GHI CHÚ']);
-  kpiHeaderRow.font = { name: FONT_FAMILY, size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
-  kpiHeaderRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDC2626' } };
-  kpiHeaderRow.alignment = { horizontal: 'center', vertical: 'middle' };
   kpiHeaderRow.height = 26;
+  styleRowCells(kpiHeaderRow, 5, {
+    font: { name: FONT_FAMILY, size: 10, bold: true, color: { argb: 'FFFFFFFF' } },
+    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDC2626' } },
+    alignment: { horizontal: 'center', vertical: 'middle' },
+    border: headerBorder,
+  });
 
   const profitMargin = data.totalRevenue > 0 ? (data.grossProfit / data.totalRevenue) * 100 : 0;
   const completedOrders = data.statusCounts?.COMPLETED || 0;
@@ -173,10 +196,13 @@ export async function exportRevenueReportExcel(data: {
   wsTimeline.mergeCells(`A${secDayRow.number}:E${secDayRow.number}`);
 
   const dayHeader = wsTimeline.addRow(['STT', 'NGÀY / THỜI ĐIỂM', 'SỐ ĐƠN HOÀN THÀNH', 'DOANH THU (VNĐ)', 'LỢI NHUẬN GỘP (VNĐ)']);
-  dayHeader.font = { name: FONT_FAMILY, size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
-  dayHeader.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF475569' } };
-  dayHeader.alignment = { horizontal: 'center', vertical: 'middle' };
   dayHeader.height = 24;
+  styleRowCells(dayHeader, 5, {
+    font: { name: FONT_FAMILY, size: 10, bold: true, color: { argb: 'FFFFFFFF' } },
+    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF475569' } },
+    alignment: { horizontal: 'center', vertical: 'middle' },
+    border: headerBorder,
+  });
 
   let totalDailyRev = 0;
   let totalDailyProf = 0;
@@ -204,13 +230,19 @@ export async function exportRevenueReportExcel(data: {
   });
 
   const dailyTotalRow = wsTimeline.addRow(['', 'TỔNG CỘNG THEO NGÀY', totalDailyOrders, totalDailyRev, totalDailyProf]);
-  dailyTotalRow.font = { name: FONT_FAMILY, size: 10, bold: true };
-  dailyTotalRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEF3C7' } };
+  dailyTotalRow.height = 24;
+  styleRowCells(dailyTotalRow, 5, {
+    font: { name: FONT_FAMILY, size: 10, bold: true },
+    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEF3C7' } },
+    border: totalBorder,
+  });
   dailyTotalRow.getCell(2).alignment = { horizontal: 'center', vertical: 'middle' };
   dailyTotalRow.getCell(3).numFmt = '#,##0';
+  dailyTotalRow.getCell(3).alignment = { horizontal: 'right', vertical: 'middle' };
   dailyTotalRow.getCell(4).numFmt = '#,##0 "đ"';
+  dailyTotalRow.getCell(4).alignment = { horizontal: 'right', vertical: 'middle' };
   dailyTotalRow.getCell(5).numFmt = '#,##0 "đ"';
-  dailyTotalRow.eachCell((cell) => (cell.border = totalBorder));
+  dailyTotalRow.getCell(5).alignment = { horizontal: 'right', vertical: 'middle' };
 
   // Bảng theo Tháng
   wsTimeline.addRow([]);
@@ -219,10 +251,13 @@ export async function exportRevenueReportExcel(data: {
   wsTimeline.mergeCells(`A${secMonthRow.number}:E${secMonthRow.number}`);
 
   const monthHeader = wsTimeline.addRow(['STT', 'THÁNG / NĂM', 'SỐ ĐƠN HOÀN THÀNH', 'DOANH THU (VNĐ)', 'LỢI NHUẬN GỘP (VNĐ)']);
-  monthHeader.font = { name: FONT_FAMILY, size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
-  monthHeader.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF475569' } };
-  monthHeader.alignment = { horizontal: 'center', vertical: 'middle' };
   monthHeader.height = 24;
+  styleRowCells(monthHeader, 5, {
+    font: { name: FONT_FAMILY, size: 10, bold: true, color: { argb: 'FFFFFFFF' } },
+    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF475569' } },
+    alignment: { horizontal: 'center', vertical: 'middle' },
+    border: headerBorder,
+  });
 
   let totalMonthlyRev = 0;
   let totalMonthlyProf = 0;
@@ -250,13 +285,19 @@ export async function exportRevenueReportExcel(data: {
   });
 
   const monthTotalRow = wsTimeline.addRow(['', 'TỔNG CỘNG THEO THÁNG', totalMonthlyOrders, totalMonthlyRev, totalMonthlyProf]);
-  monthTotalRow.font = { name: FONT_FAMILY, size: 10, bold: true };
-  monthTotalRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEF3C7' } };
+  monthTotalRow.height = 24;
+  styleRowCells(monthTotalRow, 5, {
+    font: { name: FONT_FAMILY, size: 10, bold: true },
+    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEF3C7' } },
+    border: totalBorder,
+  });
   monthTotalRow.getCell(2).alignment = { horizontal: 'center', vertical: 'middle' };
   monthTotalRow.getCell(3).numFmt = '#,##0';
+  monthTotalRow.getCell(3).alignment = { horizontal: 'right', vertical: 'middle' };
   monthTotalRow.getCell(4).numFmt = '#,##0 "đ"';
+  monthTotalRow.getCell(4).alignment = { horizontal: 'right', vertical: 'middle' };
   monthTotalRow.getCell(5).numFmt = '#,##0 "đ"';
-  monthTotalRow.eachCell((cell) => (cell.border = totalBorder));
+  monthTotalRow.getCell(5).alignment = { horizontal: 'right', vertical: 'middle' };
 
   wsTimeline.columns = [
     { width: 8 },
@@ -281,10 +322,13 @@ export async function exportRevenueReportExcel(data: {
 
   wsStock.addRow([]);
   const stockHeader = wsStock.addRow(['STT', 'TÊN MÔ HÌNH GUNDAM', 'MÃ SKU', 'PHÂN KHÚC (GRADE)', 'SỐ LƯỢNG CÒN LẠI']);
-  stockHeader.font = { name: FONT_FAMILY, size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
-  stockHeader.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD97706' } };
-  stockHeader.alignment = { horizontal: 'center', vertical: 'middle' };
   stockHeader.height = 24;
+  styleRowCells(stockHeader, 5, {
+    font: { name: FONT_FAMILY, size: 10, bold: true, color: { argb: 'FFFFFFFF' } },
+    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD97706' } },
+    alignment: { horizontal: 'center', vertical: 'middle' },
+    border: headerBorder,
+  });
 
   (data.lowStockProducts || []).forEach((p, idx) => {
     const row = wsStock.addRow([
@@ -383,11 +427,13 @@ export async function exportOrdersExcel(orders: Array<{
   ];
 
   const headerRow = ws.addRow(headers);
-  headerRow.font = { name: FONT_FAMILY, size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
-  headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDC2626' } };
-  headerRow.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
   headerRow.height = 26;
-  headerRow.eachCell((c) => (c.border = headerBorder));
+  styleRowCells(headerRow, 12, {
+    font: { name: FONT_FAMILY, size: 10, bold: true, color: { argb: 'FFFFFFFF' } },
+    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFDC2626' } },
+    alignment: { horizontal: 'center', vertical: 'middle', wrapText: true },
+    border: headerBorder,
+  });
 
   const statusLabelMap: Record<string, { label: string; fg: string; bg: string }> = {
     PENDING: { label: 'Chờ xác nhận', fg: 'FFB45309', bg: 'FFFEF3C7' },
@@ -480,8 +526,11 @@ export async function exportOrdersExcel(orders: Array<{
     '',
   ]);
   summaryRow.height = 26;
-  summaryRow.font = { name: FONT_FAMILY, size: 10, bold: true };
-  summaryRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEF3C7' } };
+  styleRowCells(summaryRow, 12, {
+    font: { name: FONT_FAMILY, size: 10, bold: true },
+    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEF3C7' } },
+    border: totalBorder,
+  });
   summaryRow.getCell(2).alignment = { horizontal: 'center', vertical: 'middle' };
   summaryRow.getCell(3).alignment = { horizontal: 'center', vertical: 'middle' };
   summaryRow.getCell(9).numFmt = '#,##0 "đ"';
@@ -489,7 +538,6 @@ export async function exportOrdersExcel(orders: Array<{
   summaryRow.getCell(10).numFmt = '#,##0 "đ"';
   summaryRow.getCell(10).alignment = { horizontal: 'right', vertical: 'middle' };
   summaryRow.getCell(10).font = { name: FONT_FAMILY, size: 11, bold: true, color: { argb: 'FFB91C1C' } };
-  summaryRow.eachCell((c) => (c.border = totalBorder));
 
   ws.columns = [
     { width: 6 },
@@ -577,11 +625,13 @@ export async function exportInventoryExcel(
   ];
 
   const invHeaderRow = wsInv.addRow(invHeaders);
-  invHeaderRow.font = { name: FONT_FAMILY, size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
-  invHeaderRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2563EB' } };
-  invHeaderRow.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
   invHeaderRow.height = 26;
-  invHeaderRow.eachCell((c) => (c.border = headerBorder));
+  styleRowCells(invHeaderRow, 12, {
+    font: { name: FONT_FAMILY, size: 10, bold: true, color: { argb: 'FFFFFFFF' } },
+    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2563EB' } },
+    alignment: { horizontal: 'center', vertical: 'middle', wrapText: true },
+    border: headerBorder,
+  });
 
   let totalQty = 0;
   let totalCostValue = 0;
@@ -680,15 +730,17 @@ export async function exportInventoryExcel(
     totalCostValue,
   ]);
   invSummary.height = 26;
-  invSummary.font = { name: FONT_FAMILY, size: 10, bold: true };
-  invSummary.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEF3C7' } };
+  styleRowCells(invSummary, 12, {
+    font: { name: FONT_FAMILY, size: 10, bold: true },
+    fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEF3C7' } },
+    border: totalBorder,
+  });
   invSummary.getCell(2).alignment = { horizontal: 'center', vertical: 'middle' };
   invSummary.getCell(7).numFmt = '#,##0';
   invSummary.getCell(7).alignment = { horizontal: 'right', vertical: 'middle' };
   invSummary.getCell(12).numFmt = '#,##0 "đ"';
   invSummary.getCell(12).alignment = { horizontal: 'right', vertical: 'middle' };
   invSummary.getCell(12).font = { name: FONT_FAMILY, size: 11, bold: true, color: { argb: 'FF1E40AF' } };
-  invSummary.eachCell((c) => (c.border = totalBorder));
 
   wsInv.columns = [
     { width: 6 },
@@ -723,11 +775,13 @@ export async function exportInventoryExcel(
 
     const logHeaders = ['STT', 'THỜI GIAN', 'MÔ HÌNH GUNDAM', 'MÃ SKU', 'BIẾN ĐỘNG (HỘP)', 'LÝ DO / MÃ THAM CHIẾU'];
     const logHeaderRow = wsLogs.addRow(logHeaders);
-    logHeaderRow.font = { name: FONT_FAMILY, size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
-    logHeaderRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4B5563' } };
-    logHeaderRow.alignment = { horizontal: 'center', vertical: 'middle' };
     logHeaderRow.height = 24;
-    logHeaderRow.eachCell((c) => (c.border = headerBorder));
+    styleRowCells(logHeaderRow, 6, {
+      font: { name: FONT_FAMILY, size: 10, bold: true, color: { argb: 'FFFFFFFF' } },
+      fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4B5563' } },
+      alignment: { horizontal: 'center', vertical: 'middle' },
+      border: headerBorder,
+    });
 
     const reasonLabelMap: Record<string, string> = {
       IMPORT: 'Nhập hàng vào kho',
