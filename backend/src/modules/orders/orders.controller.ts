@@ -95,6 +95,15 @@ export class OrdersController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Lấy thông báo trực tiếp cho Admin (đơn chờ duyệt, kho cảnh báo, đơn hủy)' })
+  @Get('admin/live-notifications')
+  getAdminNotifications() {
+    return this.ordersService.getAdminNotifications();
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Xem chi tiết đơn hàng theo ID' })
   @Get(':id')
   findOne(@Param('id') id: string) {

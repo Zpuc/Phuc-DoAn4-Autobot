@@ -516,5 +516,151 @@ export class OrdersService {
       data: { isRead: true },
     });
   }
+
+  async getAdminNotifications() {
+    const [pendingOrders, lowStockItems, recentCancelled, recentReviews] = await Promise.all([
+      // 1. Đơn hàng mới PENDING
+      this.prisma.order.findMany({
+        where: { status: OrderStatus.PENDING },
+        select: {
+          id: true,
+          code: true,
+          customerName: true,
+          customerPhone: true,
+          total: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 15,
+      }),
+
+      // 2. Cảnh báo tồn kho nguy cấp (<= 3 hộp)
+      this.prisma.inventory.findMany({
+        where: {
+          quantity: { lte: 3 },
+          product: { deletedAt: null },
+        },
+        include: {
+          product: {
+            select: { id: true, name: true, sku: true, grade: true, scale: true },
+          },
+        },
+        orderBy: { quantity: 'asc' },
+        take: 15,
+      }),
+
+      // 3. Đơn đã hủy gần đây
+      this.prisma.order.findMany({
+        where: { status: OrderStatus.CANCELLED },
+        select: {
+          id: true,
+          code: true,
+          customerName: true,
+          note: true,
+          total: true,
+          updatedAt: true,
+        },
+        orderBy: { updatedAt: 'desc' },
+        take: 5,
+      }),
+
+      // 4. Đánh giá mới từ khách hàng
+      this.prisma.review.findMany({
+        select: {
+          id: true,
+          userName: true,
+          rating: true,
+          comment: true,
+          createdAt: true,
+          product: {
+            select: { id: true, name: true, sku: true },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+      }),
+    ]);
+
+    const notifications: Array<{
+      id: string;
+      type: 'ORDER_PENDING' | 'LOW_STOCK' | 'ORDER_CANCELLED' | 'NEW_REVIEW';
+      title: string;
+      message: string;
+      badgeText: string;
+      link: string;
+      createdAt: Date;
+      isUrgent: boolean;
+    }> = [];
+
+    // Map Đơn chờ duyệt
+    for (const ord of pendingOrders) {
+      notifications.push({
+        id: `ord-pending-${ord.id}`,
+        type: 'ORDER_PENDING',
+        title: `Đơn hàng mới: #${ord.code}`,
+        message: `${ord.customerName} vừa đặt đơn ${Number(ord.total).toLocaleString('vi-VN')} đ (SĐT: ${ord.customerPhone})`,
+        badgeText: 'Chờ duyệt',
+        link: `/admin/orders?search=${encodeURIComponent(ord.code)}`,
+        createdAt: ord.createdAt,
+        isUrgent: true,
+      });
+    }
+
+    // Map Kho sắp hết
+    for (const inv of lowStockItems) {
+      notifications.push({
+        id: `stock-low-${inv.productId}`,
+        type: 'LOW_STOCK',
+        title: `Cảnh báo tồn kho: ${inv.product.name}`,
+        message: `Chỉ còn ${inv.quantity} hộp trong kho (${inv.product.sku}) - Hãy nhập thêm hàng!`,
+        badgeText: inv.quantity === 0 ? 'Hết hàng' : `Còn ${inv.quantity} kit`,
+        link: `/admin/inventory?search=${encodeURIComponent(inv.product.sku)}`,
+        createdAt: inv.updatedAt,
+        isUrgent: inv.quantity === 0,
+      });
+    }
+
+    // Map Đơn đã hủy
+    for (const c of recentCancelled) {
+      notifications.push({
+        id: `ord-cancel-${c.id}`,
+        type: 'ORDER_CANCELLED',
+        title: `Đơn hàng đã hủy: #${c.code}`,
+        message: `${c.customerName} - ${c.note || 'Khách/Admin yêu cầu hủy đơn'}`,
+        badgeText: 'Đã hủy',
+        link: `/admin/orders?search=${encodeURIComponent(c.code)}`,
+        createdAt: c.updatedAt,
+        isUrgent: false,
+      });
+    }
+
+    // Map Đánh giá mới
+    for (const rev of recentReviews) {
+      notifications.push({
+        id: `rev-${rev.id}`,
+        type: 'NEW_REVIEW',
+        title: `Đánh giá ${rev.rating} sao từ ${rev.userName}`,
+        message: `Mô hình: ${rev.product.name} - "${rev.comment.slice(0, 60)}${rev.comment.length > 60 ? '...' : ''}"`,
+        badgeText: `${rev.rating} ★`,
+        link: `/admin/products`,
+        createdAt: rev.createdAt,
+        isUrgent: false,
+      });
+    }
+
+    // Sắp xếp theo thời gian mới nhất
+    notifications.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    const pendingOrdersCount = pendingOrders.length;
+    const lowStockCount = lowStockItems.length;
+    const unreadCount = pendingOrdersCount + lowStockCount;
+
+    return {
+      items: notifications,
+      unreadCount,
+      pendingOrdersCount,
+      lowStockCount,
+    };
+  }
 }
 
