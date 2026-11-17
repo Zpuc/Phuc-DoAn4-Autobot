@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "public": "node scripts/start-public.mjs",
+    "share": "node scripts/start-public.mjs",
     "dev": "concurrently -k -n BACKEND,FRONTEND -c yellow,cyan \"npm --prefix backend run start:dev\" \"npm --prefix frontend run dev\"",
     "dev:backend": "npm --prefix backend run start:dev",
     "dev:frontend": "npm --prefix frontend run dev",
