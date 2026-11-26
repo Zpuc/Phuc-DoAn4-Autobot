@@ -32,7 +32,28 @@ interface ProductCardProps {
   product: ProductCardData;
 }
 
-const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?w=500';
+const FALLBACK_IMAGE =
+  "data:image/svg+xml;utf8," +
+  encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="500" height="400" viewBox="0 0 500 400">
+      <defs>
+        <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#0f172a"/>
+          <stop offset="100%" stop-color="#1e293b"/>
+        </linearGradient>
+      </defs>
+      <rect width="500" height="400" fill="url(#bg)"/>
+      <polygon points="250,95 160,55 190,115 242,135" fill="#fbbf24"/>
+      <polygon points="250,95 340,55 310,115 258,135" fill="#fbbf24"/>
+      <polygon points="250,75 266,100 250,125 234,100" fill="#ef4444"/>
+      <polygon points="212,135 288,135 280,195 220,195" fill="#e2e8f0"/>
+      <polygon points="222,148 242,152 238,162 224,160" fill="#22d3ee"/>
+      <polygon points="278,148 258,152 262,162 276,160" fill="#22d3ee"/>
+      <polygon points="238,195 262,195 256,216 244,216" fill="#ef4444"/>
+      <text x="250" y="268" text-anchor="middle" fill="#f8fafc" font-family="Arial, sans-serif" font-weight="bold" font-size="22" letter-spacing="2">AUTOBOT GUNDAM</text>
+      <text x="250" y="295" text-anchor="middle" fill="#94a3b8" font-family="Arial, sans-serif" font-size="13">GUNPLA MODEL KIT</text>
+    </svg>`,
+  );
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const navigate = useNavigate();

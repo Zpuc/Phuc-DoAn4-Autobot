@@ -103,17 +103,19 @@ export class OrdersService {
       const shippingFee = Number(dto.shippingFee) || 0;
       const total = Math.max(0, subtotal - discountAmount + shippingFee);
 
-      // 2. Sinh mã đơn hàng tự động định dạng: AG-YYMMDD-XXX
+      // 2. Sinh mã đơn hàng tự động định dạng: AG-YYMMDD-XXX (đồng bộ theo giờ máy chủ)
       const now = new Date();
-      const dateStr = now.toISOString().slice(2, 10).replace(/-/g, '');
-      const countToday = await tx.order.count({
-        where: {
-          createdAt: {
-            gte: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
-          },
-        },
+      const dateStr = `${String(now.getFullYear()).slice(-2)}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+      const prefix = `AG-${dateStr}-`;
+      const latestOrderToday = await tx.order.findFirst({
+        where: { code: { startsWith: prefix } },
+        orderBy: { code: 'desc' },
+        select: { code: true },
       });
-      const orderCode = `AG-${dateStr}-${String(countToday + 1).padStart(3, '0')}`;
+      const lastSeq = latestOrderToday
+        ? parseInt(latestOrderToday.code.slice(prefix.length), 10) || 0
+        : 0;
+      const orderCode = `${prefix}${String(lastSeq + 1).padStart(3, '0')}`;
 
       // 3. Tạo Order
       const order = await tx.order.create({
@@ -206,6 +208,7 @@ export class OrdersService {
         { code: { contains: filter.search, mode: 'insensitive' } },
         { customerName: { contains: filter.search, mode: 'insensitive' } },
         { customerPhone: { contains: filter.search, mode: 'insensitive' } },
+        { customerEmail: { contains: filter.search, mode: 'insensitive' } },
       ];
     }
 

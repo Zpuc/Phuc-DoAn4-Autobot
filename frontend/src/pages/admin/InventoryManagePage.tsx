@@ -31,6 +31,7 @@ import {
   SearchOutlined,
   FileExcelOutlined,
 } from '@ant-design/icons';
+import { useSearchParams } from 'react-router-dom';
 import { apiClient } from '../../api/client';
 import { exportInventoryExcel } from '../../utils/excelExport';
 
@@ -76,6 +77,7 @@ interface InventoryLog {
 }
 
 export const InventoryManagePage: React.FC = () => {
+  const [searchParams] = useSearchParams();
   const [overview, setOverview] = useState<InventoryOverview | null>(null);
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [logs, setLogs] = useState<InventoryLog[]>([]);
@@ -83,8 +85,8 @@ export const InventoryManagePage: React.FC = () => {
   const [logsLoading, setLogsLoading] = useState(false);
 
   // Bộ lọc
-  const [search, setSearch] = useState('');
-  const [warningOnly, setWarningOnly] = useState(false);
+  const [search, setSearch] = useState(searchParams.get('search') || '');
+  const [warningOnly, setWarningOnly] = useState(searchParams.get('warningOnly') === 'true');
   const [activeTab, setActiveTab] = useState('inventory');
   const [exporting, setExporting] = useState(false);
 
@@ -135,13 +137,15 @@ export const InventoryManagePage: React.FC = () => {
     }
   };
 
-  const fetchInventory = async () => {
+  const fetchInventory = async (overrideSearch?: string, overrideWarning?: boolean) => {
     setLoading(true);
     try {
+      const effectiveSearch = overrideSearch !== undefined ? overrideSearch : search;
+      const effectiveWarning = overrideWarning !== undefined ? overrideWarning : warningOnly;
       const data: any = await apiClient.get('/inventory', {
         params: {
-          search: search || undefined,
-          warningOnly: warningOnly ? 'true' : undefined,
+          search: effectiveSearch || undefined,
+          warningOnly: effectiveWarning ? 'true' : undefined,
           limit: 50,
         },
       });
@@ -166,6 +170,16 @@ export const InventoryManagePage: React.FC = () => {
       setLogsLoading(false);
     }
   };
+
+  useEffect(() => {
+    const urlSearch = searchParams.get('search') || '';
+    const urlWarning = searchParams.get('warningOnly') === 'true';
+    setSearch(urlSearch);
+    setWarningOnly(urlWarning);
+    setActiveTab('inventory');
+    fetchOverview();
+    fetchInventory(urlSearch, urlWarning);
+  }, [searchParams]);
 
   useEffect(() => {
     fetchOverview();
@@ -521,11 +535,11 @@ export const InventoryManagePage: React.FC = () => {
                         prefix={<SearchOutlined />}
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        onPressEnter={fetchInventory}
+                        onPressEnter={() => fetchInventory()}
                         style={{ width: 280 }}
                         allowClear
                       />
-                      <Button type="primary" onClick={fetchInventory}>
+                      <Button type="primary" onClick={() => fetchInventory()}>
                         Tìm kiếm
                       </Button>
                     </Space>

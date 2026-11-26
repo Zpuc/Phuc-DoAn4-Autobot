@@ -23,12 +23,12 @@ export const HomePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   const grades = [
-    { name: 'High Grade (HG)', scale: '1/144', color: 'blue', desc: 'Đa dạng, dễ ráp, biên độ cử động linh hoạt' },
-    { name: 'Real Grade (RG)', scale: '1/144', color: 'purple', desc: 'Khung xương Advanced MS Joint siêu chi tiết' },
-    { name: 'Master Grade (MG)', scale: '1/100', color: 'volcano', desc: 'Tỉ lệ chuẩn 1/100, khung xương hoàn chỉnh' },
-    { name: 'Perfect Grade (PG)', scale: '1/60', color: 'gold', desc: 'Tuyệt tác Gunpla, khung kim loại & LED' },
-    { name: 'Super Deformed (SD)', scale: 'Non-scale', color: 'cyan', desc: 'Nhỏ gọn dễ thương, phong cách Chibi' },
-    { name: 'Metal Build / Alloy', scale: '1/100, 1/72', color: 'magenta', desc: 'Mô hình hoàn thiện khung kim loại đúc sẵn' },
+    { code: 'HG', name: 'High Grade (HG)', scale: '1/144', color: 'blue', desc: 'Đa dạng, dễ ráp, biên độ cử động linh hoạt' },
+    { code: 'RG', name: 'Real Grade (RG)', scale: '1/144', color: 'purple', desc: 'Khung xương Advanced MS Joint siêu chi tiết' },
+    { code: 'MG', name: 'Master Grade (MG)', scale: '1/100', color: 'volcano', desc: 'Tỉ lệ chuẩn 1/100, khung xương hoàn chỉnh' },
+    { code: 'PG', name: 'Perfect Grade (PG)', scale: '1/60', color: 'gold', desc: 'Tuyệt tác Gunpla, khung kim loại & LED' },
+    { code: 'SD', name: 'Super Deformed (SD)', scale: 'Non-scale', color: 'cyan', desc: 'Nhỏ gọn dễ thương, phong cách Chibi' },
+    { code: 'MB', name: 'Metal Build / Alloy', scale: '1/100, 1/72', color: 'magenta', desc: 'Mô hình hoàn thiện khung kim loại đúc sẵn' },
   ];
 
   useEffect(() => {
@@ -84,7 +84,7 @@ export const HomePage: React.FC = () => {
           <Col xs={24} md={8} style={{ textAlign: 'center' }}>
             <Image
               preview={false}
-              src="https://images.unsplash.com/photo-1594736797933-d0501ba2fe65?w=600&auto=format&fit=crop&q=60"
+              src="https://product.hstatic.net/200000326537/product/10777897p_ccfbcdc67eda4562b8e2779e8fc8c621_grande.jpg"
               alt="Gundam Hero"
               style={{
                 width: '100%',
@@ -108,7 +108,7 @@ export const HomePage: React.FC = () => {
             <Col xs={24} sm={12} md={8} key={g.name}>
               <Card
                 hoverable
-                onClick={() => navigate(`/products`)}
+                onClick={() => navigate(`/products?grade=${g.code}`)}
                 style={{
                   borderRadius: 8,
                   height: '100%',

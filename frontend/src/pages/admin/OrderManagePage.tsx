@@ -25,6 +25,7 @@ import {
   DownloadOutlined,
   FileExcelOutlined,
 } from '@ant-design/icons';
+import { useSearchParams } from 'react-router-dom';
 import { apiClient } from '../../api/client';
 import { exportOrdersExcel } from '../../utils/excelExport';
 
@@ -56,12 +57,15 @@ interface Order {
 }
 
 export const OrderManagePage: React.FC = () => {
+  const [searchParams] = useSearchParams();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
-  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string | undefined>(
+    searchParams.get('status') || undefined,
+  );
+  const [search, setSearch] = useState(searchParams.get('search') || '');
   const [exporting, setExporting] = useState(false);
 
   // Modal Đổi trạng thái
@@ -74,12 +78,14 @@ export const OrderManagePage: React.FC = () => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [detailOrder, setDetailOrder] = useState<Order | null>(null);
 
-  const fetchOrders = async () => {
+  const fetchOrders = async (overrideSearch?: string, overrideStatus?: string) => {
     try {
       setLoading(true);
+      const effectiveSearch = overrideSearch !== undefined ? overrideSearch : search;
+      const effectiveStatus = overrideStatus !== undefined ? overrideStatus : statusFilter;
       const params: any = { page, limit: 10 };
-      if (statusFilter) params.status = statusFilter;
-      if (search) params.search = search;
+      if (effectiveStatus) params.status = effectiveStatus;
+      if (effectiveSearch) params.search = effectiveSearch;
 
       const res: any = await apiClient.get('/orders', { params });
       setOrders(res.items || []);
@@ -90,6 +96,15 @@ export const OrderManagePage: React.FC = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const urlSearch = searchParams.get('search') || '';
+    const urlStatus = searchParams.get('status') || undefined;
+    setSearch(urlSearch);
+    setStatusFilter(urlStatus);
+    setPage(1);
+    fetchOrders(urlSearch, urlStatus || '');
+  }, [searchParams]);
 
   useEffect(() => {
     fetchOrders();
@@ -287,7 +302,7 @@ export const OrderManagePage: React.FC = () => {
               <Button icon={<FileExcelOutlined />} onClick={handleExportOrdersExcel} loading={exporting} style={{ borderColor: '#52c41a', color: '#52c41a', fontWeight: 600 }}>
                 Xuất Đơn Hàng Excel (.xlsx)
               </Button>
-              <Button icon={<ReloadOutlined />} onClick={fetchOrders}>
+              <Button icon={<ReloadOutlined />} onClick={() => fetchOrders()}>
                 Làm mới danh sách
               </Button>
             </Space>
