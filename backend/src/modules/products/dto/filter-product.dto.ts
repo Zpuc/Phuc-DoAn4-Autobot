@@ -39,6 +39,12 @@ export class FilterProductDto {
   @IsBoolean()
   isPreorder?: boolean;
 
+  @ApiProperty({ required: false, description: 'Bao gồm sản phẩm INACTIVE (Dành cho Admin)' })
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  includeInactive?: boolean;
+
   @ApiProperty({ required: false, description: 'Giá tối thiểu (VND)' })
   @IsOptional()
   @Type(() => Number)

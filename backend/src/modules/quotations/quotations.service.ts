@@ -12,15 +12,15 @@ export class QuotationsService {
     }
 
     const now = new Date();
-    const dateStr = now.toISOString().slice(2, 10).replace(/-/g, '');
-    const countToday = await this.prisma.quotation.count({
-      where: {
-        createdAt: {
-          gte: new Date(now.getFullYear(), now.getMonth(), now.getDate()),
-        },
-      },
+    const dateStr = `${String(now.getFullYear()).slice(-2)}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+    const prefix = `BG-${dateStr}-`;
+    const latestToday = await this.prisma.quotation.findFirst({
+      where: { code: { startsWith: prefix } },
+      orderBy: { code: 'desc' },
+      select: { code: true },
     });
-    const quoteCode = `BG-${dateStr}-${String(countToday + 1).padStart(3, '0')}`;
+    const lastSeq = latestToday ? parseInt(latestToday.code.slice(prefix.length), 10) || 0 : 0;
+    const quoteCode = `${prefix}${String(lastSeq + 1).padStart(3, '0')}`;
 
     let totalAmount = 0;
     for (const item of dto.items) {

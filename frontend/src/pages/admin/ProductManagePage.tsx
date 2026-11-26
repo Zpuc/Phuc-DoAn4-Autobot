@@ -138,7 +138,7 @@ export const ProductManagePage: React.FC = () => {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const params: any = { page, limit: 10 };
+      const params: any = { page, limit: 10, includeInactive: true };
       if (search) params.search = search;
       if (gradeFilter) params.grade = gradeFilter;
 

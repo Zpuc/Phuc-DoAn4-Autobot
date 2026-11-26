@@ -57,7 +57,7 @@ export class ReportsService {
     const monthlyMap = new Map<string, { label: string; revenue: number; profit: number; ordersCount: number }>();
 
     for (const order of completedOrders) {
-      const orderRev = Number(order.subtotal);
+      const orderRev = Math.max(0, Number(order.subtotal) - Number(order.discountAmount || 0));
       let orderCost = 0;
       for (const item of order.items) {
         orderCost += Number(item.unitCost) * item.quantity;

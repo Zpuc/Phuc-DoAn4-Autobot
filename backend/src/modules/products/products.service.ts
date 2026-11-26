@@ -16,6 +16,7 @@ export class ProductsService {
 
     const where: Prisma.ProductWhereInput = {
       deletedAt: null,
+      ...(filter.includeInactive ? {} : { status: 'ACTIVE' }),
     };
 
     if (filter.search) {
