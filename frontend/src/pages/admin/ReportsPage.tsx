@@ -106,7 +106,8 @@ export const ReportsPage: React.FC = () => {
   if (loading && !data) {
     return (
       <div style={{ textAlign: 'center', padding: '100px 0' }}>
-        <Spin size="large" tip="Đang tổng hợp báo cáo tài chính Gunpla..." />
+        <Spin size="large" />
+        <div style={{ marginTop: 12, color: '#8c8c8c' }}>Đang tổng hợp báo cáo tài chính Gunpla...</div>
       </div>
     );
   }
@@ -193,13 +194,13 @@ export const ReportsPage: React.FC = () => {
       {/* KPI Doanh thu & Lợi nhuận */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col xs={24} sm={12} lg={6}>
-          <Card bordered={false} style={{ borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+          <Card variant="borderless" style={{ borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
             <Statistic
               title="Tổng doanh thu thực tế"
               value={revenue}
               precision={0}
               suffix="đ"
-              valueStyle={{ color: '#52c41a', fontWeight: 'bold', fontSize: 24 }}
+              styles={{ content: { color: '#52c41a', fontWeight: 'bold', fontSize: 24 } }}
               prefix={<DollarOutlined />}
             />
             <div style={{ marginTop: 8, fontSize: 12, color: '#8c8c8c' }}>
@@ -209,13 +210,13 @@ export const ReportsPage: React.FC = () => {
         </Col>
 
         <Col xs={24} sm={12} lg={6}>
-          <Card bordered={false} style={{ borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+          <Card variant="borderless" style={{ borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
             <Statistic
               title="Tổng giá vốn hàng bán (COGS)"
               value={cost}
               precision={0}
               suffix="đ"
-              valueStyle={{ color: '#595959', fontWeight: 'bold', fontSize: 24 }}
+              styles={{ content: { color: '#595959', fontWeight: 'bold', fontSize: 24 } }}
             />
             <div style={{ marginTop: 8, fontSize: 12, color: '#8c8c8c' }}>
               Chi phí nhập khẩu kits Gundam
@@ -224,13 +225,13 @@ export const ReportsPage: React.FC = () => {
         </Col>
 
         <Col xs={24} sm={12} lg={6}>
-          <Card bordered={false} style={{ borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+          <Card variant="borderless" style={{ borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
             <Statistic
               title="Lợi nhuận gộp (Gross Profit)"
               value={profit}
               precision={0}
               suffix="đ"
-              valueStyle={{ color: profit >= 0 ? '#1677ff' : '#ff4d4f', fontWeight: 'bold', fontSize: 24 }}
+              styles={{ content: { color: profit >= 0 ? '#1677ff' : '#ff4d4f', fontWeight: 'bold', fontSize: 24 } }}
               prefix={<RiseOutlined />}
             />
             <div style={{ marginTop: 8, fontSize: 12, color: '#8c8c8c' }}>
@@ -240,12 +241,12 @@ export const ReportsPage: React.FC = () => {
         </Col>
 
         <Col xs={24} sm={12} lg={6}>
-          <Card bordered={false} style={{ borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+          <Card variant="borderless" style={{ borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
             <Statistic
               title="Tỉ suất lợi nhuận gộp"
               value={profitMargin}
               suffix="%"
-              valueStyle={{ color: '#722ed1', fontWeight: 'bold', fontSize: 24 }}
+              styles={{ content: { color: '#722ed1', fontWeight: 'bold', fontSize: 24 } }}
             />
             <div style={{ marginTop: 8, fontSize: 12, color: '#8c8c8c' }}>
               Hiệu suất sinh lời trên mỗi hộp
@@ -256,7 +257,7 @@ export const ReportsPage: React.FC = () => {
 
       {/* Biểu đồ Doanh thu & Lợi nhuận */}
       <Card
-        bordered={false}
+        variant="borderless"
         style={{ borderRadius: 8, marginBottom: 24, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}
         title={
           <Space>
@@ -377,7 +378,7 @@ export const ReportsPage: React.FC = () => {
                 <ShoppingOutlined /> Tình Trạng Xử Lý Đơn Hàng
               </Space>
             }
-            bordered={false}
+            variant="borderless"
             style={{ borderRadius: 8 }}
           >
             <div style={{ marginBottom: 16 }}>
@@ -455,7 +456,7 @@ export const ReportsPage: React.FC = () => {
                 <WarningOutlined style={{ color: '#fa8c16' }} /> Cảnh Báo Tồn Kho Thấp (≤ 2 hộp)
               </Space>
             }
-            bordered={false}
+            variant="borderless"
             style={{ borderRadius: 8 }}
           >
             {data?.lowStockProducts && data.lowStockProducts.length > 0 ? (
@@ -468,7 +469,7 @@ export const ReportsPage: React.FC = () => {
               />
             ) : (
               <Alert
-                message="Tất cả các mô hình Gunpla đều đang đủ tồn kho an toàn"
+                title="Tất cả các mô hình Gunpla đều đang đủ tồn kho an toàn"
                 type="success"
                 showIcon
               />

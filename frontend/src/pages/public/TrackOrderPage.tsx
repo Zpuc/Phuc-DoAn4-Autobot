@@ -186,7 +186,7 @@ export const TrackOrderPage: React.FC = () => {
       {errorMsg && (
         <Alert
           type="error"
-          message={errorMsg}
+          title={errorMsg}
           showIcon
           style={{ marginBottom: 24, borderRadius: 8 }}
         />
@@ -199,7 +199,7 @@ export const TrackOrderPage: React.FC = () => {
             <Alert
               type="error"
               showIcon
-              message="Đơn hàng này đã bị hủy"
+              title="Đơn hàng này đã bị hủy"
               description="Đơn hàng đã được ghi nhận hủy và tồn kho đã được hoàn lại. Nếu cần hỗ trợ, vui lòng liên hệ hotline shop."
               style={{ marginBottom: 20 }}
             />

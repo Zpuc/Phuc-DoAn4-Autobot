@@ -235,7 +235,7 @@ export const UserManagePage: React.FC = () => {
       width: 160,
       sorter: (a, b) => a.ordersCount - b.ordersCount,
       render: (_, record) => (
-        <Space direction="vertical" size={2}>
+        <Space orientation="vertical" size={2}>
           <Link to={`/admin/orders?search=${encodeURIComponent(record.email)}`}>
             <Tag color="cyan" icon={<ShoppingOutlined />} style={{ cursor: 'pointer' }}>
               {record.ordersCount} đơn hàng
@@ -360,49 +360,49 @@ export const UserManagePage: React.FC = () => {
       {/* KPI Cards */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col xs={24} sm={12} lg={6}>
-          <Card bordered={false} style={{ borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+          <Card variant="borderless" style={{ borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
             <Statistic
               title="Tổng số thành viên"
               value={overview?.totalUsers || 0}
               suffix="tài khoản"
-              valueStyle={{ color: '#1677ff', fontWeight: 'bold' }}
+              styles={{ content: { color: '#1677ff', fontWeight: 'bold' } }}
               prefix={<TeamOutlined />}
             />
           </Card>
         </Col>
 
         <Col xs={24} sm={12} lg={6}>
-          <Card bordered={false} style={{ borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+          <Card variant="borderless" style={{ borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
             <Statistic
               title="Quản trị viên (Admin)"
               value={overview?.adminCount || 0}
               suffix="admin"
-              valueStyle={{ color: '#e53935', fontWeight: 'bold' }}
+              styles={{ content: { color: '#e53935', fontWeight: 'bold' } }}
               prefix={<SafetyCertificateOutlined />}
             />
           </Card>
         </Col>
 
         <Col xs={24} sm={12} lg={6}>
-          <Card bordered={false} style={{ borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+          <Card variant="borderless" style={{ borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
             <Statistic
               title="Khách hàng mua sắm"
               value={overview?.customerCount || 0}
               suffix="khách"
-              valueStyle={{ color: '#52c41a', fontWeight: 'bold' }}
+              styles={{ content: { color: '#52c41a', fontWeight: 'bold' } }}
               prefix={<UserOutlined />}
             />
           </Card>
         </Col>
 
         <Col xs={24} sm={12} lg={6}>
-          <Card bordered={false} style={{ borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+          <Card variant="borderless" style={{ borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
             <Statistic
               title="Tổng chi tiêu từ thành viên"
               value={overview?.totalMemberSpent || 0}
               precision={0}
               suffix="đ"
-              valueStyle={{ color: '#722ed1', fontWeight: 'bold' }}
+              styles={{ content: { color: '#722ed1', fontWeight: 'bold' } }}
               prefix={<CrownOutlined />}
             />
           </Card>

@@ -82,6 +82,18 @@ interface ProductDetail {
   }[];
 }
 
+const DETAIL_FALLBACK_IMG =
+  'data:image/svg+xml;utf8,' +
+  encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="500" height="420" viewBox="0 0 500 420">
+      <rect width="500" height="420" fill="#0f172a"/>
+      <polygon points="250,105 160,65 190,125 242,145" fill="#fbbf24"/>
+      <polygon points="250,105 340,65 310,125 258,145" fill="#fbbf24"/>
+      <polygon points="212,145 288,145 280,205 220,205" fill="#e2e8f0"/>
+      <text x="250" y="275" text-anchor="middle" fill="#f8fafc" font-family="Arial" font-weight="bold" font-size="22">AUTOBOT GUNDAM</text>
+    </svg>`,
+  );
+
 export const ProductDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
@@ -324,7 +336,11 @@ export const ProductDetailPage: React.FC = () => {
               }}
             >
               <img
-                src={selectedImage || 'https://via.placeholder.com/450x420?text=Gunpla'}
+                src={selectedImage || DETAIL_FALLBACK_IMG}
+                onError={(e) => {
+                  e.currentTarget.onerror = null;
+                  e.currentTarget.src = DETAIL_FALLBACK_IMG;
+                }}
                 alt={product.name}
                 style={{ width: '100%', height: '100%', objectFit: 'contain' }}
               />
@@ -385,7 +401,7 @@ export const ProductDetailPage: React.FC = () => {
               <Text strong style={{ color: '#d48806', fontSize: 15 }}>
                 {reviewData?.stats.average || 5.0}
               </Text>
-              <Divider type="vertical" />
+              <Divider orientation="vertical" />
               <Button
                 type="link"
                 style={{ padding: 0, height: 'auto', color: '#1890ff' }}
@@ -393,7 +409,7 @@ export const ProductDetailPage: React.FC = () => {
               >
                 {reviewData?.stats.total || 0} bài đánh giá
               </Button>
-              <Divider type="vertical" />
+              <Divider orientation="vertical" />
               <Tag color="cyan">100% Chính Hãng MISB</Tag>
             </div>
 
@@ -511,7 +527,7 @@ export const ProductDetailPage: React.FC = () => {
               type="info"
               showIcon
               icon={<SafetyCertificateOutlined />}
-              message="Chính sách hỗ trợ mua hàng tại Autobot"
+              title="Chính sách hỗ trợ mua hàng tại Autobot"
               description="Hỗ trợ kiểm tra hộp trước khi nhận hàng. Giao hỏa tốc nội thành trong ngày, giao toàn quốc qua GHN/GHTK bọc màng khí chống móp 100%."
             />
           </Col>
@@ -805,7 +821,7 @@ export const ProductDetailPage: React.FC = () => {
         open={reviewModalOpen}
         onCancel={() => setReviewModalOpen(false)}
         footer={null}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form
           form={reviewForm}
@@ -863,7 +879,7 @@ export const ProductDetailPage: React.FC = () => {
           </Form.Item>
 
           <Form.Item label="Đính kèm hình ảnh thực tế mô hình (Không bắt buộc)">
-            <Space direction="vertical" style={{ width: '100%' }} size={10}>
+            <Space orientation="vertical" style={{ width: '100%' }} size={10}>
               <Space wrap>
                 <Upload
                   accept="image/*"

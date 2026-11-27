@@ -198,7 +198,7 @@ export const ProfilePage: React.FC = () => {
           background: 'linear-gradient(135deg, #1f1f1f 0%, #3a3a3a 100%)',
           color: '#fff',
         }}
-        bordered={false}
+        variant="borderless"
       >
         <Space size={20} align="center">
           <Avatar size={72} icon={<UserOutlined />} style={{ backgroundColor: '#e53935' }} />
@@ -354,7 +354,7 @@ export const ProfilePage: React.FC = () => {
                       <Paragraph type="secondary">Bạn chưa lưu địa chỉ nhận hàng nào</Paragraph>
                     </div>
                   ) : (
-                    <Space direction="vertical" size={16} style={{ width: '100%' }}>
+                    <Space orientation="vertical" size={16} style={{ width: '100%' }}>
                       {addresses.map((addr) => (
                         <Card
                           key={addr.id}
@@ -371,7 +371,7 @@ export const ProfilePage: React.FC = () => {
                                 <Text strong style={{ fontSize: 15 }}>
                                   {addr.receiverName}
                                 </Text>
-                                <Divider type="vertical" />
+                                <Divider orientation="vertical" />
                                 <Text type="secondary">{addr.phone}</Text>
                                 {addr.isDefault && (
                                   <Tag color="red" icon={<CheckCircleOutlined />}>
@@ -436,7 +436,7 @@ export const ProfilePage: React.FC = () => {
           setEditingAddressId(null);
         }}
         footer={null}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form form={addressForm} layout="vertical" onFinish={handleSaveAddress} style={{ marginTop: 16 }}>
           <Row gutter={12}>

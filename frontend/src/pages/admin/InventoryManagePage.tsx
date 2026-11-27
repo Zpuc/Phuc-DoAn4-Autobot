@@ -438,44 +438,44 @@ export const InventoryManagePage: React.FC = () => {
       {/* KPI Cards */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col xs={24} sm={12} lg={6}>
-          <Card bordered={false} style={{ borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+          <Card variant="borderless" style={{ borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
             <Statistic
               title="Tổng số hộp trong kho"
               value={overview?.totalBoxes || 0}
               suffix="hộp"
-              valueStyle={{ color: '#1677ff', fontWeight: 'bold' }}
+              styles={{ content: { color: '#1677ff', fontWeight: 'bold' } }}
               prefix={<DatabaseOutlined />}
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card bordered={false} style={{ borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+          <Card variant="borderless" style={{ borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
             <Statistic
               title="Mã sản phẩm quản lý"
               value={overview?.totalTrackedProducts || 0}
               suffix="kit"
-              valueStyle={{ fontWeight: 'bold' }}
+              styles={{ content: { fontWeight: 'bold' } }}
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card bordered={false} style={{ borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+          <Card variant="borderless" style={{ borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
             <Statistic
               title="Cảnh báo sắp hết (≤ 2)"
               value={overview?.lowStockCount || 0}
               suffix="kit"
-              valueStyle={{ color: '#fa8c16', fontWeight: 'bold' }}
+              styles={{ content: { color: '#fa8c16', fontWeight: 'bold' } }}
               prefix={<WarningOutlined />}
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card bordered={false} style={{ borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+          <Card variant="borderless" style={{ borderRadius: 8, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
             <Statistic
               title="Kit đã hết hàng (0 hộp)"
               value={overview?.outOfStockCount || 0}
               suffix="kit"
-              valueStyle={{ color: '#ff4d4f', fontWeight: 'bold' }}
+              styles={{ content: { color: '#ff4d4f', fontWeight: 'bold' } }}
               prefix={<CloseCircleOutlined />}
             />
           </Card>
@@ -483,7 +483,7 @@ export const InventoryManagePage: React.FC = () => {
       </Row>
 
       {/* Main Tabs */}
-      <Card bordered={false} style={{ borderRadius: 8 }}>
+      <Card variant="borderless" style={{ borderRadius: 8 }}>
         <Tabs
           activeKey={activeTab}
           onChange={setActiveTab}
@@ -595,7 +595,7 @@ export const InventoryManagePage: React.FC = () => {
         open={importModalVisible}
         onCancel={() => setImportModalVisible(false)}
         footer={null}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form form={importForm} layout="vertical" onFinish={handleImportSubmit} style={{ marginTop: 16 }}>
           <div style={{ marginBottom: 16, padding: 12, background: '#f5f5f5', borderRadius: 6 }}>
@@ -656,7 +656,7 @@ export const InventoryManagePage: React.FC = () => {
         open={adjustModalVisible}
         onCancel={() => setAdjustModalVisible(false)}
         footer={null}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form form={adjustForm} layout="vertical" onFinish={handleAdjustSubmit} style={{ marginTop: 16 }}>
           <div style={{ marginBottom: 16, padding: 12, background: '#f5f5f5', borderRadius: 6 }}>

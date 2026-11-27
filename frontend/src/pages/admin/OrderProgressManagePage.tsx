@@ -277,7 +277,7 @@ export const OrderProgressManagePage: React.FC = () => {
           <Empty description="Không có đơn hàng nào ở bước tiến độ này" />
         </Card>
       ) : (
-        <Space direction="vertical" size={16} style={{ width: '100%' }}>
+        <Space orientation="vertical" size={16} style={{ width: '100%' }}>
           {filteredOrders.map((order) => {
             const norm = normalizeStepStatus(order.status);
             const currentStep = getStepIndex(order.status);
@@ -356,7 +356,7 @@ export const OrderProgressManagePage: React.FC = () => {
                   </Col>
 
                   <Col xs={24} lg={6} style={{ textAlign: 'right' }}>
-                    <Space direction="vertical" style={{ width: '100%' }} size={8}>
+                    <Space orientation="vertical" style={{ width: '100%' }} size={8}>
                       {norm === 'PENDING' && (
                         <Button
                           type="primary"
@@ -412,7 +412,7 @@ export const OrderProgressManagePage: React.FC = () => {
             rules={[{ required: true, message: 'Vui lòng chọn bước tiến độ' }]}
           >
             <Radio.Group style={{ width: '100%' }}>
-              <Space direction="vertical" style={{ width: '100%' }}>
+              <Space orientation="vertical" style={{ width: '100%' }}>
                 <Radio value="PENDING">
                   <Tag color="gold">Bước 1</Tag> <strong>Chờ xác nhận</strong> — Shop đang kiểm tra và xác nhận đơn
                 </Radio>

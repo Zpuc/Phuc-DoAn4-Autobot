@@ -256,7 +256,7 @@ export const CouponManagePage: React.FC = () => {
             <Statistic
               title="Mã Đang Kích Hoạt"
               value={totalActive}
-              valueStyle={{ color: '#52c41a' }}
+              styles={{ content: { color: '#52c41a' } }}
               prefix={<CheckCircleOutlined />}
             />
           </Card>
@@ -266,7 +266,7 @@ export const CouponManagePage: React.FC = () => {
             <Statistic
               title="Tổng Lượt Đã Áp Dụng"
               value={totalUsed}
-              valueStyle={{ color: '#e53935' }}
+              styles={{ content: { color: '#e53935' } }}
               prefix={<TagOutlined />}
             />
           </Card>
@@ -294,7 +294,7 @@ export const CouponManagePage: React.FC = () => {
         open={modalOpen}
         onCancel={() => setModalOpen(false)}
         footer={null}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form
           form={form}

@@ -261,7 +261,8 @@ export const MyOrdersPage: React.FC = () => {
 
       {loading ? (
         <div style={{ textAlign: 'center', padding: '60px 0' }}>
-          <Spin size="large" tip="Đang tải lịch sử đơn hàng..." />
+          <Spin size="large" />
+          <div style={{ marginTop: 12, color: '#8c8c8c' }}>Đang tải lịch sử đơn hàng...</div>
         </div>
       ) : orders.length === 0 ? (
         <Card style={{ borderRadius: 12, textAlign: 'center', padding: '40px 20px' }}>
@@ -281,14 +282,14 @@ export const MyOrdersPage: React.FC = () => {
           </Empty>
         </Card>
       ) : (
-        <Space direction="vertical" size={20} style={{ width: '100%' }}>
+        <Space orientation="vertical" size={20} style={{ width: '100%' }}>
           {orders.map((order) => {
             const statusConfig = statusMap[order.status] || { label: order.status, color: 'default' };
 
             return (
               <Card
                 key={order.id}
-                bordered={false}
+                variant="borderless"
                 style={{
                   borderRadius: 12,
                   boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
@@ -482,7 +483,7 @@ export const MyOrdersPage: React.FC = () => {
         open={reviewModalOpen}
         onCancel={() => setReviewModalOpen(false)}
         footer={null}
-        destroyOnClose
+        destroyOnHidden
         width={560}
       >
         {reviewTarget && (
@@ -554,7 +555,7 @@ export const MyOrdersPage: React.FC = () => {
               </Form.Item>
 
               <Form.Item label="Hình ảnh thực tế món hàng (Tải ảnh từ máy hoặc dán link ảnh)">
-                <Space direction="vertical" style={{ width: '100%' }} size={10}>
+                <Space orientation="vertical" style={{ width: '100%' }} size={10}>
                   <Space wrap>
                     <Upload
                       accept="image/*"

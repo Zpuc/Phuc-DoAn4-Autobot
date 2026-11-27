@@ -151,7 +151,7 @@ export const DashboardPage: React.FC = () => {
       {/* Cảnh báo kho */}
       {lowStockProducts.length > 0 && (
         <Alert
-          message={`Cảnh báo tồn kho (${lowStockProducts.length} mẫu sắp hết)`}
+          title={`Cảnh báo tồn kho (${lowStockProducts.length} mẫu sắp hết)`}
           description={
             <div>
               Các mẫu sau đang ở mức tồn kho tối thiểu:{' '}
@@ -175,12 +175,12 @@ export const DashboardPage: React.FC = () => {
       {/* Thống kê chỉ số */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col xs={24} sm={12} lg={6}>
-          <Card bordered={false} style={{ borderRadius: 8 }}>
+          <Card variant="borderless" style={{ borderRadius: 8 }}>
             <Statistic
               title="Tổng Doanh Thu Đã Thu"
               value={totalRevenue}
               precision={0}
-              valueStyle={{ color: '#3f8600', fontWeight: 700 }}
+              styles={{ content: { color: '#3f8600', fontWeight: 700 } }}
               prefix={<DollarOutlined />}
               suffix="đ"
             />
@@ -193,11 +193,11 @@ export const DashboardPage: React.FC = () => {
         </Col>
 
         <Col xs={24} sm={12} lg={6}>
-          <Card bordered={false} style={{ borderRadius: 8 }}>
+          <Card variant="borderless" style={{ borderRadius: 8 }}>
             <Statistic
               title="Đơn Hàng Chờ Xử Lý"
               value={pendingOrders}
-              valueStyle={{ color: '#fa8c16', fontWeight: 700 }}
+              styles={{ content: { color: '#fa8c16', fontWeight: 700 } }}
               prefix={<ShoppingOutlined />}
               suffix="đơn"
             />
@@ -210,11 +210,11 @@ export const DashboardPage: React.FC = () => {
         </Col>
 
         <Col xs={24} sm={12} lg={6}>
-          <Card bordered={false} style={{ borderRadius: 8 }}>
+          <Card variant="borderless" style={{ borderRadius: 8 }}>
             <Statistic
               title="Tổng Số Mẫu Gunpla"
               value={totalProducts}
-              valueStyle={{ color: '#1890ff', fontWeight: 700 }}
+              styles={{ content: { color: '#1890ff', fontWeight: 700 } }}
               prefix={<AppstoreOutlined />}
               suffix="mã"
             />
@@ -227,11 +227,11 @@ export const DashboardPage: React.FC = () => {
         </Col>
 
         <Col xs={24} sm={12} lg={6}>
-          <Card bordered={false} style={{ borderRadius: 8 }}>
+          <Card variant="borderless" style={{ borderRadius: 8 }}>
             <Statistic
               title="Ước Tính Lãi Gộp"
               value={grossProfit}
-              valueStyle={{ color: '#722ed1', fontWeight: 700 }}
+              styles={{ content: { color: '#722ed1', fontWeight: 700 } }}
               prefix={<DollarOutlined />}
               suffix="đ"
             />
@@ -247,7 +247,7 @@ export const DashboardPage: React.FC = () => {
       {/* Đơn hàng gần đây */}
       <Card
         title="Đơn Đặt Hàng Gần Đây"
-        bordered={false}
+        variant="borderless"
         style={{ borderRadius: 8 }}
         extra={
           <Link to="/admin/orders">
