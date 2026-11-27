@@ -377,7 +377,7 @@ export const CheckoutPage: React.FC = () => {
                 }}
                 value={selectedZone?.id}
               >
-                <Space direction="vertical" style={{ width: '100%' }}>
+                <Space orientation="vertical" style={{ width: '100%' }}>
                   {shippingZones.map((zone) => (
                     <Card
                       key={zone.id}

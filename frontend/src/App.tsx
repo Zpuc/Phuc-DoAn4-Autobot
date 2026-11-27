@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { ConfigProvider } from 'antd';
+import { App as AntdApp, ConfigProvider } from 'antd';
 import { RouterProvider } from 'react-router-dom';
 import { router } from './routes';
 import { useAuthStore } from './store/useAuthStore';
@@ -24,7 +24,9 @@ export const App: React.FC = () => {
         },
       }}
     >
-      <RouterProvider router={router} />
+      <AntdApp>
+        <RouterProvider router={router} />
+      </AntdApp>
     </ConfigProvider>
   );
 };

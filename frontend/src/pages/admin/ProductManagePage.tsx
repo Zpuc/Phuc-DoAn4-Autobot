@@ -60,6 +60,17 @@ interface PriceHistory {
   note?: string;
 }
 
+const ADMIN_THUMB_FALLBACK =
+  'data:image/svg+xml;utf8,' +
+  encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60">
+      <rect width="60" height="60" rx="6" fill="#1e293b"/>
+      <polygon points="30,18 14,10 20,22 28,25" fill="#fbbf24"/>
+      <polygon points="30,18 46,10 40,22 32,25" fill="#fbbf24"/>
+      <polygon points="22,25 38,25 35,40 25,40" fill="#e2e8f0"/>
+    </svg>`,
+  );
+
 export const ProductManagePage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
@@ -289,9 +300,9 @@ export const ProductManagePage: React.FC = () => {
         <Image
           width={50}
           height={50}
-          src={record.images[0]?.url || 'https://via.placeholder.com/50'}
+          src={record.images[0]?.url || ADMIN_THUMB_FALLBACK}
           style={{ objectFit: 'cover', borderRadius: 4 }}
-          fallback="https://via.placeholder.com/50?text=No+Image"
+          fallback={ADMIN_THUMB_FALLBACK}
         />
       ),
     },
@@ -316,7 +327,7 @@ export const ProductManagePage: React.FC = () => {
       key: 'grade',
       width: 120,
       render: (_: any, record: Product) => (
-        <Space direction="vertical" size={2}>
+        <Space orientation="vertical" size={2}>
           <Tag color="blue">{record.grade || 'N/A'}</Tag>
           <Text type="secondary" style={{ fontSize: 11 }}>
             {record.scale || 'N/A'}
@@ -362,7 +373,7 @@ export const ProductManagePage: React.FC = () => {
       key: 'status',
       width: 110,
       render: (_: any, record: Product) => (
-        <Space direction="vertical" size={2}>
+        <Space orientation="vertical" size={2}>
           <Tag color={record.status === 'ACTIVE' ? 'success' : 'default'}>
             {record.status === 'ACTIVE' ? 'Đang bán' : 'Ẩn'}
           </Tag>
@@ -685,7 +696,7 @@ export const ProductManagePage: React.FC = () => {
           <Row gutter={16}>
             <Col span={16}>
               <Form.Item label="Hình ảnh sản phẩm (Tải từ máy hoặc dán URL)">
-                <Space direction="vertical" style={{ width: '100%' }} size={8}>
+                <Space orientation="vertical" style={{ width: '100%' }} size={8}>
                   <Space wrap>
                     <Upload
                       accept="image/*"

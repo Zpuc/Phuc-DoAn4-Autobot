@@ -22,7 +22,7 @@ import {
   EditOutlined,
   EyeOutlined,
   CarOutlined,
-  DownloadOutlined,
+  PrinterOutlined,
   FileExcelOutlined,
 } from '@ant-design/icons';
 import { useSearchParams } from 'react-router-dom';
@@ -44,9 +44,12 @@ interface Order {
   code: string;
   customerName: string;
   customerPhone: string;
+  customerEmail?: string | null;
   shippingAddress: string;
   shippingFee: number;
   subtotal: number;
+  discountAmount?: number;
+  couponCode?: string | null;
   total: number;
   status: string;
   paymentMethod: string;
@@ -148,6 +151,133 @@ export const OrderManagePage: React.FC = () => {
     setIsDetailModalOpen(true);
   };
 
+  const handlePrintInvoice = (order: Order) => {
+    const printWin = window.open('', '_blank', 'width=820,height=900');
+    if (!printWin) {
+      message.warning('Trình duyệt đang chặn cửa sổ bật lên (Pop-up), vui lòng cho phép để in phiếu!');
+      return;
+    }
+
+    const discount = Number(order.discountAmount || 0);
+    const isCod = order.paymentMethod === 'COD';
+    const rowsHtml = order.items
+      .map(
+        (it, idx) => `
+          <tr>
+            <td style="text-align:center">${idx + 1}</td>
+            <td><strong>${it.productName}</strong></td>
+            <td style="text-align:center">x${it.quantity}</td>
+            <td style="text-align:right">${Number(it.unitPrice).toLocaleString('vi-VN')} đ</td>
+            <td style="text-align:right"><strong>${(Number(it.unitPrice) * it.quantity).toLocaleString('vi-VN')} đ</strong></td>
+          </tr>`,
+      )
+      .join('');
+
+    printWin.document.write(`
+      <!doctype html>
+      <html lang="vi">
+      <head>
+        <meta charset="utf-8" />
+        <title>Phiếu Giao Hàng - ${order.code}</title>
+        <style>
+          body { font-family: Arial, sans-serif; color: #1f2937; margin: 24px; line-height: 1.5; }
+          .box { border: 2px solid #111827; padding: 20px 24px; border-radius: 6px; }
+          .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #dc2626; padding-bottom: 12px; margin-bottom: 16px; }
+          .brand { font-size: 20px; font-weight: 800; color: #dc2626; letter-spacing: 0.5px; }
+          .sub { font-size: 12px; color: #4b5563; margin-top: 2px; }
+          .code-badge { font-size: 16px; font-weight: 700; background: #fef2f2; border: 1px solid #dc2626; color: #b91c1c; padding: 6px 12px; border-radius: 4px; }
+          .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; font-size: 13px; background: #f9fafb; padding: 12px; border-radius: 4px; border: 1px solid #e5e7eb; }
+          table { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 13px; }
+          th, td { border: 1px solid #d1d5db; padding: 8px 10px; }
+          th { background: #111827; color: #fff; text-transform: uppercase; font-size: 11px; }
+          .totals { width: 320px; margin-left: auto; font-size: 13px; }
+          .totals div { display: flex; justify-content: space-between; padding: 4px 0; }
+          .cod-box { margin-top: 8px; padding: 10px 12px; background: #fef2f2; border: 2px dashed #dc2626; display: flex; justify-content: space-between; align-items: center; font-size: 16px; font-weight: 800; color: #dc2626; }
+          .sign { display: flex; justify-content: space-around; margin-top: 28px; text-align: center; font-size: 13px; }
+          .sign div p { color: #6b7280; font-size: 11px; margin-top: 2px; }
+          @media print { body { margin: 0; } }
+        </style>
+      </head>
+      <body>
+        <div class="box">
+          <div class="header">
+            <div>
+              <div class="brand">AUTOBOT GUNDAM STORE</div>
+              <div class="sub">Phân phối Mô hình Gunpla Chính Hãng • Hotline/Zalo: 0967.708.350</div>
+              <div class="sub">Tuyến giao vận: Hà Nội – Hưng Yên & Chuyển phát toàn quốc</div>
+            </div>
+            <div style="text-align:right">
+              <div class="code-badge">${order.code}</div>
+              <div class="sub" style="margin-top:6px">Ngày đặt: ${new Date(order.createdAt).toLocaleString('vi-VN')}</div>
+            </div>
+          </div>
+
+          <h3 style="text-align:center; margin: 4px 0 14px; text-transform: uppercase; letter-spacing: 1px;">PHIẾU XUẤT KHO KIÊM GIAO NHẬN HÀNG HÓA</h3>
+
+          <div class="info-grid">
+            <div>
+              <div><strong>Người nhận:</strong> ${order.customerName}</div>
+              <div><strong>Điện thoại:</strong> ${order.customerPhone}</div>
+              <div><strong>Địa chỉ giao:</strong> ${order.shippingAddress}</div>
+            </div>
+            <div>
+              <div><strong>Phương thức TT:</strong> ${isCod ? 'Thu hộ tiền mặt (COD)' : 'Chuyển khoản ngân hàng'}</div>
+              <div><strong>Mã vận đơn:</strong> ${order.trackingCode || 'Giao trực tiếp / Đang cập nhật'}</div>
+              ${order.note ? `<div><strong>Ghi chú khách:</strong> ${order.note}</div>` : ''}
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th style="width:45px">STT</th>
+                <th>Tên Mô Hình Gunpla</th>
+                <th style="width:65px">SL</th>
+                <th style="width:120px">Đơn Giá</th>
+                <th style="width:130px">Thành Tiền</th>
+              </tr>
+            </thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+
+          <div class="totals">
+            <div><span>Tạm tính tiền hàng:</span><strong>${Number(order.subtotal).toLocaleString('vi-VN')} đ</strong></div>
+            ${discount > 0 ? `<div style="color:#16a34a"><span>Giảm giá Voucher (${order.couponCode || 'Coupon'}):</span><strong>-${discount.toLocaleString('vi-VN')} đ</strong></div>` : ''}
+            <div><span>Phí vận chuyển:</span><strong>${Number(order.shippingFee).toLocaleString('vi-VN')} đ</strong></div>
+            <div class="cod-box">
+              <span>${isCod ? 'TIỀN THU HỘ (COD):' : 'TỔNG THANH TOÁN:'}</span>
+              <span>${Number(order.total).toLocaleString('vi-VN')} đ</span>
+            </div>
+          </div>
+
+          <p style="font-size:11px; color:#4b5563; margin-top:16px;">
+            * Lưu ý đồng kiểm: Hàng mô hình lắp ráp hộp giấy, vui lòng quay video mở kiện hàng và kiểm tra runner còn nguyên túi seal trước khi xé bọc.
+          </p>
+
+          <div class="sign">
+            <div>
+              <strong>Thủ Kho / Người Đóng Gói</strong>
+              <p>(Ký, ghi rõ họ tên)</p>
+              <br/><br/><br/>
+              <span>Autobot Store</span>
+            </div>
+            <div>
+              <strong>Nhân Viên Giao Hàng</strong>
+              <p>(Ký nhận bàn giao)</p>
+            </div>
+            <div>
+              <strong>Khách Hàng Nhận Hàng</strong>
+              <p>(Ký xác nhận đủ hộp nguyên vẹn)</p>
+            </div>
+          </div>
+        </div>
+        <script>window.onload = function() { window.print(); };</script>
+      </body>
+      </html>
+    `);
+    printWin.document.close();
+  };
+
   const getStatusTag = (status: string) => {
     const map: Record<string, { color: string; label: string }> = {
       PENDING: { color: 'gold', label: 'Chờ xác nhận' },
@@ -237,14 +367,20 @@ export const OrderManagePage: React.FC = () => {
     {
       title: 'Thao Tác',
       key: 'action',
-      width: 155,
+      width: 190,
       render: (_: any, record: Order) => (
-        <Space size="small">
+        <Space size={4}>
           <Button
             type="text"
             icon={<EyeOutlined />}
             onClick={() => handleViewDetail(record)}
             title="Xem chi tiết"
+          />
+          <Button
+            type="text"
+            icon={<PrinterOutlined style={{ color: '#1677ff' }} />}
+            onClick={() => handlePrintInvoice(record)}
+            title="In phiếu giao hàng"
           />
           <Button
             type="primary"
@@ -398,7 +534,7 @@ export const OrderManagePage: React.FC = () => {
           <Alert
             type="info"
             showIcon
-            message="Lưu ý cơ chế tồn kho"
+            title="Lưu ý cơ chế tồn kho"
             description="Khi chuyển trạng thái sang 'Đã hủy', hệ thống sẽ tự động hoàn trả số lượng mô hình về lại kho hàng và ghi nhật ký xuất nhập."
           />
         </Form>
@@ -410,6 +546,17 @@ export const OrderManagePage: React.FC = () => {
         open={isDetailModalOpen}
         onCancel={() => setIsDetailModalOpen(false)}
         footer={[
+          detailOrder ? (
+            <Button
+              key="print"
+              type="primary"
+              icon={<PrinterOutlined />}
+              style={{ background: '#1677ff' }}
+              onClick={() => handlePrintInvoice(detailOrder)}
+            >
+              In Phiếu Giao Hàng
+            </Button>
+          ) : null,
           <Button key="close" onClick={() => setIsDetailModalOpen(false)}>
             Đóng
           </Button>,
@@ -463,8 +610,18 @@ export const OrderManagePage: React.FC = () => {
             />
 
             <div style={{ textAlign: 'right', marginTop: 16 }}>
-              <p>Tạm tính: <strong>{Number(detailOrder.subtotal).toLocaleString('vi-VN')} đ</strong></p>
-              <p>Phí ship: <strong>{Number(detailOrder.shippingFee).toLocaleString('vi-VN')} đ</strong></p>
+              <p style={{ margin: '4px 0' }}>
+                Tạm tính: <strong>{Number(detailOrder.subtotal).toLocaleString('vi-VN')} đ</strong>
+              </p>
+              {Number(detailOrder.discountAmount || 0) > 0 && (
+                <p style={{ margin: '4px 0', color: '#52c41a' }}>
+                  Giảm giá Voucher ({detailOrder.couponCode || 'Coupon'}):{' '}
+                  <strong>-{Number(detailOrder.discountAmount).toLocaleString('vi-VN')} đ</strong>
+                </p>
+              )}
+              <p style={{ margin: '4px 0 8px' }}>
+                Phí giao hàng: <strong>{Number(detailOrder.shippingFee).toLocaleString('vi-VN')} đ</strong>
+              </p>
               <Title level={4} style={{ color: '#e53935', margin: 0 }}>
                 Tổng thanh toán: {Number(detailOrder.total).toLocaleString('vi-VN')} đ
               </Title>

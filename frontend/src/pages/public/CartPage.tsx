@@ -27,6 +27,18 @@ import { useCartStore, CartItem } from '../../store/useCartStore';
 
 const { Title, Text } = Typography;
 
+const CART_FALLBACK_IMG =
+  'data:image/svg+xml;utf8,' +
+  encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80">
+      <rect width="80" height="80" rx="8" fill="#1e293b"/>
+      <polygon points="40,22 18,12 26,28 38,32" fill="#fbbf24"/>
+      <polygon points="40,22 62,12 54,28 42,32" fill="#fbbf24"/>
+      <polygon points="30,32 50,32 47,50 33,50" fill="#e2e8f0"/>
+      <text x="40" y="68" text-anchor="middle" fill="#94a3b8" font-family="Arial" font-size="9" font-weight="bold">GUNPLA</text>
+    </svg>`,
+  );
+
 export const CartPage: React.FC = () => {
   const navigate = useNavigate();
   const { items, updateQuantity, removeFromCart, clearCart, getTotalPrice } = useCartStore();
@@ -42,9 +54,9 @@ export const CartPage: React.FC = () => {
           <Image
             width={60}
             height={60}
-            src={record.imageUrl || 'https://via.placeholder.com/60?text=Gunpla'}
+            src={record.imageUrl || CART_FALLBACK_IMG}
             style={{ objectFit: 'cover', borderRadius: 6 }}
-            fallback="https://via.placeholder.com/60?text=Gunpla"
+            fallback={CART_FALLBACK_IMG}
           />
           <div>
             <Link to={`/products/${record.slug}`}>

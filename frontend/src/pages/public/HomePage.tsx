@@ -153,7 +153,8 @@ export const HomePage: React.FC = () => {
 
         {loading ? (
           <div style={{ textAlign: 'center', padding: '60px 0' }}>
-            <Spin size="large" tip="Đang tải danh sách mô hình Gundam..." />
+            <Spin size="large" />
+            <div style={{ marginTop: 12, color: '#8c8c8c' }}>Đang tải danh sách mô hình Gundam...</div>
           </div>
         ) : (
           <Row gutter={isMobile ? [10, 12] : [20, 20]}>

@@ -237,6 +237,7 @@ export class OrdersService {
         ...o,
         subtotal: Number(o.subtotal),
         shippingFee: Number(o.shippingFee),
+        discountAmount: Number(o.discountAmount || 0),
         total: Number(o.total),
       })),
       total,

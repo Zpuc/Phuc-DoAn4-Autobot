@@ -264,7 +264,7 @@ export const ProductListPage: React.FC = () => {
         <Text strong style={{ display: 'block', marginBottom: 8 }}>
           Tình trạng hàng hóa
         </Text>
-        <Space direction="vertical">
+        <Space orientation="vertical">
           <Checkbox
             checked={isPreorder === false}
             onChange={(e) => {
@@ -437,7 +437,8 @@ export const ProductListPage: React.FC = () => {
           </Space>
         }
         placement="right"
-        width={300}
+        size="default"
+        styles={{ wrapper: { width: 300 } }}
         open={filterDrawerOpen}
         onClose={() => setFilterDrawerOpen(false)}
         extra={
